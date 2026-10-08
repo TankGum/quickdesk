@@ -299,3 +299,16 @@ select option { color: var(--fg); background-color: var(--bg); }
 .note-rich pre { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin: 0 0 8px; overflow-x: auto; }
 .note-rich pre code { background: none; padding: 0; }
 .note-rich p.is-editor-empty:first-child::before { content: attr(data-placeholder); color: var(--muted); float: left; height: 0; pointer-events: none; }
+
+/* Confirm dialog */
+.confirm-backdrop { z-index: 60; }
+.confirm-dialog { width: min(420px, 100%); }
+.confirm-body { display: flex; gap: 12px; padding: 18px 18px 6px; }
+.confirm-body h3 { margin: 0 0 6px; font-size: 15px; }
+.confirm-body p { margin: 0; overflow-wrap: anywhere; }
+.confirm-icon { font-size: 22px; line-height: 1; }
+.btn.danger-solid { background: var(--danger); border-color: var(--danger); color: white; }
+.btn.danger-solid:hover { filter: brightness(1.08); background: var(--danger); }
+.note .delete { align-self: center; font-size: 13px; }
+.note .delete { visibility: visible; opacity: 0.5; }
+.note:hover .delete, .note .delete:focus-visible { opacity: 1; }

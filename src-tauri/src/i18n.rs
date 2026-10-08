@@ -42,23 +42,25 @@ fn system_lang() -> Lang {
 
 /// Tray menu strings.
 pub fn tr(lang: Lang, key: &str) -> &'static str {
+    // Native tray menus cannot be styled (GNOME draws them), so each entry
+    // gets a symbol; the red one marks Quit.
     match (lang, key) {
-        (Lang::Vi, "quick-note") => "Ghi nhanh",
-        (Lang::Vi, "notes") => "Ghi chú",
-        (Lang::Vi, "clipboard") => "Clipboard",
-        (Lang::Vi, "ports") => "Cổng",
-        (Lang::Vi, "main") => "Mở QuickDesk",
-        (Lang::Vi, "quit") => "Thoát",
-        (Lang::Vi, "pause") => "Tạm dừng lưu clipboard",
-        (Lang::Vi, "paused") => "Đang tạm dừng lưu clipboard: bấm để bật lại",
-        (_, "quick-note") => "Quick note",
-        (_, "notes") => "Notes",
-        (_, "clipboard") => "Clipboard",
-        (_, "ports") => "Ports",
-        (_, "main") => "Open QuickDesk",
-        (_, "quit") => "Quit",
-        (_, "pause") => "Pause clipboard history",
-        (_, "paused") => "Clipboard history paused: click to resume",
+        (Lang::Vi, "quick-note") => "✏️  Ghi nhanh",
+        (Lang::Vi, "notes") => "📝  Ghi chú",
+        (Lang::Vi, "clipboard") => "📋  Clipboard",
+        (Lang::Vi, "ports") => "🔌  Cổng",
+        (Lang::Vi, "main") => "🏠  Mở QuickDesk",
+        (Lang::Vi, "quit") => "⛔  Thoát QuickDesk",
+        (Lang::Vi, "pause") => "⏸️  Tạm dừng lưu clipboard",
+        (Lang::Vi, "paused") => "▶️  Đang tạm dừng lưu clipboard: bấm để bật lại",
+        (_, "quick-note") => "✏️  Quick note",
+        (_, "notes") => "📝  Notes",
+        (_, "clipboard") => "📋  Clipboard",
+        (_, "ports") => "🔌  Ports",
+        (_, "main") => "🏠  Open QuickDesk",
+        (_, "quit") => "⛔  Quit QuickDesk",
+        (_, "pause") => "⏸️  Pause clipboard history",
+        (_, "paused") => "▶️  Clipboard history paused: click to resume",
         _ => "",
     }
 }

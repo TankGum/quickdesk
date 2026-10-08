@@ -69,7 +69,7 @@ const en = {
   "notePopup.saved": "Saved",
 
   // Notes tab
-  "notes.search": "Search notes… (accents optional)",
+  "notes.search": "Search notes…",
   "notes.noMatches": "No matching notes.",
   "notes.empty": "No notes yet. Click “New note” (Ctrl+N) to write one.",
   "notes.deleted": "Note deleted",
@@ -90,6 +90,8 @@ const en = {
   "notes.updated": "Updated {time}",
   "notes.created": "Created {time}",
   "notes.newTitle": "New note",
+  "notes.deleteTitle": "Delete this note?",
+  "notes.deleteBody": "“{name}” will be deleted. You can undo it right after.",
   "editor.bold": "Bold",
   "editor.italic": "Italic",
   "editor.strike": "Strikethrough",
@@ -103,8 +105,8 @@ const en = {
   "notes.editTitle": "Edit note",
 
   // Clipboard (popup + tab)
-  "clip.searchPopup": "🔍 Search clipboard...",
-  "clip.searchTab": "Search clipboard history… (substring, accents optional)",
+  "clip.searchPopup": "🔍 Search clipboard…",
+  "clip.searchTab": "Search clipboard history…",
   "clip.empty": "Nothing copied yet.",
   "clip.emptyTab": "Nothing copied yet. Copy something anywhere and it shows up here.",
   "clip.pasteFailed": "Copied, but auto-paste failed ({error}). Press Ctrl+V / Ctrl+Shift+V.",
@@ -383,7 +385,7 @@ const vi: Record<Key, string> = {
   "notePopup.hint": "Enter ↵ lưu · Shift+Enter xuống dòng · Ctrl+Enter lưu và mở · Esc đóng",
   "notePopup.saved": "Đã lưu",
 
-  "notes.search": "Tìm ghi chú… (gõ có dấu hay không đều được)",
+  "notes.search": "Tìm ghi chú…",
   "notes.noMatches": "Không có ghi chú nào khớp.",
   "notes.empty": "Chưa có ghi chú nào. Bấm “Ghi chú mới” (Ctrl+N) để viết.",
   "notes.deleted": "Đã xoá ghi chú",
@@ -404,6 +406,8 @@ const vi: Record<Key, string> = {
   "notes.updated": "Sửa lúc {time}",
   "notes.created": "Tạo lúc {time}",
   "notes.newTitle": "Ghi chú mới",
+  "notes.deleteTitle": "Xoá ghi chú này?",
+  "notes.deleteBody": "“{name}” sẽ bị xoá. Bạn có thể hoàn tác ngay sau đó.",
   "editor.bold": "In đậm",
   "editor.italic": "In nghiêng",
   "editor.strike": "Gạch ngang",
@@ -416,8 +420,8 @@ const vi: Record<Key, string> = {
   "editor.codeBlock": "Khối mã",
   "notes.editTitle": "Sửa ghi chú",
 
-  "clip.searchPopup": "🔍 Tìm trong clipboard...",
-  "clip.searchTab": "Tìm trong lịch sử clipboard… (tìm theo đoạn chữ, có dấu hay không đều được)",
+  "clip.searchPopup": "🔍 Tìm trong clipboard…",
+  "clip.searchTab": "Tìm trong lịch sử clipboard…",
   "clip.empty": "Chưa copy gì.",
   "clip.emptyTab": "Chưa copy gì. Copy ở bất kỳ đâu, nội dung sẽ hiện ở đây.",
   "clip.pasteFailed": "Đã copy nhưng không tự dán được ({error}). Hãy bấm Ctrl+V / Ctrl+Shift+V.",

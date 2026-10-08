@@ -3,6 +3,7 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react"
 import { useI18n } from "../../shared/i18n";
 import { api, errorMessage, Note, useBackendEvent } from "../../shared/ipc";
 import { absoluteTime, relativeTime } from "../../shared/time";
+import { ConfirmDialog } from "../../shared/ConfirmDialog";
 import { markdownToText } from "./markdown";
 
 // The rich editor is large; load it only when a note is opened.
@@ -26,6 +27,7 @@ export function NotesTab({ focusSignal }: { focusSignal: number }) {
   const [undo, setUndo] = useState<Note | null>(null);
   /** undefined = closed, null = new note, Note = editing it. */
   const [editing, setEditing] = useState<Note | null | undefined>(undefined);
+  const [confirmDelete, setConfirmDelete] = useState<Note | null>(null);
   const search = useRef<HTMLInputElement>(null);
 
   const refresh = useCallback(() => {
@@ -52,7 +54,7 @@ export function NotesTab({ focusSignal }: { focusSignal: number }) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!(e.ctrlKey || e.metaKey) || editing !== undefined) return;
+      if (!(e.ctrlKey || e.metaKey) || editing !== undefined || confirmDelete) return;
       const k = e.key.toLowerCase();
       if (k === "f") {
         e.preventDefault();
@@ -65,7 +67,7 @@ export function NotesTab({ focusSignal }: { focusSignal: number }) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [editing]);
+  }, [editing, confirmDelete]);
 
   useEffect(() => {
     if (!undo) return;
@@ -74,6 +76,11 @@ export function NotesTab({ focusSignal }: { focusSignal: number }) {
   }, [undo]);
 
   const run = (p: Promise<unknown>) => p.catch((e) => setError(errorMessage(e)));
+
+  const remove = (n: Note) => {
+    setConfirmDelete(null);
+    void run(api.notesDelete(n.id).then(() => setUndo(n)));
+  };
 
   return (
     <div className="notes">
@@ -122,6 +129,9 @@ export function NotesTab({ focusSignal }: { focusSignal: number }) {
                     <span title={absoluteTime(n.updatedAt)}>{relativeTime(n.updatedAt)}</span>
                   </div>
                 </button>
+                <button className="icon delete" title={t("common.delete")} onClick={() => setConfirmDelete(n)}>
+                  🗑️
+                </button>
               </li>
             );
           })}
@@ -136,6 +146,15 @@ export function NotesTab({ focusSignal }: { focusSignal: number }) {
             onDeleted={(n) => setUndo(n)}
           />
         </Suspense>
+      )}
+      {confirmDelete && (
+        <ConfirmDialog
+          title={t("notes.deleteTitle")}
+          message={t("notes.deleteBody", { name: heading(confirmDelete).text || t("notes.untitled") })}
+          confirmLabel={t("common.delete")}
+          onConfirm={() => remove(confirmDelete)}
+          onCancel={() => setConfirmDelete(null)}
+        />
       )}
       {undo && (
         <div className="toast">

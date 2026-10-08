@@ -269,7 +269,13 @@ fn build_menu(app: &AppHandle, lang: Lang, snap: &UsageSnapshot) -> tauri::Resul
         };
         let pct = w.used_percent.unwrap_or(0.0);
         let icon = Image::new_owned(crate::ring::render_sized(w.used_percent, ICON), ICON, ICON);
-        let text = format!("{} · {label}   {pct:.0}%", p.name);
+        let mut text = format!("{} · {label}   {pct:.0}%", p.name);
+        if let Some(r) = w.resets_at {
+            text.push_str(&format!(
+                "   ·   {}",
+                tx(lang, "resets_in").replace("{left}", &fmt_duration(lang, r - now_ms() as i64))
+            ));
+        }
         menu.append(&IconMenuItem::with_id(app, format!("ai-p{i}-w{j}"), text, true, Some(icon), None::<&str>)?)?;
     }
     if !any {
@@ -279,6 +285,18 @@ fn build_menu(app: &AppHandle, lang: Lang, snap: &UsageSnapshot) -> tauri::Resul
     menu.append(&ring_submenu(app, lang, snap)?)?;
     menu.append(&MenuItem::with_id(app, "ai-refresh", tx(lang, "refresh"), true, None::<&str>)?)?;
     Ok(menu)
+}
+
+/// "2 giờ 5 phút" / "2h 5m"; days once over 24 hours.
+fn fmt_duration(lang: Lang, ms: i64) -> String {
+    let min = (ms.max(0) + 59_999) / 60_000;
+    let (d, h, m) = (min / 1440, (min % 1440) / 60, min % 60);
+    let (dl, hl, ml) = if lang == Lang::Vi { (" ngày", " giờ", " phút") } else { ("d", "h", "m") };
+    match (d, h) {
+        (0, 0) => format!("{m}{ml}"),
+        (0, _) => format!("{h}{hl} {m}{ml}"),
+        _ => format!("{d}{dl} {h}{hl}"),
+    }
 }
 
 /// Selectable limits: every window that reports a percentage.
@@ -391,6 +409,13 @@ fn tx(lang: Lang, key: &str) -> &'static str {
                 "Does not report a quota percentage"
             }
         }
+        "resets_in" => {
+            if vi {
+                "đặt lại sau {left}"
+            } else {
+                "resets in {left}"
+            }
+        }
         "ring" => {
             if vi {
                 "Vòng tròn hiển thị"
@@ -454,6 +479,14 @@ mod tests {
         assert_eq!(s.backoff, Some(BACKOFF_MAX), "capped");
         s.record(false, t0);
         assert!(s.blocked_until.is_none() && s.backoff.is_none(), "reset on success");
+    }
+
+    #[test]
+    fn durations_read_naturally() {
+        assert_eq!(fmt_duration(Lang::En, 5 * 60_000), "5m");
+        assert_eq!(fmt_duration(Lang::Vi, (2 * 60 + 5) * 60_000), "2 giờ 5 phút");
+        assert_eq!(fmt_duration(Lang::En, (3 * 1440 + 4 * 60) * 60_000), "3d 4h");
+        assert_eq!(fmt_duration(Lang::Vi, -10), "0 phút");
     }
 
     #[test]
