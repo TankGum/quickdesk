@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light dark;
   --bg: #ffffff;
   --bg-subtle: #f4f4f5;
   --fg: #18181b;
@@ -258,13 +259,8 @@ button.icon:hover { background: var(--bg-subtle); color: var(--fg); }
 .ai-line { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; padding-top: 6px; border-top: 1px dashed var(--border); }
 .live-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #22c55e; vertical-align: middle; }
 
-/* Usage popup */
-.usage-popup { padding: 0; gap: 0; }
-.usage-head { display: flex; gap: 8px; align-items: center; padding: 12px 14px 8px; border-bottom: 1px solid var(--border); }
-.usage-head h2 { margin: 0; font-size: 15px; }
-.usage-body { flex: 1; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; }
-.usage-foot { display: flex; justify-content: flex-end; padding: 8px 12px; border-top: 1px solid var(--border); }
-.ai-card.compact { padding: 10px 12px; gap: 8px; }
-.ai-card.compact .gauges { justify-content: space-around; }
-button.icon.spin { animation: spin 0.9s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Native selects: WebKitGTK draws the option list with the system theme, so
+   give options explicit colours or light text lands on a light list. */
+select { color: var(--fg); background-color: var(--bg-subtle); }
+select option { color: var(--fg); background-color: var(--bg); }

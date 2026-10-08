@@ -6,7 +6,6 @@ import { currentWindow } from "./shared/ipc";
 import { ClipPopup } from "./windows/ClipPopup";
 import { Main } from "./windows/Main";
 import { NotePopup } from "./windows/NotePopup";
-import { UsagePopup } from "./windows/UsagePopup";
 import "./styles.css";
 
 // One bundle for every window; the Tauri window label picks the root view.
@@ -14,7 +13,6 @@ const views: Record<string, React.FC> = {
   main: Main,
   "note-popup": NotePopup,
   "clip-popup": ClipPopup,
-  "usage-popup": UsagePopup,
 };
 const View = views[currentWindow.label] ?? Main;
 document.documentElement.dataset.window = currentWindow.label;

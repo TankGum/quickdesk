@@ -5,12 +5,12 @@ import { Gauge } from "./Gauge";
 import { duration, errorText, sameChoice, when, windowLabel } from "./usage";
 
 /** One AI tool: gauges for every limit with a percentage, then the rest. */
-export function ProviderCard({ p, ringShows, compact = false }: { p: ProviderUsage; ringShows: RingChoice | null; compact?: boolean }) {
+export function ProviderCard({ p, ringShows }: { p: ProviderUsage; ringShows: RingChoice | null }) {
   const gauges = p.windows.filter((w) => w.usedPercent !== null);
   const others = p.windows.filter((w) => w.usedPercent === null);
   const err = p.error ? errorText(p.error) : null;
   return (
-    <section className={`ai-card ${compact ? "compact" : ""}`}>
+    <section className="ai-card">
       <header>
         <h3>{p.name}</h3>
         {p.plan && <span className="badge">{p.plan}</span>}
@@ -32,7 +32,7 @@ export function ProviderCard({ p, ringShows, compact = false }: { p: ProviderUsa
         <div className="gauges">
           {gauges.map((w) => (
             <div key={w.id} className={`gauge-cell ${sameChoice(ringShows, p.provider, w.id) ? "on-bar" : ""}`} title={sameChoice(ringShows, p.provider, w.id) ? t("ai.onTopBar") : undefined}>
-              <Gauge percent={w.usedPercent} size={compact ? 68 : 80} />
+              <Gauge percent={w.usedPercent} size={80} />
               <div className="gauge-label">{windowLabel(w)}</div>
               {w.resetsAt && <div className="gauge-sub">{t("ai.resetsIn", { left: duration(w.resetsAt - Date.now()) })}</div>}
               {w.resetsAt && <div className="gauge-sub muted">{when(w.resetsAt)}</div>}

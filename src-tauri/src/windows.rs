@@ -9,7 +9,6 @@ use crate::ipc::now_ms;
 pub const MAIN: &str = "main";
 pub const NOTE_POPUP: &str = "note-popup";
 pub const CLIP_POPUP: &str = "clip-popup";
-pub const USAGE_POPUP: &str = "usage-popup";
 
 /// Sent to a window each time it is brought up, so the UI can focus its input
 /// and report back whether it actually received keyboard focus.
@@ -29,7 +28,6 @@ fn label_and_tab(target: Target) -> (&'static str, Option<&'static str>) {
         Target::Clipboard => (CLIP_POPUP, None),
         Target::Ports => (MAIN, Some("ports")),
         Target::Ai => (MAIN, Some("ai")),
-        Target::UsagePopup => (USAGE_POPUP, None),
         Target::Main => (MAIN, None),
     }
 }
@@ -76,7 +74,7 @@ pub fn toggle<R: Runtime>(app: &AppHandle<R>, target: Target, sent_at_ms: u64) {
 }
 
 pub fn is_popup(label: &str) -> bool {
-    label == NOTE_POPUP || label == CLIP_POPUP || label == USAGE_POPUP
+    label == NOTE_POPUP || label == CLIP_POPUP
 }
 
 pub fn on_window_event<R: Runtime>(window: &Window<R>, event: &WindowEvent) {

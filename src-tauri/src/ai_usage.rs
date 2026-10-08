@@ -191,8 +191,8 @@ fn update_tray(app: &AppHandle, snap: &UsageSnapshot) {
                     let _ = set_ring(app, Some(choice));
                 }
             }
-            // Any usage line, or "Show usage": the popup with gauges.
-            _ => crate::windows::show(app, Target::UsagePopup, now_ms()),
+            // Any usage line opens the AI tab.
+            _ => crate::windows::show(app, Target::Ai, now_ms()),
         })
         .build(app);
     if let Err(e) = built {
@@ -201,13 +201,10 @@ fn update_tray(app: &AppHandle, snap: &UsageSnapshot) {
 }
 
 /// Compact menu: one line per limit with a small ring, then actions.
-/// (On GNOME a tray click can only open a native menu; the rich view is the
-/// usage popup opened from the first item.)
+/// Clicking a limit opens the AI tab.
 fn build_menu(app: &AppHandle, lang: Lang, snap: &UsageSnapshot) -> tauri::Result<Menu<Wry>> {
     const ICON: u32 = 32;
     let menu = Menu::new(app)?;
-    menu.append(&MenuItem::with_id(app, "ai-popup", tx(lang, "open"), true, None::<&str>)?)?;
-    menu.append(&PredefinedMenuItem::separator(app)?)?;
     let mut any = false;
     for (i, j, p, w) in ring_options(snap) {
         any = true;
@@ -330,13 +327,6 @@ fn tx(lang: Lang, key: &str) -> &'static str {
                 "Làm mới"
             } else {
                 "Refresh"
-            }
-        }
-        "open" => {
-            if vi {
-                "📊 Mở bảng usage"
-            } else {
-                "📊 Open usage panel"
             }
         }
         "no_percent" => {

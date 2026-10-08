@@ -273,9 +273,7 @@ const en = {
 
   // AI usage
   "tab.ai": "AI",
-  "ai.title": "AI usage",
   "ai.resetsIn": "resets in {left}",
-  "ai.openFull": "Settings & details",
   "ai.intro": "Usage limits of the AI tools found on this computer.",
   "ai.refresh": "Refresh",
   "ai.refreshing": "Refreshing…",
@@ -563,9 +561,7 @@ const vi: Record<Key, string> = {
   "paste.checkAgain": "Kiểm tra lại",
 
   "tab.ai": "AI",
-  "ai.title": "Usage AI",
   "ai.resetsIn": "đặt lại sau {left}",
-  "ai.openFull": "Cài đặt & chi tiết",
   "ai.intro": "Hạn mức sử dụng của các công cụ AI có trên máy này.",
   "ai.refresh": "Làm mới",
   "ai.refreshing": "Đang làm mới…",

@@ -5,8 +5,7 @@
   "windows": [
     "main",
     "note-popup",
-    "clip-popup",
-    "usage-popup"
+    "clip-popup"
   ],
   "permissions": [
     "core:default",
