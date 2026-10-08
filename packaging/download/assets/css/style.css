@@ -200,8 +200,6 @@ kbd {
 .nav__gh { display: grid; place-items: center; margin-left: 24px; color: var(--text-2); transition: color .2s; }
 .nav__gh:hover { color: var(--text); }
 .nav__gh svg { width: 18px; height: 18px; }
-.btn--gh { display: inline-flex; align-items: center; gap: 10px; }
-.btn--gh svg { width: 20px; height: 20px; }
 
 .oss { padding-block: 120px; border-top: 1px solid var(--line); }
 .oss__inner { text-align: center; }
