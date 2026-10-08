@@ -1,4 +1,3 @@
-use tauri::image::Image;
 use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{App, AppHandle, Manager, Wry};
@@ -75,8 +74,10 @@ pub fn build(app: &App, clip_paused: bool) -> tauri::Result<()> {
                 windows::show(app, target, now_ms());
             },
         );
-    // A white glyph, like the system icons beside it (the app icon is a blue tile).
-    tray = tray.icon(Image::new_owned(crate::ring::app_glyph(crate::ring::SIZE), crate::ring::SIZE, crate::ring::SIZE));
+    // The app icon (packaging/download/assets/img/favicon.svg, via `tauri icon`).
+    if let Some(icon) = app.default_window_icon() {
+        tray = tray.icon(icon.clone());
+    }
     tray.build(app)?;
     Ok(())
 }

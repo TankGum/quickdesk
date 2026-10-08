@@ -57,42 +57,6 @@ pub fn render_sized(percent: Option<f64>, side: u32) -> Vec<u8> {
     px
 }
 
-/// QuickDesk's tray glyph: three rounded bars (as on the app icon) in white,
-/// so it sits with GNOME's monochrome status icons. RGBA, `side × side`.
-pub fn app_glyph(side: u32) -> Vec<u8> {
-    let s = side as f64;
-    let (left, bar, gap) = (s * 0.16, s * 0.15, s * 0.12);
-    let top = (s - 3.0 * bar - 2.0 * gap) / 2.0;
-    // (x0, x1, y0) of each bar; the middle one is shorter.
-    let bars = [(left, s - left, top), (left, s * 0.66, top + bar + gap), (left, s - left, top + 2.0 * (bar + gap))];
-    let inside = |x: f64, y: f64| {
-        bars.iter().any(|&(x0, x1, y0)| {
-            // Rounded rectangle with fully round ends.
-            let r = bar / 2.0;
-            let cy = y0 + r;
-            let cx = x.clamp(x0 + r, x1 - r);
-            (x - cx).powi(2) + (y - cy).powi(2) <= r * r
-        })
-    };
-    const SS: u32 = 4; // supersampling per axis, for smooth edges
-    let mut px = vec![0u8; (side * side * 4) as usize];
-    for y in 0..side {
-        for x in 0..side {
-            let hits = (0..SS * SS)
-                .filter(|k| {
-                    let (sx, sy) = ((k % SS) as f64 + 0.5, (k / SS) as f64 + 0.5);
-                    inside(x as f64 + sx / SS as f64, y as f64 + sy / SS as f64)
-                })
-                .count();
-            if hits > 0 {
-                let i = ((y * side + x) * 4) as usize;
-                px[i..i + 4].copy_from_slice(&[255, 255, 255, (255 * hits / (SS * SS) as usize) as u8]);
-            }
-        }
-    }
-    px
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -117,16 +81,5 @@ mod tests {
         assert_eq!(color_for(70.0), [245, 158, 11, 255]);
         assert_eq!(color_for(90.0), [239, 68, 68, 255]);
         assert_eq!(&pixel(&render(None), SIZE / 2, band_y)[..3], &NO_DATA[..3]);
-    }
-
-    #[test]
-    fn glyph_is_white_bars_on_transparent() {
-        let px = app_glyph(SIZE);
-        // Middle of the top bar is solid white; the corners and the gap
-        // right of the short middle bar are empty.
-        assert_eq!(pixel(&px, SIZE / 2, SIZE / 2 - SIZE / 4 - 1), [255, 255, 255, 255]);
-        assert_eq!(pixel(&px, 0, 0)[3], 0);
-        assert_eq!(pixel(&px, SIZE * 3 / 4, SIZE / 2)[3], 0);
-        assert_eq!(pixel(&px, SIZE / 3, SIZE / 2), [255, 255, 255, 255]);
     }
 }
