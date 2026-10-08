@@ -26,6 +26,10 @@ const en = {
 
   // Settings page
   "settings.language": "Language",
+  "settings.startup": "Startup",
+  "settings.autostart": "Start QuickDesk when I log in (hidden in the tray)",
+  "welcome.autostart": "Start when I log in",
+  "welcome.autostartHint": "Needed for clipboard history and the AI usage ring to work all the time.",
   "settings.language.auto": "Same as system",
   "settings.sync": "Sync",
   "settings.hotkeys": "Hotkeys",
@@ -339,6 +343,10 @@ const vi: Record<Key, string> = {
   "common.waitingPassword": "Đang chờ nhập mật khẩu…",
 
   "settings.language": "Ngôn ngữ",
+  "settings.startup": "Khởi động",
+  "settings.autostart": "Tự chạy QuickDesk khi đăng nhập (ẩn trên khay hệ thống)",
+  "welcome.autostart": "Khởi động cùng máy",
+  "welcome.autostartHint": "Cần bật để lịch sử clipboard và vòng tròn usage AI luôn hoạt động.",
   "settings.language.auto": "Theo hệ thống",
   "settings.sync": "Đồng bộ",
   "settings.hotkeys": "Phím tắt",

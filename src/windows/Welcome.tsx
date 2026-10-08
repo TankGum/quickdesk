@@ -8,6 +8,7 @@ export function Welcome({ onDone }: { onDone: () => void }) {
   const { t, pref } = useI18n();
   const [offerUinput, setOfferUinput] = useState(false);
   const [enableUinput, setEnableUinput] = useState(true);
+  const [autostart, setAutostart] = useState(true);
   const [hotkeys, setHotkeys] = useState<HotkeyConfig | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,6 +21,8 @@ export function Welcome({ onDone }: { onDone: () => void }) {
   const start = async () => {
     setBusy(true);
     setError(null);
+    // Best effort: a failure here should not block getting started.
+    await api.autostartSet(autostart).catch(() => {});
     if (offerUinput && enableUinput) {
       try {
         await api.clipUinputEnable();
@@ -67,6 +70,13 @@ export function Welcome({ onDone }: { onDone: () => void }) {
           <dd>{t("welcome.ports")}</dd>
         </dl>
       )}
+      <label className="welcome-option">
+        <input type="checkbox" checked={autostart} onChange={(e) => setAutostart(e.target.checked)} />
+        <span>
+          <b>{t("welcome.autostart")}</b> {t("welcome.recommended")}
+          <small className="muted">{t("welcome.autostartHint")}</small>
+        </span>
+      </label>
       {offerUinput && (
         <label className="welcome-option">
           <input type="checkbox" checked={enableUinput} onChange={(e) => setEnableUinput(e.target.checked)} />

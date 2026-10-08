@@ -42,6 +42,11 @@ pub fn run(args: Vec<String>) {
             dispatch(app, Forwarded { args: argv.into_iter().skip(1).collect(), sent_at_ms: now_ms() });
         }))
         .plugin(tauri_plugin_opener::init())
+        // Login item starts hidden in the tray.
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            Some(vec!["--background"]),
+        ))
         .invoke_handler(tauri::generate_handler![
             commands::app::app_info,
             commands::app::diag_focus_report,
@@ -70,6 +75,8 @@ pub fn run(args: Vec<String>) {
             commands::clipboard::clip_uinput_enable,
             commands::clipboard::clip_uinput_disable,
             commands::app::app_onboarding,
+            commands::app::app_autostart_get,
+            commands::app::app_autostart_set,
             commands::app::app_get_language,
             commands::ai::ai_usage_get,
             commands::ai::ai_usage_refresh,

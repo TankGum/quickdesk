@@ -9,7 +9,7 @@ import { SyncSettings } from "../modules/sync/SyncSettings";
 import { HotkeySettings } from "../modules/settings/HotkeySettings";
 import { PasteSettings } from "../modules/settings/PasteSettings";
 import { LangPref, setLanguage, useI18n } from "../shared/i18n";
-import { api, AppInfo, currentWindow, FocusStats, hideWindow, useShown } from "../shared/ipc";
+import { api, AppInfo, currentWindow, errorMessage, FocusStats, hideWindow, useShown } from "../shared/ipc";
 import { Welcome } from "./Welcome";
 
 const TABS = ["notes", "clipboard", "ports", "ai", "settings"] as const;
@@ -91,6 +91,29 @@ function LanguagePicker() {
   );
 }
 
+function AutostartToggle() {
+  const { t } = useI18n();
+  const [on, setOn] = useState<boolean | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    void api.autostartGet().then(setOn, (e) => setError(errorMessage(e)));
+  }, []);
+  if (on === null && !error) return null;
+  return (
+    <>
+      <label className="switch">
+        <input
+          type="checkbox"
+          checked={!!on}
+          onChange={(e) => void api.autostartSet(e.target.checked).then(setOn, (x) => setError(errorMessage(x)))}
+        />
+        {t("settings.autostart")}
+      </label>
+      {error && <div className="banner error">{error}</div>}
+    </>
+  );
+}
+
 function Settings() {
   const { t } = useI18n();
   const [info, setInfo] = useState<AppInfo | null>(null);
@@ -113,6 +136,9 @@ function Settings() {
       <h2>{t("settings.language")}</h2>
       <LanguagePicker />
 
+      <h2>{t("settings.startup")}</h2>
+      <AutostartToggle />
+
       <h2>{t("settings.sync")}</h2>
       <SyncSettings />
 
@@ -122,6 +148,34 @@ function Settings() {
       <h2>{t("settings.autoPaste")}</h2>
       <PasteSettings />
 
+      {import.meta.env.DEV && <FocusTest stats={stats} />}
+
+      <h2>{t("settings.about")}</h2>
+      <dl>
+        <dt>{t("settings.version")}</dt>
+        <dd>{info.version}</dd>
+        <dt>{t("settings.session")}</dt>
+        <dd>
+          {info.os} · {info.wayland ? "Wayland" : "X11/native"} · {info.desktop || t("settings.unknown")}
+        </dd>
+        <dt>{t("settings.device")}</dt>
+        <dd><code>{info.deviceId}</code></dd>
+        <dt>{t("settings.data")}</dt>
+        <dd><code>{info.dataDir}</code></dd>
+      </dl>
+      <button className="quit" onClick={() => void api.quit()}>
+        {t("settings.quit")}
+      </button>
+    </div>
+  );
+}
+
+
+/** Dev-only: how reliably popups receive keyboard focus (see docs/SPEC.md M1). */
+function FocusTest({ stats }: { stats: FocusStats | null }) {
+  const { t } = useI18n();
+  return (
+    <>
       <h2>{t("settings.focusTest")}</h2>
       {stats && stats.total > 0 ? (
         <>
@@ -157,24 +211,6 @@ function Settings() {
       ) : (
         <p className="muted">{t("settings.focusTest.empty")}</p>
       )}
-
-      <h2>{t("settings.about")}</h2>
-      <dl>
-        <dt>{t("settings.version")}</dt>
-        <dd>{info.version}</dd>
-        <dt>{t("settings.session")}</dt>
-        <dd>
-          {info.os} · {info.wayland ? "Wayland" : "X11/native"} · {info.desktop || t("settings.unknown")}
-        </dd>
-        <dt>{t("settings.device")}</dt>
-        <dd><code>{info.deviceId}</code></dd>
-        <dt>{t("settings.data")}</dt>
-        <dd><code>{info.dataDir}</code></dd>
-      </dl>
-      <button className="quit" onClick={() => void api.quit()}>
-        {t("settings.quit")}
-      </button>
-    </div>
+    </>
   );
 }
-

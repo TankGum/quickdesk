@@ -158,3 +158,20 @@ pub fn app_set_language(
     crate::tray::relabel(&app);
     Ok(s)
 }
+
+/// Whether QuickDesk starts (hidden, in the tray) when the user logs in.
+#[tauri::command]
+pub fn app_autostart_get(app: AppHandle) -> super::CmdResult<bool> {
+    use tauri_plugin_autostart::ManagerExt;
+    app.autolaunch().is_enabled().map_err(|e| super::CmdError::new("autostart", e.to_string()))
+}
+
+#[tauri::command]
+pub fn app_autostart_set(app: AppHandle, enabled: bool) -> super::CmdResult<bool> {
+    use tauri_plugin_autostart::ManagerExt;
+    let launcher = app.autolaunch();
+    let result = if enabled { launcher.enable() } else { launcher.disable() };
+    result.map_err(|e| super::CmdError::new("autostart", e.to_string()))?;
+    tracing::info!(enabled, "autostart");
+    launcher.is_enabled().map_err(|e| super::CmdError::new("autostart", e.to_string()))
+}
