@@ -70,6 +70,24 @@ export interface PortEntry {
   container: Container | null;
 }
 
+export interface ClipEntry {
+  id: number;
+  preview: string;
+  chars: number;
+  pinned: boolean;
+  sourceApp: string | null;
+  firstCopiedAt: number;
+  lastCopiedAt: number;
+  copyCount: number;
+}
+
+export interface ClipStatus {
+  backend: string;
+  state: "starting" | "running" | "retrying" | "unavailable";
+  detail: string | null;
+  paused: boolean;
+}
+
 /** Shape of every rejected command (see `CmdError` in Rust). */
 export interface CmdError {
   code: string;
@@ -96,6 +114,14 @@ export const api = {
   portsStopContainer: (id: string) => invoke<void>("ports_stop_container", { id }),
   portsOpen: (port: number) => invoke<void>("ports_open", { port }),
   clipboardWrite: (text: string) => invoke<void>("clipboard_write", { text }),
+  clipList: (limit?: number) => invoke<ClipEntry[]>("clip_list", { limit }),
+  clipSearch: (query: string, limit?: number) => invoke<ClipEntry[]>("clip_search", { query, limit }),
+  clipCopy: (id: number) => invoke<void>("clip_copy", { id }),
+  clipPin: (id: number, pinned: boolean) => invoke<ClipEntry>("clip_pin", { id, pinned }),
+  clipDelete: (id: number) => invoke<void>("clip_delete", { id }),
+  clipClear: (keepPinned: boolean) => invoke<number>("clip_clear", { keepPinned }),
+  clipStatus: () => invoke<ClipStatus>("clip_status"),
+  clipSetPaused: (paused: boolean) => invoke<void>("clip_set_paused", { paused }),
   focusReport: (report: FocusReport) => invoke<void>("diag_focus_report", { report }),
   focusStats: () => invoke<FocusStats>("diag_focus_stats"),
   quit: () => invoke<void>("app_quit"),

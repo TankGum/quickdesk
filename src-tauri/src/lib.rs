@@ -1,4 +1,5 @@
 mod cli;
+mod clipboard;
 mod commands;
 mod hotkeys;
 pub mod ipc;
@@ -44,6 +45,14 @@ pub fn run(args: Vec<String>) {
             commands::app::app_quit,
             commands::app::app_show,
             commands::app::clipboard_write,
+            commands::clipboard::clip_list,
+            commands::clipboard::clip_search,
+            commands::clipboard::clip_copy,
+            commands::clipboard::clip_pin,
+            commands::clipboard::clip_delete,
+            commands::clipboard::clip_clear,
+            commands::clipboard::clip_status,
+            commands::clipboard::clip_set_paused,
             commands::ports::ports_scan,
             commands::ports::ports_kill,
             commands::ports::ports_is_alive,
@@ -61,10 +70,17 @@ pub fn run(args: Vec<String>) {
             init_logging(app.path().app_log_dir()?);
             let data_dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&data_dir)?;
-            let db = Db::open(&data_dir.join("quickdesk.db"), &[&qd_notes::NotesModule])?;
-            let (device_id, hotkeys) = {
+            let db = Db::open(
+                &data_dir.join("quickdesk.db"),
+                &[&qd_notes::NotesModule, &qd_clipboard::ClipboardModule],
+            )?;
+            let (device_id, hotkeys, clip_paused) = {
                 let conn = db.conn()?;
-                (settings::device_id(&conn)?, settings::get_or_init(&conn, hotkeys::SETTINGS_KEY, HotkeyConfig::default)?)
+                (
+                    settings::device_id(&conn)?,
+                    settings::get_or_init(&conn, hotkeys::SETTINGS_KEY, HotkeyConfig::default)?,
+                    clipboard::ClipboardService::load_paused(&conn),
+                )
             };
             let session = Session::detect();
             let strategy = session.hotkey_strategy();
@@ -86,9 +102,11 @@ pub fn run(args: Vec<String>) {
                 strategy,
                 hotkeys,
                 focus_reports: Mutex::new(Vec::new()),
+                clipboard: clipboard::ClipboardService::new(clip_paused),
             });
 
-            tray::build(app)?;
+            tray::build(app, clip_paused)?;
+            clipboard::start(app.handle());
 
             let handle = app.handle().clone();
             ipc::serve(move |msg| dispatch(&handle, msg))?;

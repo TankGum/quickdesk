@@ -1,0 +1,12 @@
+[package]
+name = "qd-clipboard"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+qd-core.workspace = true
+rusqlite.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+blake3 = "1"

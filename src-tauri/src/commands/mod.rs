@@ -1,6 +1,7 @@
 //! Tauri command handlers: thin wrappers that call module crates and emit events.
 
 pub mod app;
+pub mod clipboard;
 pub mod notes;
 pub mod ports;
 
@@ -53,4 +54,14 @@ impl From<qd_ports::Error> for CmdError {
 /// Run blocking work off the main thread.
 pub async fn blocking<T: Send + 'static>(f: impl FnOnce() -> CmdResult<T> + Send + 'static) -> CmdResult<T> {
     tauri::async_runtime::spawn_blocking(f).await.map_err(|e| CmdError::new("internal", e.to_string()))?
+}
+
+impl From<qd_clipboard::Error> for CmdError {
+    fn from(e: qd_clipboard::Error) -> Self {
+        let code = match e {
+            qd_clipboard::Error::NotFound(_) => "not_found",
+            _ => "internal",
+        };
+        CmdError::new(code, e.to_string())
+    }
 }

@@ -4,6 +4,7 @@ use std::sync::Mutex;
 use qd_core::{Clock, Db};
 use qd_platform::{HotkeyStrategy, Session};
 
+use crate::clipboard::ClipboardService;
 use crate::commands::app::FocusReport;
 use crate::hotkeys::HotkeyConfig;
 
@@ -16,6 +17,7 @@ pub struct AppState {
     pub strategy: HotkeyStrategy,
     pub hotkeys: HotkeyConfig,
     pub focus_reports: Mutex<Vec<FocusReport>>,
+    pub clipboard: ClipboardService,
 }
 
 impl AppState {

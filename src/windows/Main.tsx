@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { ClipboardTab } from "../modules/clipboard/ClipboardTab";
 import { NotesTab } from "../modules/notes/NotesTab";
 import { PortsTab } from "../modules/ports/PortsTab";
 import { api, AppInfo, FocusStats, useShown } from "../shared/ipc";
@@ -30,7 +31,7 @@ export function Main() {
         {tab === "notes" && <NotesTab focusSignal={shownAt} />}
         {tab === "settings" && <Settings />}
         {tab === "ports" && <PortsTab focusSignal={shownAt} />}
-        {tab === "clipboard" && <div className="empty">Clipboard history arrives in Milestone 4.</div>}
+        {tab === "clipboard" && <ClipboardTab focusSignal={shownAt} />}
       </section>
     </div>
   );
