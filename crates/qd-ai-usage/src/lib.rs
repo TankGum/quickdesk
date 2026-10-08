@@ -64,6 +64,11 @@ impl ProviderUsage {
         }
     }
 
+    /// Errors after which the previous numbers are still worth showing.
+    pub fn is_transient_error(&self) -> bool {
+        matches!(self.error.as_deref(), Some("rate_limited" | "offline"))
+    }
+
     pub fn five_hour_percent(&self) -> Option<f64> {
         self.windows.iter().find(|w| w.is_five_hour()).and_then(|w| w.used_percent)
     }
@@ -77,11 +82,17 @@ pub(crate) fn now_ms() -> i64 {
     std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0)
 }
 
-/// Every detected tool with its current usage. Blocking (network for Claude).
-pub fn collect() -> Vec<ProviderUsage> {
+/// Every detected tool with its current usage. Blocking.
+///
+/// `live` allows network requests (Claude). Vendors rate-limit their usage
+/// endpoints, so callers pass `false` most of the time; live providers are
+/// then omitted and the caller keeps showing their previous result.
+pub fn collect(live: bool) -> Vec<ProviderUsage> {
     let mut out = Vec::new();
     if let Some(p) = claude::Claude::detect() {
-        out.push(p.fetch());
+        if live {
+            out.push(p.fetch());
+        }
     }
     if let Some(p) = codex::Codex::detect() {
         out.push(p.fetch());
@@ -93,6 +104,36 @@ pub fn collect() -> Vec<ProviderUsage> {
 }
 
 /// The 5-hour usage to show in the top bar: the most used one across tools.
+/// Names of live providers present on this machine (to know which ones
+/// `collect(false)` left out).
+pub fn live_providers() -> Vec<&'static str> {
+    claude::Claude::detect().map(|_| vec!["claude"]).unwrap_or_default()
+}
+
+/// Merge a fresh result with the previous one: keep the last good numbers
+/// through transient errors, and keep live providers that were not fetched.
+pub fn merge(previous: &[ProviderUsage], fresh: Vec<ProviderUsage>, skipped_live: &[&str]) -> Vec<ProviderUsage> {
+    let mut out: Vec<ProviderUsage> = Vec::new();
+    for name in skipped_live {
+        if let Some(prev) = previous.iter().find(|p| p.provider == *name) {
+            out.push(prev.clone());
+        }
+    }
+    for mut p in fresh {
+        if p.is_transient_error() && p.windows.is_empty() {
+            if let Some(prev) = previous.iter().find(|x| x.provider == p.provider && !x.windows.is_empty()) {
+                p.windows = prev.windows.clone();
+                p.as_of = prev.as_of;
+                p.plan = p.plan.or_else(|| prev.plan.clone());
+            }
+        }
+        out.push(p);
+    }
+    // Stable order: live tools first, as detected.
+    out.sort_by_key(|p| if p.source == "live" { 0 } else { 1 });
+    out
+}
+
 pub fn headline_percent(usage: &[ProviderUsage]) -> Option<f64> {
     usage
         .iter()
@@ -144,6 +185,32 @@ mod tests {
         assert_eq!(parse_rfc3339_ms("2026-10-08T09:20:00.156839+00:00"), Some(1_791_451_200_156));
         assert_eq!(parse_rfc3339_ms("2026-10-08T16:20:00+07:00"), Some(1_791_451_200_000));
         assert_eq!(parse_rfc3339_ms("nope"), None);
+    }
+
+    fn win(id: &str, pct: f64) -> UsageWindow {
+        UsageWindow { id: id.into(), label: String::new(), used_percent: Some(pct), resets_at: None, detail: None }
+    }
+
+    #[test]
+    fn merge_keeps_last_numbers_through_rate_limits_and_skips() {
+        let mut good = ProviderUsage::new("claude", "Claude", "live");
+        good.windows.push(win("five_hour", 66.0));
+        good.as_of = Some(100);
+        let mut limited = ProviderUsage::new("claude", "Claude", "live");
+        limited.error = Some("rate_limited".into());
+        let codex = ProviderUsage::new("codex", "Codex", "local");
+
+        let merged = merge(&[good.clone()], vec![limited, codex.clone()], &[]);
+        assert_eq!(merged[0].windows, good.windows, "previous numbers kept");
+        assert_eq!((merged[0].as_of, merged[0].error.as_deref()), (Some(100), Some("rate_limited")));
+
+        let skipped = merge(&[good.clone()], vec![codex], &["claude"]);
+        assert_eq!(skipped[0], good, "not fetched this round: previous result as is");
+        assert_eq!(skipped.len(), 2);
+
+        let mut expired = ProviderUsage::new("claude", "Claude", "live");
+        expired.error = Some("login_expired".into());
+        assert!(merge(&[good], vec![expired], &[])[0].windows.is_empty(), "real errors are not hidden");
     }
 
     #[test]

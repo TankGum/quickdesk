@@ -55,8 +55,9 @@ impl Claude {
         let body: Value = match resp {
             Ok(r) => r.into_json().map_err(|e| format!("unexpected usage response: {e}"))?,
             Err(ureq::Error::Status(401, _)) => return Err("login_expired".into()),
+            Err(ureq::Error::Status(429, _)) => return Err("rate_limited".into()),
             Err(ureq::Error::Status(code, _)) => return Err(format!("usage request failed (HTTP {code})")),
-            Err(e) => return Err(format!("offline: {e}")),
+            Err(ureq::Error::Transport(_)) => return Err("offline".into()),
         };
         usage.windows = parse(&body);
         Ok(())

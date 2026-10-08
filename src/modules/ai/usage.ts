@@ -36,7 +36,14 @@ export const sameChoice = (a: RingChoice | null, provider: string, window: strin
 
 const KNOWN_ERRORS = ["login_expired", "no_data", "no_percent"];
 
-/** Friendly text for a provider error code, or the raw message. */
-export function errorText(code: string): { text: string; known: boolean } {
+/**
+ * Friendly text for a provider error code, or the raw message. Transient
+ * errors (rate limit, offline) mention how old the numbers still shown are.
+ */
+export function errorText(code: string, asOf: number | null): { text: string; known: boolean } {
+  if (code === "rate_limited" || code === "offline") {
+    if (asOf) return { text: t(`ai.err.${code}` as Key, { time: when(asOf) }), known: true };
+    return { text: t(code === "offline" ? "ai.err.offline_empty" : "ai.err.rate_limited_empty"), known: true };
+  }
   return KNOWN_ERRORS.includes(code) ? { text: t(`ai.err.${code}` as Key), known: true } : { text: code, known: false };
 }

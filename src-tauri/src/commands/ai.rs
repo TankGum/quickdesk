@@ -13,7 +13,7 @@ pub fn ai_usage_get(state: State<'_, AppState>) -> UsageSnapshot {
 #[tauri::command]
 pub async fn ai_usage_refresh(app: AppHandle) -> CmdResult<UsageSnapshot> {
     blocking(move || {
-        ai_usage::refresh(&app);
+        ai_usage::refresh(&app, true);
         Ok(app.state::<AppState>().ai.snapshot())
     })
     .await

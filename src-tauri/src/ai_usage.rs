@@ -2,7 +2,7 @@
 
 use std::sync::mpsc::{self, RecvTimeoutError, Sender};
 use std::sync::Mutex;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use qd_ai_usage::{ProviderUsage, UsageWindow};
 use serde::{Deserialize, Serialize};
@@ -52,7 +52,44 @@ pub fn pick(providers: &[ProviderUsage], choice: Option<&RingChoice>) -> (Option
         .max_by(|a, b| a.0.total_cmp(&b.0))
         .map_or((None, None), |(pct, c)| (Some(pct), Some(c)))
 }
-const REFRESH_EVERY: Duration = Duration::from_secs(120);
+/// Local sources (log files) are cheap: re-read every minute.
+const TICK: Duration = Duration::from_secs(60);
+/// Vendor endpoints rate-limit; ask at most this often on our own…
+const LIVE_EVERY: Duration = Duration::from_secs(5 * 60);
+/// …and at most this often when the user presses Refresh.
+const LIVE_MIN_GAP: Duration = Duration::from_secs(60);
+const BACKOFF_START: Duration = Duration::from_secs(10 * 60);
+const BACKOFF_MAX: Duration = Duration::from_secs(30 * 60);
+
+/// When we last asked live endpoints, and how long to stay away after a 429.
+#[derive(Default)]
+struct LiveSchedule {
+    last: Option<Instant>,
+    blocked_until: Option<Instant>,
+    backoff: Option<Duration>,
+}
+
+impl LiveSchedule {
+    fn due(&self, manual: bool, now: Instant) -> bool {
+        if self.blocked_until.is_some_and(|t| now < t) {
+            return false;
+        }
+        let gap = if manual { LIVE_MIN_GAP } else { LIVE_EVERY };
+        self.last.is_none_or(|t| now.duration_since(t) >= gap)
+    }
+
+    fn record(&mut self, rate_limited: bool, now: Instant) {
+        self.last = Some(now);
+        if rate_limited {
+            let next = self.backoff.map_or(BACKOFF_START, |b| (b * 2).min(BACKOFF_MAX));
+            self.backoff = Some(next);
+            self.blocked_until = Some(now + next);
+        } else {
+            self.backoff = None;
+            self.blocked_until = None;
+        }
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
@@ -70,6 +107,7 @@ pub struct UsageSnapshot {
 pub struct AiUsageService {
     snapshot: Mutex<UsageSnapshot>,
     tx: Mutex<Option<Sender<()>>>,
+    live: Mutex<LiveSchedule>,
 }
 
 impl AiUsageService {
@@ -79,6 +117,7 @@ impl AiUsageService {
         AiUsageService {
             snapshot: Mutex::new(UsageSnapshot { tray_enabled, ring, ..Default::default() }),
             tx: Mutex::new(None),
+            live: Mutex::new(LiveSchedule::default()),
         }
     }
 
@@ -93,12 +132,23 @@ impl AiUsageService {
     }
 }
 
-/// Collect now (blocking) and publish.
-pub fn refresh(app: &AppHandle) {
-    let providers = qd_ai_usage::collect();
+/// Collect (blocking) and publish. `manual` = the user asked for it.
+pub fn refresh(app: &AppHandle, manual: bool) {
     let state = app.state::<AppState>();
+    let now = Instant::now();
+    let live = state.ai.live.lock().unwrap_or_else(|e| e.into_inner()).due(manual, now);
+    let fresh = qd_ai_usage::collect(live);
+    if live {
+        let limited = fresh.iter().any(|p| p.error.as_deref() == Some("rate_limited"));
+        state.ai.live.lock().unwrap_or_else(|e| e.into_inner()).record(limited, now);
+        if limited {
+            tracing::warn!("usage endpoint rate limited; backing off");
+        }
+    }
+    let skipped = if live { Vec::new() } else { qd_ai_usage::live_providers() };
     let snap = {
         let mut s = state.ai.snapshot.lock().unwrap_or_else(|e| e.into_inner());
+        let providers = qd_ai_usage::merge(&s.providers, fresh, &skipped);
         (s.headline, s.ring_shows) = pick(&providers, s.ring.as_ref());
         s.providers = providers;
         s.updated_at = Some(now_ms() as i64);
@@ -113,14 +163,19 @@ pub fn start(app: &AppHandle) {
     let (tx, rx) = mpsc::channel::<()>();
     *app.state::<AppState>().ai.tx.lock().unwrap_or_else(|e| e.into_inner()) = Some(tx);
     let app = app.clone();
-    let _ = std::thread::Builder::new().name("qd-ai-usage".into()).spawn(move || loop {
-        refresh(&app);
-        match rx.recv_timeout(REFRESH_EVERY) {
-            Ok(()) | Err(RecvTimeoutError::Timeout) => {
-                // Coalesce a burst of manual refreshes.
-                while rx.try_recv().is_ok() {}
-            }
-            Err(RecvTimeoutError::Disconnected) => return,
+    let _ = std::thread::Builder::new().name("qd-ai-usage".into()).spawn(move || {
+        let mut manual = false;
+        loop {
+            refresh(&app, manual);
+            manual = match rx.recv_timeout(TICK) {
+                Ok(()) => {
+                    // Coalesce a burst of manual refreshes.
+                    while rx.try_recv().is_ok() {}
+                    true
+                }
+                Err(RecvTimeoutError::Timeout) => false,
+                Err(RecvTimeoutError::Disconnected) => return,
+            };
         }
     });
 }
@@ -377,6 +432,28 @@ mod tests {
             as_of: None,
             error: None,
         }
+    }
+
+    #[test]
+    fn live_schedule_spaces_requests_and_backs_off_after_rate_limits() {
+        let t0 = Instant::now();
+        let mut s = LiveSchedule::default();
+        assert!(s.due(false, t0), "first request goes out");
+        s.record(false, t0);
+        assert!(!s.due(false, t0 + Duration::from_secs(120)), "automatic: every 5 minutes");
+        assert!(s.due(true, t0 + Duration::from_secs(61)), "manual: after a minute");
+        assert!(s.due(false, t0 + LIVE_EVERY));
+
+        s.record(true, t0);
+        assert!(!s.due(true, t0 + Duration::from_secs(9 * 60)), "blocked after 429");
+        assert!(s.due(false, t0 + BACKOFF_START));
+        s.record(true, t0);
+        assert_eq!(s.backoff, Some(BACKOFF_START * 2), "doubles");
+        s.record(true, t0);
+        s.record(true, t0);
+        assert_eq!(s.backoff, Some(BACKOFF_MAX), "capped");
+        s.record(false, t0);
+        assert!(s.blocked_until.is_none() && s.backoff.is_none(), "reset on success");
     }
 
     #[test]

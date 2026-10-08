@@ -8,7 +8,7 @@ import { duration, errorText, sameChoice, when, windowLabel } from "./usage";
 export function ProviderCard({ p, ringShows }: { p: ProviderUsage; ringShows: RingChoice | null }) {
   const gauges = p.windows.filter((w) => w.usedPercent !== null);
   const others = p.windows.filter((w) => w.usedPercent === null);
-  const err = p.error ? errorText(p.error) : null;
+  const err = p.error ? errorText(p.error, p.asOf) : null;
   return (
     <section className="ai-card">
       <header>

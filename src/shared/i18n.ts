@@ -296,6 +296,10 @@ const en = {
   "ai.err.login_expired": "Claude Code login expired. Open Claude Code once to refresh it.",
   "ai.err.no_data": "No numbers yet: they appear after you use this tool once.",
   "ai.err.no_percent": "This tool does not report how much of its quota is used.",
+  "ai.err.rate_limited": "The provider is limiting how often usage can be checked. Showing numbers from {time}; retrying shortly.",
+  "ai.err.offline": "Offline. Showing numbers from {time}.",
+  "ai.err.rate_limited_empty": "The provider is limiting how often usage can be checked; retrying shortly.",
+  "ai.err.offline_empty": "Offline; retrying shortly.",
   "ai.updated": "Updated {time}",
   "ai.footnote":
     "Claude numbers come live from Anthropic (the same source as /usage in Claude Code) using your Claude Code login, which stays on this computer. Codex numbers are read from its local logs and update when you use Codex.",
@@ -584,6 +588,10 @@ const vi: Record<Key, string> = {
   "ai.err.login_expired": "Đăng nhập Claude Code đã hết hạn. Mở Claude Code một lần để làm mới.",
   "ai.err.no_data": "Chưa có số liệu: sẽ hiện sau khi bạn dùng công cụ này một lần.",
   "ai.err.no_percent": "Công cụ này không cho biết đã dùng bao nhiêu phần trăm hạn mức.",
+  "ai.err.rate_limited": "Nhà cung cấp đang giới hạn tần suất kiểm tra usage. Đang hiển thị số liệu lúc {time}, sẽ tự thử lại.",
+  "ai.err.offline": "Mất kết nối. Đang hiển thị số liệu lúc {time}.",
+  "ai.err.rate_limited_empty": "Nhà cung cấp đang giới hạn tần suất kiểm tra usage, sẽ tự thử lại sau ít phút.",
+  "ai.err.offline_empty": "Mất kết nối, sẽ tự thử lại.",
   "ai.updated": "Cập nhật lúc {time}",
   "ai.footnote":
     "Số liệu Claude được lấy trực tiếp từ Anthropic (cùng nguồn với lệnh /usage của Claude Code) bằng thông tin đăng nhập Claude Code, vốn chỉ nằm trên máy này. Số liệu Codex được đọc từ log trên máy và cập nhật mỗi khi bạn dùng Codex.",

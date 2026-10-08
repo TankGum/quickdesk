@@ -1,6 +1,6 @@
 //! `cargo run -p qd-ai-usage --example usage` — print detected AI tools and their limits.
 fn main() {
-    let all = qd_ai_usage::collect();
+    let all = qd_ai_usage::collect(true);
     for p in &all {
         println!(
             "{} ({}) source={} plan={:?} as_of={:?} error={:?}",
