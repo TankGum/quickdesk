@@ -1,0 +1,59 @@
+:root {
+  --bg: #ffffff;
+  --bg-subtle: #f4f4f5;
+  --fg: #18181b;
+  --muted: #71717a;
+  --border: #e4e4e7;
+  --accent: #2563eb;
+  --danger: #dc2626;
+  font-family: system-ui, -apple-system, "Segoe UI", Ubuntu, sans-serif;
+  font-size: 14px;
+  color: var(--fg);
+  background: var(--bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #18181b;
+    --bg-subtle: #27272a;
+    --fg: #f4f4f5;
+    --muted: #a1a1aa;
+    --border: #3f3f46;
+    --accent: #60a5fa;
+    --danger: #f87171;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; height: 100%; background: var(--bg); }
+button { font: inherit; color: inherit; }
+kbd, code { font-family: ui-monospace, "JetBrains Mono", monospace; font-size: 12px; }
+kbd { padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-subtle); }
+
+/* Popups */
+.popup { display: flex; flex-direction: column; height: 100%; padding: 12px; gap: 6px; border: 1px solid var(--border); }
+.popup-input, .popup-search {
+  width: 100%; border: none; outline: none; resize: none; background: transparent;
+  color: var(--fg); font: inherit; font-size: 16px;
+}
+.popup-input { flex: 1; }
+.popup-search { padding: 6px 2px 10px; border-bottom: 1px solid var(--border); }
+.popup-hint { color: var(--muted); font-size: 12px; text-align: right; }
+
+/* Main */
+.main { display: flex; flex-direction: column; height: 100%; }
+.tabs { display: flex; gap: 4px; padding: 8px 12px 0; border-bottom: 1px solid var(--border); }
+.tabs button { border: none; background: none; padding: 8px 12px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--muted); }
+.tabs button.active { color: var(--fg); border-bottom-color: var(--accent); }
+.content { flex: 1; overflow: auto; padding: 16px 20px; }
+.empty, .muted { color: var(--muted); }
+.empty { padding: 24px 0; text-align: center; }
+
+.settings h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 20px 0 8px; }
+.settings h2:first-child { margin-top: 0; }
+.settings dl { display: grid; grid-template-columns: 120px 1fr; gap: 6px 12px; margin: 0; }
+.settings dt { color: var(--muted); }
+.settings dd { margin: 0; overflow-wrap: anywhere; }
+.settings table { border-collapse: collapse; width: 100%; max-width: 480px; }
+.settings th, .settings td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--border); }
+button.danger { margin-top: 24px; padding: 6px 12px; border: 1px solid var(--danger); color: var(--danger); background: none; border-radius: 6px; cursor: pointer; }
