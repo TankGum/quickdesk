@@ -27,16 +27,24 @@ Repository → **Settings** → **Secrets and variables** → **Actions** → **
 | `R2_SECRET_ACCESS_KEY` | API token secret |
 | `R2_BUCKET` | bucket name, e.g. `quickdesk-downloads` |
 
-### 3. Download page (optional)
+### 3. Download page
 
-Put the page at `packaging/download/index.html`. When publishing, these
-placeholders are filled in and the result is uploaded as `index.html`:
+The page lives in `packaging/download/`: `index.html` plus `assets/` (CSS, JS,
+images), which are uploaded next to it. When publishing, these placeholders in
+`index.html` are filled in and the result is uploaded as `index.html`:
 
 `{{VERSION}}` `{{DATE}}` · `{{DEB_URL}}` `{{RPM_URL}}` `{{APPIMAGE_URL}}` (relative
 links) · `{{DEB_SHA256}}` `{{RPM_SHA256}}` `{{APPIMAGE_SHA256}}` ·
 `{{DEB_SIZE}}` `{{RPM_SIZE}}` `{{APPIMAGE_SIZE}}`.
 
 A page can instead read `latest.json` at runtime (same data as JSON).
+
+To check the page in a browser after a local `npx tauri build`, render it with the
+real values without uploading anything:
+
+```sh
+python3 scripts/publish_r2.py --preview /tmp/qd-page && xdg-open /tmp/qd-page/index.html
+```
 
 ## Each release
 
@@ -55,6 +63,7 @@ A page can instead read `latest.json` at runtime (same data as JSON).
    releases/<version>/SHA256SUMS
    latest.json
    index.html
+   assets/...
    ```
    The packages are also attached to the workflow run as an artifact.
 
