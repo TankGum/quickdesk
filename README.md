@@ -6,12 +6,16 @@ Tauri 2 + Rust + React. Design: [`docs/SPEC.md`](docs/SPEC.md).
 
 | Hotkey | Opens |
 |---|---|
-| `Super+Shift+N` | Quick note popup (Enter saves) |
-| `Super+Shift+V` | Clipboard popup (↑↓, Enter copies) |
-| `Super+Shift+P` | Port Manager |
+| `Super+Alt+N` | Notes manager (cursor in "New note"; Ctrl+F searches) |
+| `Super+Alt+V` | Clipboard popup (↑↓, Enter copies) |
+| `Super+Alt+P` | Port Manager |
+| *(unset)* | Quick-note popup; also in the tray menu |
+
+All hotkeys can be changed in Settings → Hotkeys. Super+Alt is the default because Vietnamese
+input methods (IBus Unikey/Bamboo) swallow Super+Shift+letter while a text field is focused.
 
 On GNOME Wayland the hotkeys are registered as GNOME custom shortcuts running
-`quickdesk toggle <notes|clipboard|ports>` and are removed again on quit.
+`quickdesk toggle <notes|quick-note|clipboard|ports>` and are removed again on quit.
 
 ## Develop
 

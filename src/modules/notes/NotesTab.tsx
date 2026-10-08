@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 
 import { api, errorMessage, Note, useBackendEvent } from "../../shared/ipc";
 import { absoluteTime, relativeTime } from "../../shared/time";
@@ -12,6 +12,7 @@ export function NotesTab({ focusSignal }: { focusSignal: number }) {
   const [error, setError] = useState<string | null>(null);
   const [undo, setUndo] = useState<Note | null>(null);
   const search = useRef<HTMLInputElement>(null);
+  const composer = useRef<HTMLTextAreaElement>(null);
 
   const refresh = useCallback(() => {
     const q = query.trim();
@@ -30,9 +31,22 @@ export function NotesTab({ focusSignal }: { focusSignal: number }) {
   }, [refresh]);
   useBackendEvent("notes://changed", refresh);
 
+  // Opening the manager puts the cursor in "New note": type to add, or pick a note to edit.
   useEffect(() => {
-    search.current?.focus();
+    composer.current?.focus();
   }, [focusSignal]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        search.current?.focus();
+        search.current?.select();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   useEffect(() => {
     if (!undo) return;
@@ -58,7 +72,7 @@ export function NotesTab({ focusSignal }: { focusSignal: number }) {
           onKeyDown={(e) => e.key === "Escape" && setQuery("")}
         />
       </div>
-      <Composer onError={setError} />
+      <Composer ref={composer} onError={setError} />
       {error && <div className="banner error">{error}</div>}
       {notes.length === 0 ? (
         <div className="empty">{query ? "No matching notes." : "No notes yet. Press the quick-note hotkey to add one."}</div>
@@ -92,7 +106,7 @@ export function NotesTab({ focusSignal }: { focusSignal: number }) {
   );
 }
 
-function Composer({ onError }: { onError: (e: string) => void }) {
+const Composer = forwardRef<HTMLTextAreaElement, { onError: (e: string) => void }>(function Composer({ onError }, ref) {
   const [text, setText] = useState("");
   const submit = () => {
     const body = text.trim();
@@ -104,9 +118,10 @@ function Composer({ onError }: { onError: (e: string) => void }) {
   };
   return (
     <textarea
+      ref={ref}
       className="composer"
-      placeholder="New note — Enter to save, Shift+Enter for newline"
-      rows={1}
+      placeholder="New note: Enter to save, Shift+Enter for newline · Ctrl+F to search"
+      rows={Math.min(8, Math.max(1, text.split("\n").length))}
       value={text}
       onChange={(e) => setText(e.target.value)}
       onKeyDown={(e) => {
@@ -117,7 +132,7 @@ function Composer({ onError }: { onError: (e: string) => void }) {
       }}
     />
   );
-}
+});
 
 function NoteItem({
   note,

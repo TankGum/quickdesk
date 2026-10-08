@@ -16,7 +16,7 @@ pub struct AppState {
     pub device_id: String,
     pub session: Session,
     pub strategy: HotkeyStrategy,
-    pub hotkeys: HotkeyConfig,
+    pub hotkeys: Mutex<HotkeyConfig>,
     pub focus_reports: Mutex<Vec<FocusReport>>,
     pub clipboard: ClipboardService,
     pub sync: SyncService,

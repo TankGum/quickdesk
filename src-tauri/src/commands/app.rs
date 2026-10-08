@@ -25,7 +25,7 @@ pub fn app_info(app: AppHandle, state: State<'_, AppState>) -> AppInfo {
         wayland: state.session.wayland,
         desktop: state.session.desktop.clone(),
         hotkey_strategy: format!("{:?}", state.strategy),
-        hotkeys: state.hotkeys.clone(),
+        hotkeys: state.hotkeys.lock().unwrap_or_else(|e| e.into_inner()).clone(),
         device_id: state.device_id.clone(),
         data_dir: state.data_dir.display().to_string(),
     }

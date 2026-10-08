@@ -3,18 +3,22 @@
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Target {
+    /// Notes manager (main window, Notes tab).
     Notes,
+    /// Small capture popup for writing one note fast.
+    QuickNote,
     Clipboard,
     Ports,
     Main,
 }
 
 impl Target {
-    pub const HOTKEY_TARGETS: [Target; 3] = [Target::Notes, Target::Clipboard, Target::Ports];
+    pub const HOTKEY_TARGETS: [Target; 4] = [Target::Notes, Target::QuickNote, Target::Clipboard, Target::Ports];
 
     pub fn parse(s: &str) -> Option<Self> {
         match s {
             "notes" | "note" => Some(Target::Notes),
+            "quick-note" | "quicknote" | "capture" => Some(Target::QuickNote),
             "clipboard" | "clip" => Some(Target::Clipboard),
             "ports" | "port" => Some(Target::Ports),
             "main" => Some(Target::Main),
@@ -25,6 +29,7 @@ impl Target {
     pub fn id(self) -> &'static str {
         match self {
             Target::Notes => "notes",
+            Target::QuickNote => "quick-note",
             Target::Clipboard => "clipboard",
             Target::Ports => "ports",
             Target::Main => "main",
@@ -61,7 +66,7 @@ impl CliCommand {
 fn usage(bad: &str) -> String {
     format!(
         "unrecognized arguments: {bad:?}\n\
-         usage: quickdesk [toggle|show] <notes|clipboard|ports|main> | --background | quit"
+         usage: quickdesk [toggle|show] <notes|quick-note|clipboard|ports|main> | --background | quit"
     )
 }
 
@@ -74,6 +79,7 @@ mod tests {
         assert_eq!(CliCommand::parse::<&str>(&[]), Ok(CliCommand::Launch));
         assert_eq!(CliCommand::parse(&["toggle", "notes"]), Ok(CliCommand::Toggle(Target::Notes)));
         assert_eq!(CliCommand::parse(&["toggle", "clip"]), Ok(CliCommand::Toggle(Target::Clipboard)));
+        assert_eq!(CliCommand::parse(&["toggle", "quick-note"]), Ok(CliCommand::Toggle(Target::QuickNote)));
         assert_eq!(CliCommand::parse(&["show", "main"]), Ok(CliCommand::Show(Target::Main)));
         assert_eq!(CliCommand::parse(&["--background"]), Ok(CliCommand::Background));
         assert_eq!(CliCommand::parse(&["quit"]), Ok(CliCommand::Quit));

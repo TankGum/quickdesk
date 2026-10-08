@@ -151,3 +151,15 @@ button.icon:hover { background: var(--bg-subtle); color: var(--fg); }
 .recovery-key { padding: 12px; border: 1px dashed var(--border); border-radius: 6px; background: var(--bg-subtle); font-size: 14px; white-space: pre-wrap; word-break: break-all; margin: 0; user-select: all; }
 .sync-state { text-transform: capitalize; font-weight: 600; }
 .sync-panel dl { display: grid; grid-template-columns: 120px 1fr; gap: 6px 12px; }
+
+/* Hotkey settings */
+.hotkey-table { width: 100%; max-width: 640px; border-collapse: collapse; }
+.hotkey-table td { padding: 8px 6px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.hotkey-table tr.recording { background: var(--bg-subtle); }
+.hk-label { width: 34%; }
+.hk-actions { text-align: right; white-space: nowrap; }
+.hk-actions > * + * { margin-left: 4px; }
+.recording-hint { color: var(--accent); font-weight: 500; }
+.hk-check { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.warn-text { color: #b45309; }
+.row.tight { margin: 2px 0 0; }

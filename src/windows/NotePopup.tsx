@@ -20,7 +20,7 @@ export function NotePopup() {
       await api.notesCreate(body);
       setText("");
       setStatus({ kind: "saved", text: "Saved" });
-      if (openMain) await api.show("main");
+      if (openMain) await api.show("notes");
       else await hideWindow();
     } catch (e) {
       setStatus({ kind: "error", text: errorMessage(e) });

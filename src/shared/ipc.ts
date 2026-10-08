@@ -6,8 +6,19 @@ import { useEffect } from "react";
 
 export interface HotkeyConfig {
   notes: string;
+  /** Empty string = no hotkey. */
+  quickNote: string;
   clipboard: string;
   ports: string;
+}
+
+export type HotkeyTarget = "notes" | "quick-note" | "clipboard" | "ports";
+
+export interface HotkeyCheck {
+  normalized: string;
+  error: string | null;
+  conflicts: string[];
+  inputMethodWarning: boolean;
 }
 
 export interface AppInfo {
@@ -154,7 +165,13 @@ export const api = {
   focusReport: (report: FocusReport) => invoke<void>("diag_focus_report", { report }),
   focusStats: () => invoke<FocusStats>("diag_focus_stats"),
   quit: () => invoke<void>("app_quit"),
-  show: (target: "notes" | "clipboard" | "ports" | "main") => invoke<void>("app_show", { target }),
+  show: (target: HotkeyTarget | "main") => invoke<void>("app_show", { target }),
+  hotkeysGet: () => invoke<{ config: HotkeyConfig; strategy: AppInfo["hotkeyStrategy"] }>("hotkeys_get"),
+  hotkeysCheck: (target: HotkeyTarget, accel: string) => invoke<HotkeyCheck>("hotkeys_check", { target, accel }),
+  hotkeysSet: (target: HotkeyTarget, accel: string) => invoke<HotkeyConfig>("hotkeys_set", { target, accel }),
+  hotkeysReset: () => invoke<HotkeyConfig>("hotkeys_reset"),
+  hotkeysSuspend: () => invoke<void>("hotkeys_suspend"),
+  hotkeysResume: () => invoke<void>("hotkeys_resume"),
 };
 
 export const currentWindow = getCurrentWebviewWindow();

@@ -38,9 +38,12 @@ Hotkey mặc định (đổi được trong Settings):
 
 | Hotkey | Hành động |
 |---|---|
-| `Super+Shift+N` | Quick note popup |
-| `Super+Shift+V` | Clipboard popup |
-| `Super+Shift+P` | Port Manager |
+| `Super+Alt+N` | Notes manager (main window, tab Notes) |
+| `Super+Alt+V` | Clipboard popup |
+| `Super+Alt+P` | Port Manager |
+| *(không đặt)* | Popup ghi nhanh (có trong tray) |
+
+> Ban đầu dùng `Super+Shift+…`. Đã đổi vì IBus Unikey/Bamboo nuốt `Super+Shift+chữ` khi đang ở trong ô nhập liệu, chỉ cho tổ hợp có Ctrl/Alt đi qua. Cấu hình cũ chưa sửa sẽ tự được nâng cấp. Đổi được trong Settings → Hotkeys: có ghi phím, phát hiện trùng với shortcut GNOME, và cảnh báo về bộ gõ.
 
 ## 3. Kiến trúc
 
@@ -476,6 +479,7 @@ M1 → M5 đã xong. Những chỗ khác so với spec ban đầu:
 | DB | 1 writer + pool đọc | 1 connection + Mutex | Đủ nhanh với WAL; thêm pool khi cần |
 | Port Manager | Docker là stretch | **Đã có:** map port → container qua `/var/run/docker.sock`, kèm nút Stop container | Trên máy dev, phần lớn port là của Docker |
 | Clipboard Windows/macOS | Listener native | Fallback poll 500ms qua `arboard`, **chưa lọc được nội dung sensitive** | Chưa có máy Windows/macOS để kiểm thử |
+| Hotkey | `Super+Shift+N/V/P`, Notes mở popup | `Super+Alt+N/V/P`; Notes mở màn quản lý; popup ghi nhanh là tuỳ chọn | Theo phản hồi người dùng, cộng với vấn đề của Unikey |
 | Bucket layout | `quickdesk/v1/…` | `<prefix>/v1/…`, prefix cấu hình được (mặc định `quickdesk`) | Cho phép nhiều app dùng chung một bucket |
 | Pull | Chỉ đọc log của máy khác | Đọc cả log của chính mình (từ cursor) | Khôi phục được thay đổi của mình khi DB local bị restore từ bản cũ |
 | Build Linux | — | Cần thêm `libdbus-1-dev` | Dùng cho Secret Service (OS keyring) |

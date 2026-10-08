@@ -23,7 +23,8 @@ pub struct Shown {
 
 fn label_and_tab(target: Target) -> (&'static str, Option<&'static str>) {
     match target {
-        Target::Notes => (NOTE_POPUP, None),
+        Target::Notes => (MAIN, Some("notes")),
+        Target::QuickNote => (NOTE_POPUP, None),
         Target::Clipboard => (CLIP_POPUP, None),
         Target::Ports => (MAIN, Some("ports")),
         Target::Main => (MAIN, None),
@@ -40,7 +41,7 @@ pub fn show<R: Runtime>(app: &AppHandle<R>, target: Target, sent_at_ms: u64) {
         tracing::warn!(label, error = %e, "failed to show window");
     }
     // Opening notes is a good moment to pick up changes from other devices.
-    if matches!(target, Target::Notes | Target::Main) {
+    if matches!(target, Target::Notes | Target::QuickNote | Target::Main) {
         if let Some(state) = app.try_state::<crate::state::AppState>() {
             state.sync.trigger(crate::sync::Trigger::WindowShown);
         }
@@ -58,11 +59,16 @@ pub fn toggle<R: Runtime>(app: &AppHandle<R>, target: Target, sent_at_ms: u64) {
     let focused = w.is_focused().unwrap_or(false);
     tracing::debug!(label, visible, focused, "toggle");
     let up = visible && focused;
-    // Ports lives in a tab of main: if main is up on another tab, switch instead of hiding.
-    if up && tab.is_none() {
-        let _ = w.hide();
-    } else {
-        show(app, target, sent_at_ms);
+    match (up, tab) {
+        (true, None) => {
+            let _ = w.hide();
+        }
+        // Main is up: only the UI knows the current tab. It hides the window if
+        // that tab is already showing, otherwise switches to it.
+        (true, Some(tab)) => {
+            let _ = app.emit_to(label, "window://toggle-tab", tab);
+        }
+        (false, _) => show(app, target, sent_at_ms),
     }
 }
 

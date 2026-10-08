@@ -15,7 +15,8 @@ pub fn build(app: &App, clip_paused: bool) -> tauri::Result<()> {
     let menu = Menu::with_items(
         app,
         &[
-            &item("notes", "Quick note")?,
+            &item("quick-note", "Quick note")?,
+            &item("notes", "Notes")?,
             &item("clipboard", "Clipboard")?,
             &item("ports", "Ports")?,
             &PredefinedMenuItem::separator(app)?,
@@ -33,6 +34,7 @@ pub fn build(app: &App, clip_paused: bool) -> tauri::Result<()> {
         .show_menu_on_left_click(true)
         .on_menu_event(|app, event| {
             let target = match event.id().as_ref() {
+                "quick-note" => Target::QuickNote,
                 "notes" => Target::Notes,
                 "clipboard" => Target::Clipboard,
                 "ports" => Target::Ports,

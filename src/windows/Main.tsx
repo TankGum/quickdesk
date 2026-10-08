@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ClipboardTab } from "../modules/clipboard/ClipboardTab";
 import { NotesTab } from "../modules/notes/NotesTab";
 import { PortsTab } from "../modules/ports/PortsTab";
 import { SyncFooter } from "../modules/sync/SyncFooter";
 import { SyncSettings } from "../modules/sync/SyncSettings";
-import { api, AppInfo, FocusStats, useShown } from "../shared/ipc";
+import { HotkeySettings } from "../modules/settings/HotkeySettings";
+import { api, AppInfo, currentWindow, FocusStats, hideWindow, useShown } from "../shared/ipc";
 
 const TABS = ["notes", "clipboard", "ports", "settings"] as const;
 type Tab = (typeof TABS)[number];
@@ -19,6 +20,23 @@ export function Main() {
     if (s.tab && (TABS as readonly string[]).includes(s.tab)) setTab(s.tab as Tab);
     setShownAt(s.shownAtMs);
   });
+
+  // Hotkey pressed while this window is focused: same tab → hide, else switch.
+  const tabRef = useRef(tab);
+  tabRef.current = tab;
+  useEffect(() => {
+    const unlisten = currentWindow.listen<string>("window://toggle-tab", ({ payload }) => {
+      if (payload === tabRef.current) {
+        void hideWindow();
+      } else if ((TABS as readonly string[]).includes(payload)) {
+        setTab(payload as Tab);
+        setShownAt(Date.now());
+      }
+    });
+    return () => {
+      void unlisten.then((f) => f());
+    };
+  }, []);
 
   return (
     <div className="main">
@@ -62,16 +80,7 @@ function Settings() {
       <SyncSettings />
 
       <h2>Hotkeys</h2>
-      <dl>
-        <dt>Quick note</dt>
-        <dd><kbd>{info.hotkeys.notes}</kbd></dd>
-        <dt>Clipboard</dt>
-        <dd><kbd>{info.hotkeys.clipboard}</kbd></dd>
-        <dt>Ports</dt>
-        <dd><kbd>{info.hotkeys.ports}</kbd></dd>
-        <dt>Mechanism</dt>
-        <dd>{strategyLabel[info.hotkeyStrategy]}</dd>
-      </dl>
+      <HotkeySettings />
 
       <h2>Popup focus test</h2>
       {stats && stats.total > 0 ? (
@@ -116,8 +125,3 @@ function Settings() {
   );
 }
 
-const strategyLabel: Record<AppInfo["hotkeyStrategy"], string> = {
-  Plugin: "OS global shortcut",
-  GnomeKeybinding: "GNOME custom shortcuts (Settings → Keyboard)",
-  Manual: "Not available — bind `quickdesk toggle <notes|clipboard|ports>` manually",
-};

@@ -47,6 +47,12 @@ pub fn run(args: Vec<String>) {
             commands::app::app_quit,
             commands::app::app_show,
             commands::app::clipboard_write,
+            commands::hotkeys::hotkeys_get,
+            commands::hotkeys::hotkeys_check,
+            commands::hotkeys::hotkeys_set,
+            commands::hotkeys::hotkeys_reset,
+            commands::hotkeys::hotkeys_suspend,
+            commands::hotkeys::hotkeys_resume,
             commands::clipboard::clip_list,
             commands::clipboard::clip_search,
             commands::clipboard::clip_copy,
@@ -84,7 +90,7 @@ pub fn run(args: Vec<String>) {
                 let conn = db.conn()?;
                 (
                     settings::device_id(&conn)?,
-                    settings::get_or_init(&conn, hotkeys::SETTINGS_KEY, HotkeyConfig::default)?,
+                    HotkeyConfig::load(&conn)?,
                     clipboard::ClipboardService::load_paused(&conn),
                 )
             };
@@ -106,7 +112,7 @@ pub fn run(args: Vec<String>) {
                 device_id,
                 session,
                 strategy,
-                hotkeys,
+                hotkeys: Mutex::new(hotkeys),
                 focus_reports: Mutex::new(Vec::new()),
                 clipboard: clipboard::ClipboardService::new(clip_paused),
                 sync: sync::SyncService::new(),

@@ -20,6 +20,8 @@ pub trait Gsettings {
     fn get(&self, schema: &str, key: &str) -> io::Result<String>;
     fn set(&self, schema: &str, key: &str, value: &str) -> io::Result<()>;
     fn reset_recursively(&self, schema: &str) -> io::Result<()>;
+    /// `gsettings list-recursively <schema>`: one `schema key value` per line.
+    fn list_recursively(&self, schema: &str) -> io::Result<String>;
 }
 
 /// Shells out to the `gsettings` CLI that ships with every GNOME install.
@@ -45,6 +47,9 @@ impl Gsettings for GsettingsCli {
     }
     fn reset_recursively(&self, schema: &str) -> io::Result<()> {
         Self::run(&["reset-recursively", schema]).map(drop)
+    }
+    fn list_recursively(&self, schema: &str) -> io::Result<String> {
+        Self::run(&["list-recursively", schema])
     }
 }
 
@@ -102,6 +107,62 @@ impl<G: Gsettings> GnomeKeybindings<G> {
     pub fn remove_all(&self) -> io::Result<()> {
         self.apply(&[])
     }
+
+    /// Existing GNOME shortcuts (system and the user's custom ones, not ours)
+    /// that use `accel`, as human-readable descriptions.
+    pub fn conflicts(&self, accel: &Accelerator) -> Vec<String> {
+        let mut found = Vec::new();
+        for schema in SYSTEM_SCHEMAS {
+            let Ok(listing) = self.gs.list_recursively(schema) else { continue };
+            for line in listing.lines() {
+                let mut parts = line.splitn(3, ' ');
+                let (Some(_), Some(key), Some(value)) = (parts.next(), parts.next(), parts.next()) else { continue };
+                if quoted_strings(value).iter().filter_map(|v| Accelerator::from_gtk(v)).any(|a| &a == accel) {
+                    found.push(format!("GNOME: {}", key.replace('-', " ")));
+                }
+            }
+        }
+        if let Ok(list) = self.gs.get(LIST_SCHEMA, LIST_KEY) {
+            for path in parse_strv(&list).into_iter().filter(|p| !is_ours(p)) {
+                let schema = entry_schema(&path);
+                let binding = self.gs.get(&schema, "binding").unwrap_or_default();
+                if quoted_strings(&binding).iter().filter_map(|v| Accelerator::from_gtk(v)).any(|a| &a == accel) {
+                    let name = self.gs.get(&schema, "name").unwrap_or_default();
+                    found.push(format!("Custom shortcut: {}", quoted_strings(&name).first().cloned().unwrap_or(path)));
+                }
+            }
+        }
+        found
+    }
+}
+
+/// Schemas holding the desktop's built-in keybindings.
+const SYSTEM_SCHEMAS: &[&str] = &[
+    "org.gnome.desktop.wm.keybindings",
+    "org.gnome.shell.keybindings",
+    "org.gnome.mutter.keybindings",
+    "org.gnome.mutter.wayland.keybindings",
+    "org.gnome.settings-daemon.plugins.media-keys",
+];
+
+/// All single-quoted GVariant strings in `value` (`'a'`, `['a', 'b']`).
+fn quoted_strings(value: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut chars = value.chars();
+    while let Some(c) = chars.next() {
+        if c == '\'' {
+            let mut s = String::new();
+            while let Some(c) = chars.next() {
+                match c {
+                    '\\' => s.extend(chars.next()),
+                    '\'' => break,
+                    c => s.push(c),
+                }
+            }
+            out.push(s);
+        }
+    }
+    out
 }
 
 fn path_for(id: &str) -> String {
@@ -176,6 +237,16 @@ mod tests {
             self.store.borrow_mut().retain(|(s, _), _| s != schema);
             Ok(())
         }
+        fn list_recursively(&self, schema: &str) -> io::Result<String> {
+            Ok(self
+                .store
+                .borrow()
+                .iter()
+                .filter(|((s, _), _)| s == schema)
+                .map(|((s, k), v)| format!("{s} {k} {v}"))
+                .collect::<Vec<_>>()
+                .join("\n"))
+        }
     }
 
     fn binding(id: &str, accel: &str) -> Binding {
@@ -233,6 +304,32 @@ mod tests {
 
         assert_eq!(list(&fake), vec![path_for("notes")]);
         assert_eq!(*fake.resets.borrow(), vec![entry_schema(&path_for("old"))]);
+    }
+
+    #[test]
+    fn finds_system_and_custom_conflicts_but_not_our_own() {
+        let fake = Fake::default();
+        (&fake).set("org.gnome.shell.keybindings", "toggle-message-tray", "['<Super>v', '<Super>m']").unwrap();
+        (&fake).set("org.gnome.desktop.wm.keybindings", "minimize", "['<Super>h']").unwrap();
+        let user = format!("{PATH_ROOT}custom0/");
+        (&fake).set(LIST_SCHEMA, LIST_KEY, &format_strv(std::slice::from_ref(&user))).unwrap();
+        (&fake).set(&entry_schema(&user), "name", "'Terminal'").unwrap();
+        (&fake).set(&entry_schema(&user), "binding", "'<Primary><Alt>t'").unwrap();
+        let kb = GnomeKeybindings::with(&fake);
+        kb.apply(&[binding("notes", "Super+Alt+N")]).unwrap();
+
+        let check = |a: &str| kb.conflicts(&a.parse().unwrap());
+        assert_eq!(check("Super+V"), vec!["GNOME: toggle message tray"]);
+        assert_eq!(check("Ctrl+Alt+T"), vec!["Custom shortcut: Terminal"]);
+        assert!(check("Super+Alt+N").is_empty(), "our own binding is not a conflict");
+        assert!(check("Super+Shift+V").is_empty());
+    }
+
+    #[test]
+    fn quoted_string_scanner() {
+        assert_eq!(quoted_strings("['<Super>v', '<Super>m']"), vec!["<Super>v", "<Super>m"]);
+        assert_eq!(quoted_strings(r"'it\'s'"), vec!["it's"]);
+        assert!(quoted_strings("@as []").is_empty());
     }
 
     #[test]

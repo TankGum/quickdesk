@@ -2,6 +2,7 @@
 
 pub mod app;
 pub mod clipboard;
+pub mod hotkeys;
 pub mod notes;
 pub mod ports;
 pub mod sync;
