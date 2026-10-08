@@ -1,16 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 import { useI18n } from "../../shared/i18n";
 import { api, errorMessage, Note, useBackendEvent } from "../../shared/ipc";
 import { absoluteTime, relativeTime } from "../../shared/time";
-import { NoteDialog } from "./NoteDialog";
+import { markdownToText } from "./markdown";
+
+// The rich editor is large; load it only when a note is opened.
+const NoteDialog = lazy(() => import("./NoteDialog").then((m) => ({ default: m.NoteDialog })));
 
 const UNDO_MS = 5000;
 
 /** What the list shows as a note's heading: its title, or its first line. */
-export function heading(n: Note): { text: string; fromBody: boolean } {
-  if (n.title.trim()) return { text: n.title, fromBody: false };
-  return { text: n.body.split("\n").find((l) => l.trim()) ?? "", fromBody: true };
+export function heading(n: Note): { text: string; preview: string } {
+  const lines = markdownToText(n.body).split("\n").filter((l) => l.trim());
+  if (n.title.trim()) return { text: n.title, preview: lines.join("\n") };
+  return { text: lines[0] ?? "", preview: lines.slice(1).join("\n") };
 }
 
 /** `focusSignal` changes each time the main window is brought up. */
@@ -96,7 +100,7 @@ export function NotesTab({ focusSignal }: { focusSignal: number }) {
         <ul className="note-list">
           {notes.map((n) => {
             const h = heading(n);
-            const preview = h.fromBody ? n.body.slice(n.body.indexOf(h.text) + h.text.length).trim() : n.body;
+            const preview = h.preview;
             return (
               <li key={n.id} className={`note ${n.pinned ? "pinned" : ""}`}>
                 <button
@@ -124,12 +128,14 @@ export function NotesTab({ focusSignal }: { focusSignal: number }) {
         </ul>
       )}
       {editing !== undefined && (
-        <NoteDialog
-          key={editing?.id ?? "new"}
-          note={editing}
-          onClose={() => setEditing(undefined)}
-          onDeleted={(n) => setUndo(n)}
-        />
+        <Suspense fallback={<div className="dialog-backdrop" />}>
+          <NoteDialog
+            key={editing?.id ?? "new"}
+            note={editing}
+            onClose={() => setEditing(undefined)}
+            onDeleted={(n) => setUndo(n)}
+          />
+        </Suspense>
       )}
       {undo && (
         <div className="toast">

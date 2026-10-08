@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useI18n } from "../../shared/i18n";
 import { api, errorMessage, Note } from "../../shared/ipc";
 import { absoluteTime, relativeTime } from "../../shared/time";
+import { NoteEditor } from "./NoteEditor";
 
 /** `note` = edit that note; `null` = write a new one. */
 export function NoteDialog({ note, onClose, onDeleted }: { note: Note | null; onClose: () => void; onDeleted: (n: Note) => void }) {
@@ -13,21 +14,18 @@ export function NoteDialog({ note, onClose, onDeleted }: { note: Note | null; on
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmClose, setConfirmClose] = useState(false);
+  // Only real edits count: re-serializing an untouched note can differ
+  // byte-for-byte (Markdown escaping) and must not look like a change.
+  const [bodyTouched, setBodyTouched] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<{ commands: { focus: (p?: "start" | "end") => unknown } } | null>(null);
 
-  const dirty = title !== (note?.title ?? "") || body !== (note?.body ?? "") || pinned !== (note?.pinned ?? false);
+  const dirty = title !== (note?.title ?? "") || bodyTouched || pinned !== (note?.pinned ?? false);
   const empty = !title.trim() && !body.trim();
 
   // New notes start in the title; existing ones at the end of the text.
   useEffect(() => {
-    if (!note) {
-      titleRef.current?.focus();
-    } else {
-      const el = bodyRef.current;
-      el?.focus();
-      el?.setSelectionRange(el.value.length, el.value.length);
-    }
+    if (!note) titleRef.current?.focus();
   }, [note]);
 
   const save = async () => {
@@ -39,7 +37,7 @@ export function NoteDialog({ note, onClose, onDeleted }: { note: Note | null; on
     setSaving(true);
     setError(null);
     try {
-      if (note) await api.notesUpdate(note.id, { title, body, pinned });
+      if (note) await api.notesUpdate(note.id, { title, pinned, ...(bodyTouched ? { body } : {}) });
       else {
         const created = await api.notesCreate(body, title);
         if (pinned) await api.notesUpdate(created.id, { pinned });
@@ -70,7 +68,8 @@ export function NoteDialog({ note, onClose, onDeleted }: { note: Note | null; on
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     const mod = e.ctrlKey || e.metaKey;
-    if (mod && (e.key.toLowerCase() === "s" || e.key === "Enter")) {
+    // Ctrl+Shift+S is strikethrough in the editor, so only plain Ctrl+S saves.
+    if (mod && !e.shiftKey && (e.key.toLowerCase() === "s" || e.key === "Enter")) {
       e.preventDefault();
       void save();
     } else if (e.key === "Escape") {
@@ -94,7 +93,7 @@ export function NoteDialog({ note, onClose, onDeleted }: { note: Note | null; on
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.ctrlKey && !e.metaKey) {
                 e.preventDefault();
-                bodyRef.current?.focus();
+                editorRef.current?.commands.focus("start");
               }
             }}
           />
@@ -102,12 +101,14 @@ export function NoteDialog({ note, onClose, onDeleted }: { note: Note | null; on
             {pinned ? "★" : "☆"}
           </button>
         </div>
-        <textarea
-          ref={bodyRef}
-          className="note-body-input"
-          placeholder={t("notes.bodyPlaceholder")}
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
+        <NoteEditor
+          markdown={note?.body ?? ""}
+          autofocus={!!note}
+          onReady={(ed) => (editorRef.current = ed)}
+          onChange={(md) => {
+            setBody(md);
+            setBodyTouched(true);
+          }}
         />
         {note?.conflictOf && (
           <div className="banner warn-text small" title={t("notes.conflictHint")}>

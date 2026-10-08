@@ -171,7 +171,7 @@ function Settings() {
         <dt>{t("settings.data")}</dt>
         <dd><code>{info.dataDir}</code></dd>
       </dl>
-      <button className="danger" onClick={() => void api.quit()}>
+      <button className="quit" onClick={() => void api.quit()}>
         {t("settings.quit")}
       </button>
     </div>

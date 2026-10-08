@@ -57,7 +57,7 @@ kbd { padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; bac
 .settings dd { margin: 0; overflow-wrap: anywhere; }
 .settings table { border-collapse: collapse; width: 100%; max-width: 480px; }
 .settings th, .settings td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--border); }
-button.danger { margin-top: 24px; padding: 6px 12px; border: 1px solid var(--danger); color: var(--danger); background: none; border-radius: 6px; cursor: pointer; }
+button.quit { margin-top: 24px; padding: 6px 12px; border: 1px solid var(--danger); color: var(--danger); background: none; border-radius: 6px; cursor: pointer; }
 
 /* Shared controls */
 .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
@@ -65,7 +65,7 @@ button.danger { margin-top: 24px; padding: 6px 12px; border: 1px solid var(--dan
   width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px;
   background: var(--bg-subtle); color: var(--fg); font: inherit; outline: none;
 }
-.search:focus, .composer:focus, .note-edit:focus { border-color: var(--accent); }
+.search:focus, .composer:focus { border-color: var(--accent); }
 .composer { resize: none; margin-bottom: 12px; }
 .banner { padding: 8px 10px; border-radius: 6px; margin-bottom: 10px; }
 .banner.error, .popup-hint.error { color: var(--danger); }
@@ -89,7 +89,6 @@ button.icon:hover { background: var(--bg-subtle); color: var(--fg); }
 .pin.on { color: #f59e0b; }
 .note-main { flex: 1; min-width: 0; }
 .note-body { white-space: pre-wrap; overflow-wrap: anywhere; cursor: text; }
-.note-edit { width: 100%; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; resize: vertical; outline: none; }
 .note-meta { display: flex; gap: 8px; align-items: center; margin-top: 4px; color: var(--muted); font-size: 12px; }
 
 /* Buttons */
@@ -144,7 +143,9 @@ button.icon:hover { background: var(--bg-subtle); color: var(--fg); }
 .field > span { font-size: 12px; color: var(--muted); }
 .field input { padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-subtle); color: var(--fg); font: inherit; outline: none; }
 .field input:focus { border-color: var(--accent); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: white; align-self: flex-start; padding: 6px 14px; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+/* Stacked forms (sync, welcome) keep primary buttons at their natural width. */
+.sync-form .btn.primary, .welcome .btn.primary { align-self: flex-start; padding: 6px 14px; }
 .btn:disabled { opacity: 0.5; cursor: default; }
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
 .small { font-size: 12px; }
@@ -211,7 +212,6 @@ button.icon:hover { background: var(--bg-subtle); color: var(--fg); }
 .note-dialog { height: min(560px, 100%); }
 .dialog-head { display: flex; gap: 8px; align-items: center; padding: 14px 16px 6px; }
 .note-title-input { flex: 1; border: none; outline: none; background: transparent; color: var(--fg); font: inherit; font-size: 20px; font-weight: 600; }
-.note-body-input { flex: 1; border: none; outline: none; resize: none; background: transparent; color: var(--fg); font: inherit; font-size: 14px; line-height: 1.55; padding: 6px 16px 12px; }
 .dialog .banner { margin: 0 16px 8px; }
 .dialog-foot { display: flex; gap: 8px; align-items: center; padding: 10px 16px; border-top: 1px solid var(--border); }
 .spacer { flex: 1; }
@@ -264,3 +264,38 @@ button.icon:hover { background: var(--bg-subtle); color: var(--fg); }
    give options explicit colours or light text lands on a light list. */
 select { color: var(--fg); background-color: var(--bg-subtle); }
 select option { color: var(--fg); background-color: var(--bg); }
+
+/* Note dialog footer: one row, everything vertically centred, same height */
+.dialog-foot .btn { display: inline-flex; align-items: center; justify-content: center; height: 30px; padding: 0 14px; margin: 0; }
+
+/* Rich note editor */
+.note-editor { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.note-toolbar { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; padding: 4px 12px 6px; border-bottom: 1px solid var(--border); }
+.note-toolbar .tool { min-width: 30px; height: 28px; padding: 0 6px; border: 1px solid transparent; border-radius: 6px; background: none; color: var(--fg); cursor: pointer; font-size: 13px; }
+.note-toolbar .tool:hover { background: var(--bg-subtle); }
+.note-toolbar .tool.on { background: var(--bg-subtle); border-color: var(--border); color: var(--accent); }
+.note-toolbar .tool.bold { font-weight: 800; }
+.note-toolbar .tool.italic { font-style: italic; font-family: Georgia, serif; }
+.note-toolbar .tool.strike { text-decoration: line-through; }
+.note-toolbar .tool.code, .note-toolbar .tool.codeBlock { font-family: ui-monospace, monospace; font-size: 12px; }
+.tool-sep { width: 1px; height: 18px; background: var(--border); margin: 0 6px; }
+.note-rich-wrap { flex: 1; min-height: 0; overflow-y: auto; }
+.note-rich { outline: none; min-height: 100%; padding: 10px 16px 14px; font-size: 14px; line-height: 1.6; }
+.note-rich > :first-child { margin-top: 0; }
+.note-rich p { margin: 0 0 6px; }
+.note-rich h1 { font-size: 20px; margin: 12px 0 6px; }
+.note-rich h2 { font-size: 17px; margin: 12px 0 6px; }
+.note-rich h3 { font-size: 15px; margin: 10px 0 4px; }
+.note-rich ul, .note-rich ol { margin: 0 0 6px; padding-left: 22px; }
+.note-rich li > p { margin: 0; }
+.note-rich ul[data-type="taskList"] { list-style: none; padding-left: 2px; }
+.note-rich ul[data-type="taskList"] li { display: flex; gap: 8px; align-items: flex-start; }
+.note-rich ul[data-type="taskList"] li > label { margin-top: 3px; user-select: none; }
+.note-rich ul[data-type="taskList"] li > div { flex: 1; }
+.note-rich ul[data-type="taskList"] li[data-checked="true"] > div { color: var(--muted); text-decoration: line-through; }
+.note-rich input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+.note-rich blockquote { margin: 0 0 6px; padding: 2px 12px; border-left: 3px solid var(--border); color: var(--muted); }
+.note-rich code { font-family: ui-monospace, monospace; font-size: 12.5px; background: var(--bg-subtle); padding: 1px 5px; border-radius: 4px; }
+.note-rich pre { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin: 0 0 8px; overflow-x: auto; }
+.note-rich pre code { background: none; padding: 0; }
+.note-rich p.is-editor-empty:first-child::before { content: attr(data-placeholder); color: var(--muted); float: left; height: 0; pointer-events: none; }
