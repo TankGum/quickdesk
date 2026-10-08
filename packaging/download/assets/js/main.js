@@ -155,13 +155,9 @@
     const li = e.target.closest('li');
     if (!li || !('limit' in li.dataset || 'refresh' in li.dataset)) return;
     takeOver();
-    if ('refresh' in li.dataset) {
-      openMenu(null);
-      if (!Object.values(wins).some((w) => w.classList.contains('is-open'))) closePanel();
-      showToast('Usage refreshed');
-      return;
-    }
+    // Like the app: GNOME closes the menu, so Refresh Now shows the AI tab.
     showWindow('main', 'ai');
+    if ('refresh' in li.dataset) showToast('Usage refreshed');
   });
 
   // QuickDesk's own tray icon and menu.
