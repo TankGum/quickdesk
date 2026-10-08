@@ -11,7 +11,7 @@ import type {
   SyncStatus,
   UsageSnapshot,
 } from "../shared/ipc";
-import { emit, params, toPage } from "./bus";
+import { demoLang, emit, toPage } from "./bus";
 
 const now = Date.now();
 const MIN = 60_000;
@@ -198,9 +198,11 @@ const sync: SyncStatus = {
 type Args = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 const changed = (event: string) => setTimeout(() => emit(event), 0);
+/** Toast text for the page, in the demo's language. */
+const say = (en: string, vi: string) => (demoLang === "vi" ? vi : en);
 
 const commands: Record<string, (a: Args) => unknown> = {
-  app_get_language: () => ({ pref: "auto", resolved: params.get("lang") === "vi" ? "vi" : "en" }),
+  app_get_language: () => ({ pref: demoLang, resolved: demoLang }),
   app_set_language: (a) => ({ pref: a.language, resolved: a.language === "vi" ? "vi" : "en" }),
   app_onboarding: () => ({ done: true, offerUinput: false }),
   app_info: () => ({
@@ -247,10 +249,10 @@ const commands: Record<string, (a: Args) => unknown> = {
   clip_list: (a) => clipQuery("", a.limit, a.kind),
   clip_search: (a) => clipQuery(a.query, a.limit, a.kind),
   clip_status: () => clipStatus,
-  clip_copy: () => toPage("toast", { text: "Copied to clipboard" }),
+  clip_copy: () => toPage("toast", { text: say("Copied to clipboard", "Đã copy vào clipboard") }),
   clip_paste: () => {
     toPage("hide", { label: "clip-popup" });
-    toPage("toast", { text: "Pasted into the app you were using" });
+    toPage("toast", { text: say("Pasted into the app you were using", "Đã dán vào app bạn đang dùng") });
   },
   clip_pin: (a) => {
     const c = clips.find((x) => x.id === a.id)!;
@@ -288,7 +290,7 @@ const commands: Record<string, (a: Args) => unknown> = {
   ports_stop_container: (a) => {
     ports = ports.filter((p) => p.container?.id !== a.id);
   },
-  ports_open: (a) => toPage("toast", { text: `Opening http://localhost:${a.port}` }),
+  ports_open: (a) => toPage("toast", { text: say(`Opening http://localhost:${a.port}`, `Đang mở http://localhost:${a.port}`) }),
 
   ai_usage_get: () => usage,
   ai_usage_refresh: () => ({ ...usage, updatedAt: Date.now() }),

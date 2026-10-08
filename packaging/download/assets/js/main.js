@@ -12,8 +12,61 @@
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
 
-  /* ---------- Footer year ---------- */
-  $('#year').textContent = new Date().getFullYear();
+  /* ---------- Language ---------- */
+  // English lives in the markup; Vietnamese for every [data-i18n] element is
+  // in #i18n-vi (inside index.html, so release placeholders get filled in).
+  const VI = JSON.parse($('#i18n-vi')?.textContent || '{}');
+  const EN_META = { title: document.title, description: $('meta[name="description"]').content };
+  // Strings this script writes itself.
+  const STR = {
+    en: {
+      refreshed: 'Usage refreshed', paused: 'Clipboard history paused', resumed: 'Clipboard history resumed',
+      quit: 'Quit — in the real app, QuickDesk would close now',
+      encrypting: 'Encrypting…', synced: 'Encrypted & synced',
+      copied: 'Copied', pressCopy: 'Press Ctrl+C', copy: 'Copy',
+      note: 'Standup — Tuesday\n• Shipped clipboard images\n• Reviewing the release flow\n• No blockers',
+    },
+    vi: {
+      refreshed: 'Đã làm mới usage', paused: 'Đã tạm dừng lưu clipboard', resumed: 'Đã bật lại lưu clipboard',
+      quit: 'Thoát — trong app thật, QuickDesk sẽ đóng lại ngay',
+      encrypting: 'Đang mã hoá…', synced: 'Đã mã hoá & đồng bộ',
+      copied: 'Đã copy', pressCopy: 'Bấm Ctrl+C', copy: 'Copy',
+      note: 'Họp đầu ngày — Thứ Ba\n• Đã xong ảnh trong clipboard\n• Đang rà quy trình phát hành\n• Không vướng gì',
+    },
+  };
+  let lang = 'en';
+  const tr = (key) => STR[lang][key];
+  const langListeners = [];
+
+  function setLang(next, remember) {
+    lang = next === 'vi' ? 'vi' : 'en';
+    document.documentElement.lang = lang;
+    $$('[data-i18n]').forEach((el) => {
+      if (el.dataset.en === undefined) el.dataset.en = el.innerHTML;
+      const html = lang === 'vi' ? VI[el.dataset.i18n] : el.dataset.en;
+      if (html !== undefined) el.innerHTML = html;
+    });
+    document.title = lang === 'vi' ? VI.title : EN_META.title;
+    $('meta[name="description"]').content = lang === 'vi' ? VI.description : EN_META.description;
+    $$('[data-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+    // The footer's year span is re-created with its sentence.
+    $('#year').textContent = new Date().getFullYear();
+    // The demo windows are the real app: switch its language too.
+    $$('iframe').forEach((f) => f.contentWindow?.postMessage({ source: 'quickdesk-page', type: 'lang', lang }, '*'));
+    langListeners.forEach((fn) => fn());
+    if (remember) {
+      try { localStorage.setItem('qd-lang', lang); } catch { /* private mode */ }
+    }
+  }
+
+  let saved = null;
+  try { saved = localStorage.getItem('qd-lang'); } catch { /* private mode */ }
+  setLang(saved || (navigator.language.toLowerCase().startsWith('vi') ? 'vi' : 'en'), false);
+  $$('[data-lang]').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.lang, true)));
+  // Iframes that finish loading later still need to hear the language.
+  $$('iframe').forEach((f) => f.addEventListener('load', () => {
+    f.contentWindow?.postMessage({ source: 'quickdesk-page', type: 'lang', lang }, '*');
+  }));
 
   /* ---------- Reveal on scroll (staggered per parent) ---------- */
   const revealIO = new IntersectionObserver((entries) => {
@@ -158,7 +211,7 @@
     if ('refresh' in li.dataset) {
       openMenu(null);
       if (!Object.values(wins).some((w) => w.classList.contains('is-open'))) closePanel();
-      showToast('Usage refreshed');
+      showToast(tr('refreshed'));
       return;
     }
     showWindow('main', 'ai');
@@ -190,10 +243,10 @@
       Object.keys(wins).forEach((w) => post(w, { type: 'pause', paused }));
       openMenu(null);
       if (!Object.values(wins).some((w) => w.classList.contains('is-open'))) closePanel();
-      showToast(paused ? 'Clipboard history paused' : 'Clipboard history resumed');
+      showToast(tr(paused ? 'paused' : 'resumed'));
     } else if ('quit' in li.dataset) {
       closePanel();
-      showToast('Quit — in the real app, QuickDesk would close now');
+      showToast(tr('quit'));
     }
   });
 
@@ -265,11 +318,18 @@
 
   // Live clock in the top bar.
   const clock = $('#clock');
-  const fmt = new Intl.DateTimeFormat('en-US', {
+  const clockFormat = () => new Intl.DateTimeFormat(lang === 'vi' ? 'vi-VN' : 'en-US', {
     weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false,
   });
+  let fmt = clockFormat();
   const tick = () => { clock.textContent = fmt.format(new Date()).replace(/,/g, ''); };
   tick();
+  langListeners.push(() => {
+    fmt = clockFormat();
+    tick();
+    $('.desktop__ime').textContent = lang;
+  });
+  $('.desktop__ime').textContent = lang;
   setInterval(tick, 15000);
 
   let toastTimer = null;
@@ -286,11 +346,12 @@
     const src = $('[data-sync-src]', sync);
     const dst = $('[data-sync-dst]', sync);
     const badge = $('[data-sync-badge]', sync);
-    const NOTE = 'Standup — Tuesday\n• Shipped clipboard images\n• Reviewing the release flow\n• No blockers';
+    const NOTE = () => tr('note');
 
     if (reduceMotion) {
-      src.textContent = NOTE;
-      dst.textContent = NOTE;
+      const show = () => { src.textContent = NOTE(); dst.textContent = NOTE(); badge.textContent = tr('synced'); };
+      show();
+      langListeners.push(show);
     } else {
       let started = false;
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -299,11 +360,11 @@
       const mirror = () => {
         clearTimeout(mirrorTimer);
         sync.classList.add('is-syncing');
-        badge.textContent = 'Encrypting…';
+        badge.textContent = tr('encrypting');
         mirrorTimer = setTimeout(() => {
           dst.textContent = src.textContent;
           sync.classList.remove('is-syncing');
-          badge.textContent = 'Encrypted & synced';
+          badge.textContent = tr('synced');
         }, 450);
       };
 
@@ -313,7 +374,7 @@
           dst.textContent = '';
           src.classList.add('is-typing');
           await sleep(600);
-          for (const ch of NOTE) {
+          for (const ch of NOTE()) {
             src.textContent += ch;
             if (ch === '\n' || ch === ' ') mirror();
             await sleep(ch === '\n' ? 260 : 38 + Math.random() * 50);
@@ -379,11 +440,11 @@
     btn.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(btn.dataset.copy);
-        btn.textContent = 'Copied';
+        btn.textContent = tr('copied');
       } catch {
-        btn.textContent = 'Press Ctrl+C';
+        btn.textContent = tr('pressCopy');
       }
-      setTimeout(() => { btn.textContent = 'Copy'; }, 1800);
+      setTimeout(() => { btn.textContent = tr('copy'); }, 1800);
     });
   });
 })();

@@ -18,6 +18,9 @@ export function emit(event: string, payload?: unknown) {
 
 export const params = new URLSearchParams(location.search);
 
+/** Language the page asked for (?lang= or a "lang" message); the app follows it. */
+export let demoLang: "en" | "vi" = params.get("lang") === "vi" ? "vi" : "en";
+
 // ?theme=dark|light forces a theme (the landing page is dark).
 const theme = params.get("theme");
 if (theme) document.documentElement.dataset.theme = theme;
@@ -55,6 +58,10 @@ if (params.get("tab")) {
 // The page shows a window: replay what Rust sends when a hotkey fires.
 window.addEventListener("message", ({ data }) => {
   if (!data || data.source !== "quickdesk-page") return;
+  if (data.type === "lang") {
+    demoLang = data.lang === "vi" ? "vi" : "en";
+    emit("ui://language", { pref: demoLang, resolved: demoLang });
+  }
   if (data.type === "show") {
     const now = Date.now();
     emit("window://shown", { sentAtMs: now, shownAtMs: now, tab: data.tab ?? null });

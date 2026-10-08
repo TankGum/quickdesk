@@ -25,13 +25,17 @@
       <span>QuickDesk</span>
     </a>
     <nav class="nav__links" aria-label="Primary">
-      <a href="#notes">Notes</a>
+      <a href="#notes" data-i18n="t0">Notes</a>
       <a href="#clipboard">Clipboard</a>
-      <a href="#ports">Ports</a>
-      <a href="#ai">AI usage</a>
+      <a href="#ports" data-i18n="t1">Ports</a>
+      <a href="#ai" data-i18n="t2">AI usage</a>
       <a href="#faq">FAQ</a>
     </nav>
-    <a href="#download" class="btn btn--primary btn--sm">Download</a>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <button type="button" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <a href="#download" class="btn btn--primary btn--sm" data-i18n="t3">Download</a>
   </div>
 </header>
 
@@ -40,12 +44,12 @@
   <!-- ============ HERO ============ -->
   <section class="hero" id="top">
     <div class="hero__glow" aria-hidden="true"></div>
-    <p class="eyebrow reveal">Free &amp; open source · for Linux</p>
-    <h1 class="hero__title reveal">Your whole desk.<br><span class="grad">One shortcut away.</span></h1>
-    <p class="hero__sub reveal">Encrypted notes, clipboard history, a live port manager and your AI usage limits — summoned instantly with <kbd>Super</kbd> <kbd>Alt</kbd>.</p>
+    <p class="eyebrow reveal" data-i18n="t4">Free &amp; open source · for Linux</p>
+    <h1 class="hero__title reveal" data-i18n="t5">Your whole desk.<br><span class="grad">One shortcut away.</span></h1>
+    <p class="hero__sub reveal" data-i18n="t6">Encrypted notes, clipboard history, a live port manager and your AI usage limits — summoned instantly with <kbd>Super</kbd> <kbd>Alt</kbd>.</p>
     <div class="hero__cta reveal">
-      <a class="btn btn--primary btn--lg" href="#download">Download for Linux</a>
-      <a class="btn btn--link" href="#demo">Try the shortcuts <span aria-hidden="true">›</span></a>
+      <a class="btn btn--primary btn--lg" href="#download" data-i18n="t7">Download for Linux</a>
+      <a class="btn btn--link" href="#demo" data-i18n="t8">Try the shortcuts <span aria-hidden="true">›</span></a>
     </div>
     <p class="hero__meta reveal">v{{VERSION}} · Ubuntu 22.04+ · Debian 12+ · Fedora · x86_64</p>
   </section>
@@ -59,19 +63,19 @@
       <span class="plus">+</span>
       <span class="key key--letter" id="comboLetter">N</span>
     </div>
-    <p class="combo__tray" aria-hidden="true">No shortcut needed — click the ring in the top bar.</p>
+    <p class="combo__tray" aria-hidden="true" data-i18n="t9">No shortcut needed — click the ring in the top bar.</p>
 
     <div class="switcher reveal" role="tablist" aria-label="QuickDesk panels">
-      <button type="button" role="tab" data-mode="notes" aria-selected="false"><b>N</b>Notes</button>
+      <button type="button" role="tab" data-mode="notes" aria-selected="false" data-i18n="t10"><b>N</b>Notes</button>
       <button type="button" role="tab" data-mode="clipboard" aria-selected="false"><b>V</b>Clipboard</button>
-      <button type="button" role="tab" data-mode="ports" aria-selected="false"><b>P</b>Ports</button>
-      <button type="button" role="tab" data-mode="ai" aria-selected="false"><b>A</b>AI usage</button>
+      <button type="button" role="tab" data-mode="ports" aria-selected="false" data-i18n="t11"><b>P</b>Ports</button>
+      <button type="button" role="tab" data-mode="ai" aria-selected="false" data-i18n="t12"><b>A</b>AI usage</button>
     </div>
-    <p class="demo__hint reveal">This is the real app running on sample data. Press <kbd>N</kbd>, <kbd>V</kbd>, <kbd>P</kbd> or <kbd>A</kbd>, then click around. <kbd>Esc</kbd> to close.</p>
+    <p class="demo__hint reveal" data-i18n="t13">This is the real app running on sample data. Press <kbd>N</kbd>, <kbd>V</kbd>, <kbd>P</kbd> or <kbd>A</kbd>, then click around. <kbd>Esc</kbd> to close.</p>
 
     <div class="desktop reveal" id="desktop">
       <div class="desktop__bar">
-        <span class="desktop__activities">Activities</span>
+        <span class="desktop__activities" data-i18n="t14">Activities</span>
         <span class="desktop__clock" id="clock">Tue Oct 7 09:41</span>
         <span class="desktop__sys">
           <!-- QuickDesk's two tray icons, as on a real GNOME top bar -->
@@ -94,7 +98,7 @@
         <i style="--c:#ff7a45"></i><i style="--c:#3a86ff"></i><i style="--c:#8338ec"></i><i style="--c:#2ec4b6"></i><i class="is-qd"><img src="assets/img/favicon.svg" alt=""></i>
       </div>
 
-      <p class="desktop__empty" aria-hidden="true"><span>Press <kbd>N</kbd> <kbd>V</kbd> <kbd>P</kbd> or <kbd>A</kbd></span></p>
+      <p class="desktop__empty" aria-hidden="true" data-i18n="t15"><span>Press <kbd>N</kbd> <kbd>V</kbd> <kbd>P</kbd> or <kbd>A</kbd></span></p>
 
       <div class="desktop__stage">
 
@@ -120,31 +124,31 @@
         <!-- The tray menus are GNOME's own menus; these copy how they look. -->
         <div class="shell-menu shell-menu--app" data-menu="app">
           <ul>
-            <li data-open="note-popup">New Quick Note</li>
-            <li data-open="notes">Notes</li>
-            <li data-open="clipboard">Clipboard History</li>
-            <li data-open="ports">Ports</li>
+            <li data-open="note-popup" data-i18n="t16">New Quick Note</li>
+            <li data-open="notes" data-i18n="t0">Notes</li>
+            <li data-open="clipboard" data-i18n="t17">Clipboard History</li>
+            <li data-open="ports" data-i18n="t1">Ports</li>
             <li class="sep"></li>
-            <li class="check is-on" data-pause>Save Clipboard History</li>
+            <li class="check is-on" data-pause data-i18n="t18">Save Clipboard History</li>
             <li class="sep"></li>
-            <li data-open="main">Open QuickDesk</li>
-            <li data-quit>Quit QuickDesk</li>
+            <li data-open="main" data-i18n="t19">Open QuickDesk</li>
+            <li data-quit data-i18n="t20">Quit QuickDesk</li>
           </ul>
         </div>
 
         <div class="shell-menu shell-menu--ai" data-menu="ai">
           <ul data-tray>
             <li class="head">Claude Pro</li>
-            <li data-limit>5-hour: 42% · resets in 2h 10m</li>
-            <li data-limit>Weekly: 18% · resets in 4d 6h</li>
+            <li data-limit data-i18n="t21">5-hour: 42% · resets in 2h 10m</li>
+            <li data-limit data-i18n="t22">Weekly: 18% · resets in 4d 6h</li>
             <li class="sep"></li>
             <li class="head">Codex Plus</li>
-            <li data-limit>5-hour: 81% · resets in 38m</li>
-            <li data-limit>Weekly: 27% · resets in 5d 2h</li>
+            <li data-limit data-i18n="t23">5-hour: 81% · resets in 38m</li>
+            <li data-limit data-i18n="t24">Weekly: 27% · resets in 5d 2h</li>
             <li class="sep"></li>
-            <li class="sub">Ring Shows</li>
-            <li data-refresh>Refresh Now</li>
-            <li data-limit>Open AI Usage…</li>
+            <li class="sub" data-i18n="t25">Ring Shows</li>
+            <li data-refresh data-i18n="t26">Refresh Now</li>
+            <li data-limit data-i18n="t27">Open AI Usage…</li>
           </ul>
         </div>
 
@@ -158,9 +162,9 @@
     <div class="wrap">
       <header class="feature__head reveal">
         <span class="shortcut"><kbd>Super</kbd><kbd>Alt</kbd><kbd>N</kbd></span>
-        <p class="eyebrow eyebrow--accent">Notes</p>
-        <h2 class="section-title">Write it here.<br>Read it everywhere.</h2>
-        <p class="lead">Jot something down on your desktop and pick it up on your laptop. Notes sync through a storage bucket you own, encrypted on your device before they leave it — no account, no QuickDesk server.</p>
+        <p class="eyebrow eyebrow--accent" data-i18n="t0">Notes</p>
+        <h2 class="section-title" data-i18n="t28">Write it here.<br>Read it everywhere.</h2>
+        <p class="lead" data-i18n="t29">Jot something down on your desktop and pick it up on your laptop. Notes sync through a storage bucket you own, encrypted on your device before they leave it — no account, no QuickDesk server.</p>
       </header>
 
       <div class="sync reveal" data-sync>
@@ -179,9 +183,9 @@
       </div>
 
       <ul class="points reveal">
-        <li><strong>End-to-end encrypted sync</strong><span>Bring your own S3-compatible bucket — Cloudflare R2, AWS S3, MinIO. It only ever stores ciphertext.</span></li>
-        <li><strong>Markdown editor</strong><span>Headings, checklists, quotes and code blocks, with instant search across every note.</span></li>
-        <li><strong>Offline-first</strong><span>Saved on your machine first and synced when you’re back online. Edited on two devices at once? Both versions are kept.</span></li>
+        <li data-i18n="t30"><strong>End-to-end encrypted sync</strong><span>Bring your own S3-compatible bucket — Cloudflare R2, AWS S3, MinIO. It only ever stores ciphertext.</span></li>
+        <li data-i18n="t31"><strong>Markdown editor</strong><span>Headings, checklists, quotes and code blocks, with instant search across every note.</span></li>
+        <li data-i18n="t32"><strong>Offline-first</strong><span>Saved on your machine first and synced when you’re back online. Edited on two devices at once? Both versions are kept.</span></li>
       </ul>
     </div>
   </section>
@@ -192,21 +196,21 @@
       <header class="feature__head reveal">
         <span class="shortcut"><kbd>Super</kbd><kbd>Alt</kbd><kbd>V</kbd></span>
         <p class="eyebrow eyebrow--accent">Clipboard</p>
-        <h2 class="section-title">Copy now.<br>Paste whenever.</h2>
-        <p class="lead">Everything you copy — text, screenshots, files from your file manager — lands in a searchable history. Pick an entry and QuickDesk pastes it straight into the app you were using.</p>
+        <h2 class="section-title" data-i18n="t33">Copy now.<br>Paste whenever.</h2>
+        <p class="lead" data-i18n="t34">Everything you copy — text, screenshots, files from your file manager — lands in a searchable history. Pick an entry and QuickDesk pastes it straight into the app you were using.</p>
       </header>
 
       <div class="stack reveal" aria-hidden="true">
-        <div class="card card--img"><span class="card__type">Image</span><div class="card__thumb"></div><span class="card__meta">1280×720 · 184 KB</span></div>
+        <div class="card card--img"><span class="card__type" data-i18n="t35">Image</span><div class="card__thumb"></div><span class="card__meta">1280×720 · 184 KB</span></div>
         <div class="card"><span class="card__type">Files</span><ul class="card__files"><li>📄 release-notes.pdf</li><li>🖼️ mockup.png</li><li>📁 assets</li></ul><span class="card__meta">~/Projects/quickdesk</span></div>
-        <div class="card"><span class="card__type">Text</span><p class="card__text">Họp dời sang 15:30, phòng 4B</p><span class="card__meta">12 min ago · copied 3×</span></div>
-        <div class="card card--top"><span class="card__type">Pinned</span><code>docker compose up -d --build</code><span class="card__meta">Pinned · never removed automatically</span><span class="card__pin">★</span></div>
+        <div class="card"><span class="card__type" data-i18n="t36">Text</span><p class="card__text">Họp dời sang 15:30, phòng 4B</p><span class="card__meta" data-i18n="t37">12 min ago · copied 3×</span></div>
+        <div class="card card--top"><span class="card__type" data-i18n="t38">Pinned</span><code>docker compose up -d --build</code><span class="card__meta" data-i18n="t39">Pinned · never removed automatically</span><span class="card__pin">★</span></div>
       </div>
 
       <ul class="points reveal">
-        <li><strong>Search that understands you</strong><span>Accent-insensitive: type <code>hop doi</code> to find “Họp dời”. Filter by text, images or files.</span></li>
-        <li><strong>Paste where you were</strong><span>Enter pastes into the previous app — terminals included. Pin the snippets you use every day.</span></li>
-        <li><strong>Private by design</strong><span>Stays on this device and never syncs. Password-manager copies are skipped, and you can pause saving anytime.</span></li>
+        <li data-i18n="t40"><strong>Search that understands you</strong><span>Accent-insensitive: type <code>hop doi</code> to find “Họp dời”. Filter by text, images or files.</span></li>
+        <li data-i18n="t41"><strong>Paste where you were</strong><span>Enter pastes into the previous app — terminals included. Pin the snippets you use every day.</span></li>
+        <li data-i18n="t42"><strong>Private by design</strong><span>Stays on this device and never syncs. Password-manager copies are skipped, and you can pause saving anytime.</span></li>
       </ul>
     </div>
   </section>
@@ -216,9 +220,9 @@
     <div class="wrap">
       <header class="feature__head reveal">
         <span class="shortcut"><kbd>Super</kbd><kbd>Alt</kbd><kbd>P</kbd></span>
-        <p class="eyebrow eyebrow--accent">Ports</p>
-        <h2 class="section-title">“Port 3000 is already in use.”<br>Not anymore.</h2>
-        <p class="lead">See every port listening on your machine, which process or Docker container owns it, and free it in one click. No more <code>lsof -i :3000</code> and <code>kill -9</code>.</p>
+        <p class="eyebrow eyebrow--accent" data-i18n="t1">Ports</p>
+        <h2 class="section-title" data-i18n="t43">“Port 3000 is already in use.”<br>Not anymore.</h2>
+        <p class="lead" data-i18n="t44">See every port listening on your machine, which process or Docker container owns it, and free it in one click. No more <code>lsof -i :3000</code> and <code>kill -9</code>.</p>
       </header>
 
       <div class="story reveal" data-story>
@@ -227,18 +231,18 @@
           <pre class="term__body" data-story-term></pre>
         </div>
         <div class="mini-panel">
-          <div class="mini-panel__head"><span>Ports</span><span class="shortcut shortcut--sm"><kbd>Super</kbd><kbd>Alt</kbd><kbd>P</kbd></span></div>
+          <div class="mini-panel__head"><span data-i18n="t1">Ports</span><span class="shortcut shortcut--sm"><kbd>Super</kbd><kbd>Alt</kbd><kbd>P</kbd></span></div>
           <div class="ports__row ports__row--story" data-story-row><span class="port">3000</span><span>node <em>vite</em></span><span>48211</span><span class="ports__act"><button type="button" class="mini mini--danger mini--pulse" data-story-kill>Kill</button></span></div>
           <div class="ports__row ports__row--story"><span class="port">5432</span><span>🐳 postgres-dev</span><span>—</span><span></span></div>
           <div class="ports__row ports__row--story"><span class="port">6379</span><span>redis-server</span><span>1187</span><span></span></div>
-          <button type="button" class="btn btn--link story__replay" data-story-replay>Replay <span aria-hidden="true">↺</span></button>
+          <button type="button" class="btn btn--link story__replay" data-story-replay data-i18n="t45">Replay <span aria-hidden="true">↺</span></button>
         </div>
       </div>
 
       <ul class="points reveal">
-        <li><strong>Every listening TCP port</strong><span>IPv4 and IPv6, with the full command line. Filter by port, PID, process or container.</span></li>
-        <li><strong>Docker-aware</strong><span>Published ports show the container and image, and stop the container instead of killing <code>docker-proxy</code>.</span></li>
-        <li><strong>Kill safely</strong><span>Asks first, stops politely, and offers a force kill only if the process refuses to quit.</span></li>
+        <li data-i18n="t46"><strong>Every listening TCP port</strong><span>IPv4 and IPv6, with the full command line. Filter by port, PID, process or container.</span></li>
+        <li data-i18n="t47"><strong>Docker-aware</strong><span>Published ports show the container and image, and stop the container instead of killing <code>docker-proxy</code>.</span></li>
+        <li data-i18n="t48"><strong>Kill safely</strong><span>Asks first, stops politely, and offers a force kill only if the process refuses to quit.</span></li>
       </ul>
     </div>
   </section>
@@ -247,10 +251,10 @@
   <section class="feature" id="ai" style="--accent: var(--ai)">
     <div class="wrap">
       <header class="feature__head reveal">
-        <span class="shortcut"><kbd>Top bar</kbd><kbd>◔</kbd></span>
-        <p class="eyebrow eyebrow--accent">AI usage</p>
-        <h2 class="section-title">Know your AI limits.<br>Before you hit them.</h2>
-        <p class="lead">A small ring in the top bar shows how much of your Claude Code and Codex limits you’ve used, and when they reset — so you’re never cut off in the middle of a task.</p>
+        <span class="shortcut" data-i18n="t49"><kbd>Top bar</kbd><kbd>◔</kbd></span>
+        <p class="eyebrow eyebrow--accent" data-i18n="t2">AI usage</p>
+        <h2 class="section-title" data-i18n="t50">Know your AI limits.<br>Before you hit them.</h2>
+        <p class="lead" data-i18n="t51">A small ring in the top bar shows how much of your Claude Code and Codex limits you’ve used, and when they reset — so you’re never cut off in the middle of a task.</p>
       </header>
 
       <!-- The real AI tab, same as the demo above. -->
@@ -270,9 +274,9 @@
       </div>
 
       <ul class="points reveal">
-        <li><strong>Live for Claude Code</strong><span>Reuses the login Claude Code already has on this machine. Checked every 5 minutes, sent only to Anthropic.</span></li>
-        <li><strong>Codex &amp; Antigravity</strong><span>Read from the logs these tools keep on your computer. Nothing leaves your machine.</span></li>
-        <li><strong>Your ring, your choice</strong><span>Let it follow whichever 5-hour limit is highest, pin it to one limit, or hide it.</span></li>
+        <li data-i18n="t52"><strong>Live for Claude Code</strong><span>Reuses the login Claude Code already has on this machine. Checked every 5 minutes, sent only to Anthropic.</span></li>
+        <li data-i18n="t53"><strong>Codex &amp; Antigravity</strong><span>Read from the logs these tools keep on your computer. Nothing leaves your machine.</span></li>
+        <li data-i18n="t54"><strong>Your ring, your choice</strong><span>Let it follow whichever 5-hour limit is highest, pin it to one limit, or hide it.</span></li>
       </ul>
     </div>
   </section>
@@ -280,37 +284,37 @@
   <!-- ============ BENTO ============ -->
   <section class="bento-section">
     <div class="wrap">
-      <h2 class="section-title center reveal">Built for the keyboard.<br><span class="muted">Made for Linux.</span></h2>
+      <h2 class="section-title center reveal" data-i18n="t55">Built for the keyboard.<br><span class="muted">Made for Linux.</span></h2>
       <div class="bento">
         <article class="tile tile--wide reveal">
           <div class="tile__keys" aria-hidden="true"><kbd>Super</kbd><kbd>Alt</kbd><kbd class="k-n">N</kbd><kbd class="k-v">V</kbd><kbd class="k-p">P</kbd></div>
-          <h3>Keyboard-first</h3>
-          <p>Open, search, paste, pin — every everyday action has a key. Your hands never leave the keyboard.</p>
+          <h3 data-i18n="t56">Keyboard-first</h3>
+          <p data-i18n="t57">Open, search, paste, pin — every everyday action has a key. Your hands never leave the keyboard.</p>
         </article>
         <article class="tile reveal">
           <div class="tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
-          <h3>Always ready</h3>
-          <p>Starts with your session, waits in the tray, and pops up the moment you press a shortcut.</p>
+          <h3 data-i18n="t58">Always ready</h3>
+          <p data-i18n="t59">Starts with your session, waits in the tray, and pops up the moment you press a shortcut.</p>
         </article>
         <article class="tile reveal">
           <div class="tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></div>
-          <h3>Local-first</h3>
-          <p>Everything lives on your machine. Only notes sync — encrypted, to storage you own.</p>
+          <h3 data-i18n="t60">Local-first</h3>
+          <p data-i18n="t61">Everything lives on your machine. Only notes sync — encrypted, to storage you own.</p>
         </article>
         <article class="tile reveal">
           <div class="tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-          <h3>Instant search</h3>
-          <p>Full-text search across notes and clipboard, with or without accents.</p>
+          <h3 data-i18n="t62">Instant search</h3>
+          <p data-i18n="t63">Full-text search across notes and clipboard, with or without accents.</p>
         </article>
         <article class="tile reveal">
           <div class="tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 10h.01M9.5 10h.01M13 10h.01M16.5 10h.01M8 14h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-          <h3>Rebind anything</h3>
-          <p>Pick your own shortcuts. QuickDesk warns you when one clashes with GNOME or your input method.</p>
+          <h3 data-i18n="t64">Rebind anything</h3>
+          <p data-i18n="t65">Pick your own shortcuts. QuickDesk warns you when one clashes with GNOME or your input method.</p>
         </article>
         <article class="tile tile--wide reveal">
           <div class="tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg></div>
-          <h3>Light &amp; dark · English &amp; Tiếng Việt</h3>
-          <p>Follows your system theme and language, or pick one yourself in Settings.</p>
+          <h3 data-i18n="t66">Light &amp; dark · English &amp; Tiếng Việt</h3>
+          <p data-i18n="t67">Follows your system theme and language, or pick one yourself in Settings.</p>
         </article>
       </div>
     </div>
@@ -322,8 +326,8 @@
     <div class="wrap">
       <div class="download__head reveal">
         <img src="assets/img/favicon.svg" alt="" width="88" height="88" class="download__logo">
-        <h2 class="section-title center">Ready when you are.</h2>
-        <p class="lead center">QuickDesk {{VERSION}} for Linux · released {{DATE}}. Free and open source.</p>
+        <h2 class="section-title center" data-i18n="t68">Ready when you are.</h2>
+        <p class="lead center" data-i18n="t69">QuickDesk {{VERSION}} for Linux · released {{DATE}}. Free and open source.</p>
       </div>
 
       <div class="dl-grid">
@@ -333,7 +337,7 @@
           </div>
           <h3>.deb</h3>
           <p>Ubuntu 22.04+, Debian 12+, Linux Mint, Pop!_OS.</p>
-          <a class="btn btn--primary" href="{{DEB_URL}}" download>Download .deb</a>
+          <a class="btn btn--primary" href="{{DEB_URL}}" download data-i18n="t71">Download .deb</a>
           <span class="dl-card__meta">v{{VERSION}} · amd64 · {{DEB_SIZE}}</span>
         </article>
         <article class="dl-card reveal">
@@ -341,8 +345,8 @@
             <svg viewBox="0 0 24 24"><path d="M12 2 3 6.5v11L12 22l9-4.5v-11z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
           </div>
           <h3>.rpm</h3>
-          <p>Fedora and other RPM-based distros.</p>
-          <a class="btn btn--secondary" href="{{RPM_URL}}" download>Download .rpm</a>
+          <p data-i18n="t72">Fedora and other RPM-based distros.</p>
+          <a class="btn btn--secondary" href="{{RPM_URL}}" download data-i18n="t73">Download .rpm</a>
           <span class="dl-card__meta">v{{VERSION}} · x86_64 · {{RPM_SIZE}}</span>
         </article>
         <article class="dl-card reveal">
@@ -350,8 +354,8 @@
             <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 8v7m-3-3 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <h3>AppImage</h3>
-          <p>Portable — runs on most distros, no install needed.</p>
-          <a class="btn btn--secondary" href="{{APPIMAGE_URL}}" download>Download AppImage</a>
+          <p data-i18n="t74">Portable — runs on most distros, no install needed.</p>
+          <a class="btn btn--secondary" href="{{APPIMAGE_URL}}" download data-i18n="t75">Download AppImage</a>
           <span class="dl-card__meta">v{{VERSION}} · x86_64 · {{APPIMAGE_SIZE}}</span>
         </article>
       </div>
@@ -359,10 +363,10 @@
       <div class="terminal reveal">
         <div class="terminal__bar">
           <span class="terminal__dots" aria-hidden="true"><i></i><i></i><i></i></span>
-          <span class="terminal__title">Install from the terminal</span>
+          <span class="terminal__title" data-i18n="t76">Install from the terminal</span>
           <button type="button" class="terminal__copy" data-copy="sudo apt install ./QuickDesk_{{VERSION}}_amd64.deb">Copy</button>
         </div>
-<pre><code><span class="c"># Ubuntu / Debian, after downloading the .deb</span>
+<pre><code><span class="c" data-i18n="t78"># Ubuntu / Debian, after downloading the .deb</span>
 <span class="p">$</span> sudo apt install ./QuickDesk_{{VERSION}}_amd64.deb
 <span class="c"># Fedora</span>
 <span class="p">$</span> sudo dnf install ./QuickDesk-{{VERSION}}-1.x86_64.rpm
@@ -370,7 +374,7 @@
 <span class="p">$</span> chmod +x QuickDesk_{{VERSION}}_amd64.AppImage &amp;&amp; ./QuickDesk_{{VERSION}}_amd64.AppImage</code></pre>
       </div>
 
-      <p class="soon reveal">Then open QuickDesk from your app menu — it lives in the top bar.<br>
+      <p class="soon reveal" data-i18n="t79">Then open QuickDesk from your app menu — it lives in the top bar.<br>
         <a class="btn--link" href="releases/{{VERSION}}/SHA256SUMS">SHA-256 checksums</a> · <a class="btn--link" href="https://github.com/TankGum/quickdesk">Source on GitHub</a> · Windows and macOS versions are planned.</p>
     </div>
   </section>
@@ -378,47 +382,47 @@
   <!-- ============ FAQ ============ -->
   <section class="faq" id="faq">
     <div class="wrap wrap--narrow">
-      <h2 class="section-title center reveal">Questions?</h2>
+      <h2 class="section-title center reveal" data-i18n="t80">Questions?</h2>
       <div class="faq__list">
         <details class="reveal">
-          <summary>Which Linux distributions are supported?</summary>
-          <p>Any x86_64 distro from the last few years: Ubuntu 22.04 and newer, Debian 12, Fedora, Linux Mint and the like. QuickDesk works best on GNOME, where it registers its shortcuts for you. On other desktops, bind <code>quickdesk toggle notes</code>, <code>clipboard</code> or <code>ports</code> to a key in your desktop’s keyboard settings.</p>
+          <summary data-i18n="t81">Which Linux distributions are supported?</summary>
+          <p data-i18n="t82">Any x86_64 distro from the last few years: Ubuntu 22.04 and newer, Debian 12, Fedora, Linux Mint and the like. QuickDesk works best on GNOME, where it registers its shortcuts for you. On other desktops, bind <code>quickdesk toggle notes</code>, <code>clipboard</code> or <code>ports</code> to a key in your desktop’s keyboard settings.</p>
         </details>
         <details class="reveal">
-          <summary>Do the shortcuts work on Wayland?</summary>
-          <p>Yes. QuickDesk adds them to GNOME’s custom keyboard shortcuts, so they work in both X11 and Wayland sessions, and removes them again when it quits.</p>
+          <summary data-i18n="t83">Do the shortcuts work on Wayland?</summary>
+          <p data-i18n="t84">Yes. QuickDesk adds them to GNOME’s custom keyboard shortcuts, so they work in both X11 and Wayland sessions, and removes them again when it quits.</p>
         </details>
         <details class="reveal">
-          <summary>Why Super + Alt and not Super + Shift?</summary>
-          <p>Vietnamese input methods such as Unikey and Bamboo swallow Super + Shift + letter while you type in a text field; combinations with Alt keep working. You can rebind any shortcut in Settings → Hotkeys, and QuickDesk tells you if one is already taken.</p>
+          <summary data-i18n="t85">Why Super + Alt and not Super + Shift?</summary>
+          <p data-i18n="t86">Vietnamese input methods such as Unikey and Bamboo swallow Super + Shift + letter while you type in a text field; combinations with Alt keep working. You can rebind any shortcut in Settings → Hotkeys, and QuickDesk tells you if one is already taken.</p>
         </details>
         <details class="reveal">
-          <summary>How do notes sync between machines?</summary>
-          <p>There is no QuickDesk account or server. You connect each machine to the same S3-compatible bucket you own — Cloudflare R2’s free tier is plenty — and enter the same passphrase. The first machine also gives you a recovery key. After that notes sync in the background, offline edits catch up when you reconnect, and if a note was edited on two machines at once, the other version is kept as a copy.</p>
+          <summary data-i18n="t87">How do notes sync between machines?</summary>
+          <p data-i18n="t88">There is no QuickDesk account or server. You connect each machine to the same S3-compatible bucket you own — Cloudflare R2’s free tier is plenty — and enter the same passphrase. The first machine also gives you a recovery key. After that notes sync in the background, offline edits catch up when you reconnect, and if a note was edited on two machines at once, the other version is kept as a copy.</p>
         </details>
         <details class="reveal">
-          <summary>Is my data encrypted?</summary>
-          <p>Notes are encrypted on your device (XChaCha20-Poly1305, with a key derived from your passphrase using Argon2id) before upload, so the storage provider only ever sees ciphertext. The bucket’s secret key is kept in your system keyring. Clipboard history and port data never leave your machine.</p>
+          <summary data-i18n="t89">Is my data encrypted?</summary>
+          <p data-i18n="t90">Notes are encrypted on your device (XChaCha20-Poly1305, with a key derived from your passphrase using Argon2id) before upload, so the storage provider only ever sees ciphertext. The bucket’s secret key is kept in your system keyring. Clipboard history and port data never leave your machine.</p>
         </details>
         <details class="reveal">
-          <summary>Is my clipboard history uploaded anywhere?</summary>
-          <p>No. It stays on this device and never syncs. Copies that password managers mark as secret are skipped, and you can pause saving for 15 minutes, an hour or until you turn it back on. QuickDesk keeps the latest 1,000 entries (pinned ones are kept forever) and images up to 10 MB each. Clear it anytime.</p>
+          <summary data-i18n="t91">Is my clipboard history uploaded anywhere?</summary>
+          <p data-i18n="t92">No. It stays on this device and never syncs. Copies that password managers mark as secret are skipped, and you can pause saving for 15 minutes, an hour or until you turn it back on. QuickDesk keeps the latest 1,000 entries (pinned ones are kept forever) and images up to 10 MB each. Clear it anytime.</p>
         </details>
         <details class="reveal">
-          <summary>How does auto-paste work?</summary>
-          <p>When you pick an entry, QuickDesk switches back to the app you were using and presses Shift + Insert, which also works in terminals. By default it does this through GNOME’s remote-desktop portal, which asks for permission once. You can instead enable instant paste through a virtual keyboard in Settings → Auto-paste (asks for your administrator password once), or turn auto-paste off and just copy.</p>
+          <summary data-i18n="t93">How does auto-paste work?</summary>
+          <p data-i18n="t94">When you pick an entry, QuickDesk switches back to the app you were using and presses Shift + Insert, which also works in terminals. By default it does this through GNOME’s remote-desktop portal, which asks for permission once. You can instead enable instant paste through a virtual keyboard in Settings → Auto-paste (asks for your administrator password once), or turn auto-paste off and just copy.</p>
         </details>
         <details class="reveal">
-          <summary>What does the AI usage ring read?</summary>
-          <p>For Claude Code, QuickDesk reads the login Claude Code already saved on your machine and asks Anthropic for your usage, at most every 5 minutes. The token is only read — never stored, refreshed or sent anywhere except Anthropic. Codex and Antigravity numbers come from the log files those tools keep on your computer.</p>
+          <summary data-i18n="t95">What does the AI usage ring read?</summary>
+          <p data-i18n="t96">For Claude Code, QuickDesk reads the login Claude Code already saved on your machine and asks Anthropic for your usage, at most every 5 minutes. The token is only read — never stored, refreshed or sent anywhere except Anthropic. Codex and Antigravity numbers come from the log files those tools keep on your computer.</p>
         </details>
         <details class="reveal">
-          <summary>Is QuickDesk free?</summary>
-          <p>Yes. QuickDesk is free and open source under the MIT license. The source code is on <a class="btn--link" href="https://github.com/TankGum/quickdesk">GitHub</a>.</p>
+          <summary data-i18n="t97">Is QuickDesk free?</summary>
+          <p data-i18n="t98">Yes. QuickDesk is free and open source under the MIT license. The source code is on <a class="btn--link" href="https://github.com/TankGum/quickdesk">GitHub</a>.</p>
         </details>
         <details class="reveal">
-          <summary>How do I uninstall it?</summary>
-          <p>Turn off “Start QuickDesk when I log in” in Settings, quit from the tray, then run <code>sudo apt remove quick-desk</code> (Debian/Ubuntu) or <code>sudo dnf remove QuickDesk</code> (Fedora), or just delete the AppImage. Your notes and clipboard history stay in <code>~/.local/share/io.github.tankgum.quickdesk</code> until you delete that folder.</p>
+          <summary data-i18n="t99">How do I uninstall it?</summary>
+          <p data-i18n="t100">Turn off “Start QuickDesk when I log in” in Settings, quit from the tray, then run <code>sudo apt remove quick-desk</code> (Debian/Ubuntu) or <code>sudo dnf remove QuickDesk</code> (Fedora), or just delete the AppImage. Your notes and clipboard history stay in <code>~/.local/share/io.github.tankgum.quickdesk</code> until you delete that folder.</p>
         </details>
       </div>
     </div>
@@ -434,18 +438,125 @@
       <span>QuickDesk</span>
     </a>
     <nav class="footer__links" aria-label="Footer">
-      <a href="#notes">Notes</a>
+      <a href="#notes" data-i18n="t0">Notes</a>
       <a href="#clipboard">Clipboard</a>
-      <a href="#ports">Ports</a>
-      <a href="#ai">AI usage</a>
-      <a href="#download">Download</a>
+      <a href="#ports" data-i18n="t1">Ports</a>
+      <a href="#ai" data-i18n="t2">AI usage</a>
+      <a href="#download" data-i18n="t3">Download</a>
       <a href="#faq">FAQ</a>
       <a href="https://github.com/TankGum/quickdesk">GitHub</a>
     </nav>
-    <p class="footer__copy">© <span id="year">2026</span> QuickDesk · MIT License. Made for Linux, with care.</p>
+    <p class="footer__copy" data-i18n="t101">© <span id="year">2026</span> QuickDesk · MIT License. Made for Linux, with care.</p>
   </div>
 </footer>
 
+<!-- Vietnamese for every data-i18n element (English stays in the markup). -->
+<script type="application/json" id="i18n-vi">
+{
+"t0": "Ghi chú",
+"t1": "Cổng",
+"t2": "Usage AI",
+"t3": "Tải về",
+"t4": "Miễn phí &amp; mã nguồn mở · cho Linux",
+"t5": "Cả bàn làm việc.<br><span class=\"grad\">Chỉ cách một phím tắt.</span>",
+"t6": "Ghi chú mã hoá, lịch sử clipboard, trình quản lý cổng và hạn mức AI của bạn — gọi ra tức thì bằng <kbd>Super</kbd> <kbd>Alt</kbd>.",
+"t7": "Tải cho Linux",
+"t8": "Thử phím tắt <span aria-hidden=\"true\">›</span>",
+"t9": "Không cần phím tắt — bấm vào vòng tròn trên thanh trên cùng.",
+"t10": "<b>N</b>Ghi chú",
+"t11": "<b>P</b>Cổng",
+"t12": "<b>A</b>Usage AI",
+"t13": "Đây là app thật, chạy với dữ liệu mẫu. Bấm <kbd>N</kbd>, <kbd>V</kbd>, <kbd>P</kbd> hoặc <kbd>A</kbd> rồi bấm thử mọi thứ. <kbd>Esc</kbd> để đóng.",
+"t14": "Hoạt động",
+"t15": "<span>Bấm <kbd>N</kbd> <kbd>V</kbd> <kbd>P</kbd> hoặc <kbd>A</kbd></span>",
+"t16": "Ghi chú nhanh mới",
+"t17": "Lịch sử clipboard",
+"t18": "Lưu lịch sử clipboard",
+"t19": "Mở QuickDesk",
+"t20": "Thoát QuickDesk",
+"t21": "5 giờ: 42% · đặt lại sau 2 giờ 10 phút",
+"t22": "Tuần: 18% · đặt lại sau 4 ngày 6 giờ",
+"t23": "5 giờ: 81% · đặt lại sau 38 phút",
+"t24": "Tuần: 27% · đặt lại sau 5 ngày 2 giờ",
+"t25": "Vòng tròn hiển thị",
+"t26": "Làm mới ngay",
+"t27": "Mở trang AI…",
+"t28": "Viết ở đây.<br>Đọc ở mọi nơi.",
+"t29": "Ghi nhanh trên máy bàn, mở lại trên laptop. Ghi chú đồng bộ qua bucket lưu trữ của chính bạn và được mã hoá ngay trên máy trước khi gửi đi — không tài khoản, không server QuickDesk.",
+"t30": "<strong>Đồng bộ mã hoá đầu-cuối</strong><span>Dùng bucket tương thích S3 của bạn — Cloudflare R2, AWS S3, MinIO. Nơi lưu chỉ thấy dữ liệu đã mã hoá.</span>",
+"t31": "<strong>Trình soạn Markdown</strong><span>Tiêu đề, checklist, trích dẫn và khối code, tìm kiếm tức thì trong mọi ghi chú.</span>",
+"t32": "<strong>Ưu tiên ngoại tuyến</strong><span>Lưu trên máy trước, đồng bộ khi có mạng lại. Sửa cùng lúc trên hai máy? Cả hai bản đều được giữ.</span>",
+"t33": "Copy bây giờ.<br>Dán lúc nào cũng được.",
+"t34": "Mọi thứ bạn copy — chữ, ảnh chụp màn hình, file từ trình quản lý file — đều vào một lịch sử tìm kiếm được. Chọn một mục là QuickDesk dán ngay vào app bạn đang dùng.",
+"t35": "Ảnh",
+"t36": "Chữ",
+"t37": "12 phút trước · đã copy 3 lần",
+"t38": "Đã ghim",
+"t39": "Đã ghim · không bao giờ bị tự xoá",
+"t40": "<strong>Tìm kiếm hiểu tiếng Việt</strong><span>Không cần gõ dấu: gõ <code>hop doi</code> vẫn ra “Họp dời”. Lọc theo chữ, ảnh hoặc file.</span>",
+"t41": "<strong>Dán đúng chỗ đang gõ</strong><span>Enter là dán vào app trước đó — kể cả terminal. Ghim những đoạn bạn dùng hằng ngày.</span>",
+"t42": "<strong>Riêng tư từ thiết kế</strong><span>Chỉ nằm trên máy này, không bao giờ đồng bộ. Bỏ qua mục copy từ trình quản lý mật khẩu, và bạn có thể tạm dừng lưu bất cứ lúc nào.</span>",
+"t43": "“Port 3000 is already in use.”<br>Hết rồi nhé.",
+"t44": "Xem mọi cổng đang mở trên máy, tiến trình hay container Docker nào đang giữ, và giải phóng chỉ với một cú bấm. Không cần <code>lsof -i :3000</code> rồi <code>kill -9</code> nữa.",
+"t45": "Xem lại <span aria-hidden=\"true\">↺</span>",
+"t46": "<strong>Mọi cổng TCP đang lắng nghe</strong><span>IPv4 và IPv6, kèm đầy đủ dòng lệnh. Lọc theo cổng, PID, tiến trình hoặc container.</span>",
+"t47": "<strong>Hiểu Docker</strong><span>Cổng do container mở hiện tên container và image, và dừng đúng container thay vì kill <code>docker-proxy</code>.</span>",
+"t48": "<strong>Dừng an toàn</strong><span>Hỏi trước, dừng nhẹ nhàng, chỉ đề nghị force kill khi tiến trình không chịu thoát.</span>",
+"t49": "<kbd>Thanh trên cùng</kbd><kbd>◔</kbd>",
+"t50": "Biết hạn mức AI.<br>Trước khi chạm trần.",
+"t51": "Một vòng tròn nhỏ trên thanh trên cùng cho biết bạn đã dùng bao nhiêu hạn mức Claude Code và Codex, và khi nào được đặt lại — để không bị cắt ngang giữa chừng.",
+"t52": "<strong>Trực tiếp cho Claude Code</strong><span>Dùng lại phiên đăng nhập Claude Code có sẵn trên máy. Kiểm tra mỗi 5 phút, chỉ gửi tới Anthropic.</span>",
+"t53": "<strong>Codex &amp; Antigravity</strong><span>Đọc từ log mà các công cụ này lưu trên máy bạn. Không có gì rời khỏi máy.</span>",
+"t54": "<strong>Vòng tròn theo ý bạn</strong><span>Tự theo hạn mức 5 giờ cao nhất, cố định vào một hạn mức, hoặc ẩn đi.</span>",
+"t55": "Sinh ra cho bàn phím.<br><span class=\"muted\">Làm cho Linux.</span>",
+"t56": "Bàn phím là trên hết",
+"t57": "Mở, tìm, dán, ghim — thao tác hằng ngày nào cũng có phím. Tay không cần rời bàn phím.",
+"t58": "Luôn sẵn sàng",
+"t59": "Khởi động cùng máy, chờ trên khay hệ thống và hiện ra ngay khi bạn bấm phím tắt.",
+"t60": "Ưu tiên trên máy",
+"t61": "Mọi thứ nằm trên máy bạn. Chỉ ghi chú được đồng bộ — đã mã hoá, tới nơi lưu của chính bạn.",
+"t62": "Tìm kiếm tức thì",
+"t63": "Tìm toàn văn trong ghi chú và clipboard, có dấu hay không dấu đều được.",
+"t64": "Đổi phím tuỳ ý",
+"t65": "Tự chọn phím tắt. QuickDesk cảnh báo khi phím trùng với GNOME hoặc bộ gõ.",
+"t66": "Sáng &amp; tối · Tiếng Việt &amp; English",
+"t67": "Theo giao diện và ngôn ngữ của hệ thống, hoặc tự chọn trong Cài đặt.",
+"t68": "Sẵn sàng khi bạn cần.",
+"t69": "QuickDesk {{VERSION}} cho Linux · phát hành {{DATE}}. Miễn phí và mã nguồn mở.",
+"t71": "Tải .deb",
+"t72": "Fedora và các distro dùng RPM.",
+"t73": "Tải .rpm",
+"t74": "Chạy ngay trên hầu hết distro, không cần cài.",
+"t75": "Tải AppImage",
+"t76": "Cài bằng terminal",
+"t78": "# Ubuntu / Debian, sau khi tải file .deb",
+"t79": "Sau đó mở QuickDesk từ menu ứng dụng — app nằm trên thanh trên cùng.<br>\n        <a class=\"btn--link\" href=\"releases/{{VERSION}}/SHA256SUMS\">Mã kiểm tra SHA-256</a> · <a class=\"btn--link\" href=\"https://github.com/TankGum/quickdesk\">Mã nguồn trên GitHub</a> · Bản cho Windows và macOS đang được lên kế hoạch.",
+"t80": "Câu hỏi thường gặp",
+"t81": "Hỗ trợ những bản Linux nào?",
+"t82": "Mọi distro x86_64 trong vài năm gần đây: Ubuntu 22.04 trở lên, Debian 12, Fedora, Linux Mint… QuickDesk chạy tốt nhất trên GNOME, nơi app tự đăng ký phím tắt. Trên desktop khác, hãy gán <code>quickdesk toggle notes</code>, <code>clipboard</code> hoặc <code>ports</code> vào một phím trong cài đặt bàn phím.",
+"t83": "Phím tắt có chạy trên Wayland không?",
+"t84": "Có. QuickDesk thêm chúng vào phím tắt tuỳ chỉnh của GNOME nên chạy được cả X11 lẫn Wayland, và gỡ đi khi thoát app.",
+"t85": "Sao lại là Super + Alt mà không phải Super + Shift?",
+"t86": "Bộ gõ tiếng Việt như Unikey, Bamboo nuốt mất Super + Shift + chữ khi bạn đang gõ trong ô nhập; tổ hợp có Alt thì vẫn chạy. Bạn có thể đổi mọi phím tắt trong Cài đặt → Phím tắt, và QuickDesk sẽ báo nếu phím đã bị dùng.",
+"t87": "Ghi chú đồng bộ giữa các máy thế nào?",
+"t88": "Không có tài khoản hay server QuickDesk. Bạn kết nối mỗi máy vào cùng một bucket tương thích S3 của mình — gói miễn phí của Cloudflare R2 là đủ — và nhập cùng một passphrase. Máy đầu tiên còn cho bạn một recovery key. Sau đó ghi chú tự đồng bộ trong nền, chỉnh sửa lúc mất mạng sẽ được gửi khi có mạng lại, và nếu một ghi chú bị sửa cùng lúc trên hai máy thì bản còn lại được giữ thành bản sao.",
+"t89": "Dữ liệu có được mã hoá không?",
+"t90": "Ghi chú được mã hoá ngay trên máy (XChaCha20-Poly1305, khoá sinh từ passphrase bằng Argon2id) trước khi tải lên, nên nhà cung cấp lưu trữ chỉ thấy dữ liệu đã mã hoá. Secret key của bucket được giữ trong keyring của hệ thống. Lịch sử clipboard và dữ liệu cổng không bao giờ rời khỏi máy.",
+"t91": "Lịch sử clipboard có bị tải lên đâu không?",
+"t92": "Không. Nó chỉ nằm trên máy này và không bao giờ đồng bộ. Mục copy được trình quản lý mật khẩu đánh dấu bí mật sẽ bị bỏ qua, và bạn có thể tạm dừng lưu 15 phút, 1 giờ hoặc tới khi bật lại. QuickDesk giữ 1.000 mục gần nhất (mục đã ghim được giữ mãi) và ảnh tối đa 10 MB mỗi ảnh. Xoá lúc nào cũng được.",
+"t93": "Tự động dán hoạt động thế nào?",
+"t94": "Khi bạn chọn một mục, QuickDesk quay lại app bạn đang dùng và bấm Shift + Insert — cách này chạy được cả trong terminal. Mặc định app làm việc này qua portal remote desktop của GNOME, chỉ hỏi quyền một lần. Bạn cũng có thể bật dán tức thì qua bàn phím ảo trong Cài đặt → Tự động dán (hỏi mật khẩu quản trị một lần), hoặc tắt tự động dán và chỉ copy.",
+"t95": "Vòng tròn usage AI đọc những gì?",
+"t96": "Với Claude Code, QuickDesk đọc phiên đăng nhập Claude Code đã lưu trên máy và hỏi Anthropic số liệu usage, tối đa mỗi 5 phút một lần. Token chỉ được đọc — không lưu lại, không làm mới và không gửi đi đâu ngoài Anthropic. Số liệu Codex và Antigravity lấy từ file log mà các công cụ đó lưu trên máy bạn.",
+"t97": "QuickDesk có miễn phí không?",
+"t98": "Có. QuickDesk miễn phí và mã nguồn mở theo giấy phép MIT. Mã nguồn nằm trên <a class=\"btn--link\" href=\"https://github.com/TankGum/quickdesk\">GitHub</a>.",
+"t99": "Gỡ cài đặt thế nào?",
+"t100": "Tắt “Tự chạy QuickDesk khi đăng nhập” trong Cài đặt, thoát app từ khay hệ thống, rồi chạy <code>sudo apt remove quick-desk</code> (Debian/Ubuntu) hoặc <code>sudo dnf remove QuickDesk</code> (Fedora), hoặc chỉ cần xoá file AppImage. Ghi chú và lịch sử clipboard vẫn nằm trong <code>~/.local/share/io.github.tankgum.quickdesk</code> cho tới khi bạn xoá thư mục đó.",
+"t101": "© <span id=\"year\">2026</span> QuickDesk · Giấy phép MIT. Làm cho Linux, bằng cả tấm lòng.",
+"title": "QuickDesk — Ghi chú, clipboard, cổng & hạn mức AI. Chỉ cách một phím tắt.",
+"description": "QuickDesk là tiện ích desktop Linux miễn phí, mã nguồn mở: ghi chú mã hoá đầu-cuối, lịch sử clipboard, trình quản lý cổng và hạn mức AI, gọi ra bằng Super + Alt + N, V hoặc P."
+}
+</script>
 <script src="assets/js/main.js" defer></script>
 </body>
 </html>
