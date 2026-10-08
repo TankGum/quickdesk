@@ -1,11 +1,29 @@
 //! Writing the clipboard and pasting into the previously focused app.
 //!
-//! Wayland apps may not synthesize input. On Linux we use the
-//! xdg-desktop-portal RemoteDesktop API (keyboard only): the desktop asks the
-//! user once, and the restore token returned by every `Start` lets later
-//! sessions start without asking again. We type Shift+Insert, which pastes in
-//! browsers, editors, GTK/Qt/Electron apps *and* terminals (where Ctrl+V does
-//! not); the text is put on both CLIPBOARD and PRIMARY so either convention works.
+//! Wayland apps may not synthesize input. On Linux there are two ways:
+//!
+//! * **uinput** virtual keyboard: invisible to the user, needs a one-time udev
+//!   rule granting `/dev/uinput` (see [`crate::uinput`]).
+//! * xdg-desktop-portal **RemoteDesktop** (keyboard only): works out of the box,
+//!   but the desktop asks once and shows a "remote control" indicator while
+//!   the session is open.
+//!
+//! Either way we type Shift+Insert, which pastes in browsers, editors,
+//! GTK/Qt/Electron apps *and* terminals (where Ctrl+V does not); the text is
+//! put on both CLIPBOARD and PRIMARY so either convention works.
+
+use serde::{Deserialize, Serialize};
+
+/// How to inject the paste keystroke.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum PasteMethod {
+    /// uinput when accessible, otherwise the portal.
+    #[default]
+    Auto,
+    Uinput,
+    Portal,
+}
 
 use std::sync::{Mutex, OnceLock};
 
@@ -34,6 +52,9 @@ mod imp {
     use ashpd::desktop::{PersistMode, Session};
     use tokio::sync::Mutex;
 
+    use super::PasteMethod;
+    use crate::uinput::{self, VirtualKeyboard, KEY_INSERT, KEY_LEFTSHIFT};
+
     const SHIFT_L: i32 = 0xffe1;
     const INSERT: i32 = 0xff63;
 
@@ -43,17 +64,56 @@ mod imp {
         last_used: Instant,
     }
 
-    /// One RemoteDesktop session, opened on demand and closed when idle
-    /// (GNOME shows a "remote control" indicator while it is open).
+    /// A lazily created uinput keyboard, and/or one RemoteDesktop session opened
+    /// on demand and closed when idle (GNOME shows an indicator while it is open).
     #[derive(Default)]
     pub struct AutoPaster {
         active: Mutex<Option<Active>>,
+        keyboard: std::sync::Mutex<Option<VirtualKeyboard>>,
     }
 
     impl AutoPaster {
-        /// Type Shift+Insert into the focused window. `restore_token` comes from a
-        /// previous call; the returned token must be stored for the next one.
-        pub async fn paste(&self, restore_token: Option<&str>) -> Result<Option<String>, String> {
+        /// Which backend `method` resolves to right now.
+        pub fn resolve(method: PasteMethod) -> PasteMethod {
+            match method {
+                PasteMethod::Auto if uinput::available() => PasteMethod::Uinput,
+                PasteMethod::Auto => PasteMethod::Portal,
+                m => m,
+            }
+        }
+
+        /// Type Shift+Insert into the focused window. For the portal,
+        /// `restore_token` comes from a previous call and the returned token must
+        /// be stored for the next one.
+        pub async fn paste(&self, method: PasteMethod, restore_token: Option<&str>) -> Result<Option<String>, String> {
+            match Self::resolve(method) {
+                PasteMethod::Uinput => {
+                    self.close_portal().await;
+                    self.paste_uinput().map(|_| None)
+                }
+                _ => self.paste_portal(restore_token).await,
+            }
+        }
+
+        fn paste_uinput(&self) -> Result<(), String> {
+            let mut kb = self.keyboard.lock().unwrap_or_else(|e| e.into_inner());
+            if kb.is_none() {
+                *kb = Some(VirtualKeyboard::create()?);
+            }
+            let result = kb.as_mut().expect("created above").chord(&[KEY_LEFTSHIFT, KEY_INSERT]);
+            if result.is_err() {
+                *kb = None; // recreate next time
+            }
+            result
+        }
+
+        async fn close_portal(&self) {
+            if let Some(a) = self.active.lock().await.take() {
+                let _ = a.session.close().await;
+            }
+        }
+
+        async fn paste_portal(&self, restore_token: Option<&str>) -> Result<Option<String>, String> {
             let mut active = self.active.lock().await;
             let mut new_token = None;
             if active.is_none() {
@@ -136,11 +196,20 @@ mod imp {
 mod imp {
     use std::time::Duration;
 
+    use super::PasteMethod;
+
     #[derive(Default)]
     pub struct AutoPaster;
 
     impl AutoPaster {
-        pub async fn paste(&self, _restore_token: Option<&str>) -> Result<Option<String>, String> {
+        pub fn resolve(method: PasteMethod) -> PasteMethod {
+            method
+        }
+        pub async fn paste(
+            &self,
+            _method: PasteMethod,
+            _restore_token: Option<&str>,
+        ) -> Result<Option<String>, String> {
             Err("auto-paste is not supported on this platform yet".into())
         }
         pub async fn close_if_idle(&self, _idle: Duration) {}

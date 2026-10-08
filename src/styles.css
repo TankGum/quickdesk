@@ -163,3 +163,9 @@ button.icon:hover { background: var(--bg-subtle); color: var(--fg); }
 .hk-check { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
 .warn-text { color: #b45309; }
 .row.tight { margin: 2px 0 0; }
+
+/* Paste settings */
+.radio-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.radio { display: flex; gap: 8px; align-items: baseline; cursor: pointer; }
+.setup-box { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; background: var(--bg-subtle); max-width: 680px; display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
+.setup-command { margin: 0; padding: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; font-size: 12px; white-space: pre-wrap; word-break: break-all; user-select: all; }

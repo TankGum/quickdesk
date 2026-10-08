@@ -123,6 +123,15 @@ export interface SyncStatus {
   config: S3Config | null;
 }
 
+export type PasteMethod = "auto" | "uinput" | "portal";
+
+export interface PasteInfo {
+  method: PasteMethod;
+  effective: PasteMethod;
+  uinputAvailable: boolean;
+  setupCommand: string | null;
+}
+
 /** Shape of every rejected command (see `CmdError` in Rust). */
 export interface CmdError {
   code: string;
@@ -153,6 +162,8 @@ export const api = {
   clipSearch: (query: string, limit?: number) => invoke<ClipEntry[]>("clip_search", { query, limit }),
   clipCopy: (id: number) => invoke<void>("clip_copy", { id }),
   clipPaste: (id: number) => invoke<void>("clip_paste", { id }),
+  clipPasteInfo: () => invoke<PasteInfo>("clip_paste_info"),
+  clipSetPasteMethod: (method: PasteMethod) => invoke<void>("clip_set_paste_method", { method }),
   clipSetAutoPaste: (enabled: boolean) => invoke<void>("clip_set_auto_paste", { enabled }),
   clipPin: (id: number, pinned: boolean) => invoke<ClipEntry>("clip_pin", { id, pinned }),
   clipDelete: (id: number) => invoke<void>("clip_delete", { id }),

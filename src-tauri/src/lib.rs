@@ -62,6 +62,8 @@ pub fn run(args: Vec<String>) {
             commands::clipboard::clip_set_paused,
             commands::clipboard::clip_paste,
             commands::clipboard::clip_set_auto_paste,
+            commands::clipboard::clip_paste_info,
+            commands::clipboard::clip_set_paste_method,
             commands::ports::ports_scan,
             commands::ports::ports_kill,
             commands::ports::ports_is_alive,

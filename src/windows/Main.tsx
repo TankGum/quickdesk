@@ -6,6 +6,7 @@ import { PortsTab } from "../modules/ports/PortsTab";
 import { SyncFooter } from "../modules/sync/SyncFooter";
 import { SyncSettings } from "../modules/sync/SyncSettings";
 import { HotkeySettings } from "../modules/settings/HotkeySettings";
+import { PasteSettings } from "../modules/settings/PasteSettings";
 import { api, AppInfo, currentWindow, FocusStats, hideWindow, useShown } from "../shared/ipc";
 
 const TABS = ["notes", "clipboard", "ports", "settings"] as const;
@@ -81,6 +82,9 @@ function Settings() {
 
       <h2>Hotkeys</h2>
       <HotkeySettings />
+
+      <h2>Auto-paste</h2>
+      <PasteSettings />
 
       <h2>Popup focus test</h2>
       {stats && stats.total > 0 ? (

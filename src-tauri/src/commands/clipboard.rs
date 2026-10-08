@@ -89,3 +89,34 @@ pub fn clip_status(state: State<'_, AppState>) -> ClipStatus {
 pub fn clip_set_paused(app: AppHandle, paused: bool) -> CmdResult<()> {
     Ok(crate::clipboard::set_paused(&app, paused)?)
 }
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PasteInfo {
+    method: qd_platform::paste::PasteMethod,
+    /// What `method` resolves to right now (auto → uinput or portal).
+    effective: qd_platform::paste::PasteMethod,
+    uinput_available: bool,
+    /// One-time command that grants /dev/uinput (Linux).
+    setup_command: Option<&'static str>,
+}
+
+#[tauri::command]
+pub fn clip_paste_info(state: State<'_, AppState>) -> PasteInfo {
+    let method = state.clipboard.paste_method();
+    #[cfg(target_os = "linux")]
+    let (available, setup) = (qd_platform::uinput::available(), Some(qd_platform::uinput::SETUP_COMMAND));
+    #[cfg(not(target_os = "linux"))]
+    let (available, setup) = (false, None);
+    PasteInfo {
+        method,
+        effective: qd_platform::paste::AutoPaster::resolve(method),
+        uinput_available: available,
+        setup_command: setup,
+    }
+}
+
+#[tauri::command]
+pub fn clip_set_paste_method(app: AppHandle, method: qd_platform::paste::PasteMethod) -> CmdResult<()> {
+    Ok(crate::clipboard::set_paste_method(&app, method)?)
+}

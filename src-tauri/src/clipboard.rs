@@ -7,7 +7,7 @@ use std::time::Duration;
 use qd_clipboard::{Ingested, Policy};
 use qd_core::settings;
 use qd_platform::clipboard::{spawn_watcher, WatcherHandle, WatcherState};
-use qd_platform::paste::AutoPaster;
+use qd_platform::paste::{AutoPaster, PasteMethod};
 use serde::Serialize;
 use tauri::menu::CheckMenuItem;
 use tauri::{AppHandle, Emitter, Manager, Wry};
@@ -18,6 +18,7 @@ use crate::state::AppState;
 const PAUSED_KEY: &str = "clipboard.paused";
 const AUTO_PASTE_KEY: &str = "clipboard.auto_paste";
 const PASTE_TOKEN_KEY: &str = "clipboard.paste_token";
+const PASTE_METHOD_KEY: &str = "clipboard.paste_method";
 /// Close the RemoteDesktop session (and GNOME's indicator) after this long unused.
 const PASTE_SESSION_IDLE: Duration = Duration::from_secs(45);
 const PRUNE_EVERY: Duration = Duration::from_secs(3600);
@@ -30,6 +31,7 @@ pub struct ClipboardService {
     pub tray_item: Mutex<Option<CheckMenuItem<Wry>>>,
     auto_paste: AtomicBool,
     pub paster: AutoPaster,
+    paste_method: Mutex<PasteMethod>,
 }
 
 #[derive(Serialize)]
@@ -53,7 +55,12 @@ impl ClipboardService {
             tray_item: Mutex::new(None),
             auto_paste: AtomicBool::new(settings::get(conn, AUTO_PASTE_KEY).ok().flatten().unwrap_or(true)),
             paster: AutoPaster::default(),
+            paste_method: Mutex::new(settings::get(conn, PASTE_METHOD_KEY).ok().flatten().unwrap_or_default()),
         }
+    }
+
+    pub fn paste_method(&self) -> PasteMethod {
+        *self.paste_method.lock().unwrap_or_else(|e| e.into_inner())
     }
 
     pub fn auto_paste(&self) -> bool {
@@ -92,6 +99,13 @@ pub fn set_paused(app: &AppHandle, paused: bool) -> qd_core::Result<()> {
     Ok(())
 }
 
+pub fn set_paste_method(app: &AppHandle, method: PasteMethod) -> qd_core::Result<()> {
+    let state = app.state::<AppState>();
+    *state.clipboard.paste_method.lock().unwrap_or_else(|e| e.into_inner()) = method;
+    settings::set(&*state.db.conn()?, PASTE_METHOD_KEY, &method)?;
+    Ok(())
+}
+
 pub fn set_auto_paste(app: &AppHandle, enabled: bool) -> qd_core::Result<()> {
     let state = app.state::<AppState>();
     state.clipboard.auto_paste.store(enabled, Ordering::Relaxed);
@@ -105,7 +119,7 @@ pub async fn paste_into_focused(app: &AppHandle) -> Result<(), String> {
     let state = app.state::<AppState>();
     let token: Option<String> =
         settings::get(&*state.db.conn().map_err(|e| e.to_string())?, PASTE_TOKEN_KEY).map_err(|e| e.to_string())?;
-    let new_token = state.clipboard.paster.paste(token.as_deref()).await?;
+    let new_token = state.clipboard.paster.paste(state.clipboard.paste_method(), token.as_deref()).await?;
     if let Some(t) = new_token {
         // Tokens are single-use: always keep the latest one.
         settings::set(&*state.db.conn().map_err(|e| e.to_string())?, PASTE_TOKEN_KEY, &t).map_err(|e| e.to_string())?;
