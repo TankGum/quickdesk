@@ -8,12 +8,17 @@ import { SyncSettings } from "../modules/sync/SyncSettings";
 import { HotkeySettings } from "../modules/settings/HotkeySettings";
 import { PasteSettings } from "../modules/settings/PasteSettings";
 import { api, AppInfo, currentWindow, FocusStats, hideWindow, useShown } from "../shared/ipc";
+import { Welcome } from "./Welcome";
 
 const TABS = ["notes", "clipboard", "ports", "settings"] as const;
 type Tab = (typeof TABS)[number];
 
 export function Main() {
   const [tab, setTab] = useState<Tab>("notes");
+  const [onboarded, setOnboarded] = useState<boolean | null>(null);
+  useEffect(() => {
+    void api.onboarding().then((o) => setOnboarded(o.done));
+  }, []);
   // Bumped on every show so the active tab can re-focus its input.
   const [shownAt, setShownAt] = useState(0);
 
@@ -38,6 +43,10 @@ export function Main() {
       void unlisten.then((f) => f());
     };
   }, []);
+
+  if (onboarded === false) {
+    return <Welcome onDone={() => setOnboarded(true)} />;
+  }
 
   return (
     <div className="main">

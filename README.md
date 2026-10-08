@@ -11,9 +11,14 @@ Tauri 2 + Rust + React. Design: [`docs/SPEC.md`](docs/SPEC.md).
 | `Super+Alt+P` | Port Manager |
 | *(unset)* | Quick-note popup; also in the tray menu |
 
-Auto-paste uses the desktop's RemoteDesktop portal (keyboard only): GNOME asks once, then
-remembers. It types Shift+Insert, which pastes in browsers, editors and terminals alike. Turn it
-off in the Clipboard tab to just copy.
+Auto-paste types Shift+Insert into the app you were using (works in browsers, editors and
+terminals). Two backends on Linux:
+- **Instant** (virtual keyboard via `/dev/uinput`): no prompts, no indicator. Opt-in on the
+  welcome screen or in Settings → Auto-paste; asks for the admin password once to install a udev
+  rule (the same permission `steam-devices` grants). Uninstalling the package removes it.
+- **Desktop portal** (fallback): GNOME asks once and shows a remote-control indicator while pasting.
+
+Turn auto-paste off in the Clipboard tab to just copy.
 
 All hotkeys can be changed in Settings → Hotkeys. Super+Alt is the default because Vietnamese
 input methods (IBus Unikey/Bamboo) swallow Super+Shift+letter while a text field is focused.

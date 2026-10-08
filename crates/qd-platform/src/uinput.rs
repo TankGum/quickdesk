@@ -64,6 +64,63 @@ struct InputEvent {
     value: i32,
 }
 
+/// Root script that installs the rule and applies it to the existing node.
+fn enable_script() -> String {
+    format!(
+        "set -e; printf '%s\\n' '{UDEV_RULE}' > {UDEV_RULE_PATH}; \
+         udevadm control --reload-rules; udevadm trigger --action=change --sysname-match=uinput; udevadm settle"
+    )
+}
+
+/// Root script that removes the rule and the ACL it granted.
+fn disable_script() -> String {
+    format!(
+        "rm -f {UDEV_RULE_PATH}; udevadm control --reload-rules; \
+         setfacl -b {DEVICE} 2>/dev/null || true; udevadm settle"
+    )
+}
+
+pub fn pkexec_available() -> bool {
+    std::process::Command::new("pkexec").arg("--version").output().is_ok_and(|o| o.status.success())
+}
+
+/// Run `script` as root behind the desktop's password dialog (polkit).
+fn run_privileged(script: &str) -> Result<(), String> {
+    let out = std::process::Command::new("pkexec")
+        .args(["/bin/sh", "-c", script])
+        .output()
+        .map_err(|e| format!("could not start pkexec: {e}"))?;
+    match out.status.code() {
+        Some(0) => Ok(()),
+        // pkexec: 126 = dialog dismissed / not authorized, 127 = authentication failed.
+        Some(126) | Some(127) => Err("administrator password was not provided".into()),
+        _ => Err(format!("setup failed: {}", String::from_utf8_lossy(&out.stderr).trim())),
+    }
+}
+
+/// Grant the logged-in user access to `/dev/uinput` (asks for the admin password).
+pub fn enable() -> Result<(), String> {
+    run_privileged(&enable_script())?;
+    // logind applies the ACL asynchronously after the trigger.
+    for _ in 0..20 {
+        if available() {
+            return Ok(());
+        }
+        std::thread::sleep(Duration::from_millis(100));
+    }
+    Err("rule installed, but access was not granted; try logging out and back in".into())
+}
+
+/// Undo [`enable`].
+pub fn disable() -> Result<(), String> {
+    run_privileged(&disable_script())
+}
+
+/// Whether the rule is installed (independent of the current ACL).
+pub fn rule_installed() -> bool {
+    std::path::Path::new(UDEV_RULE_PATH).exists()
+}
+
 /// Whether we may create a virtual keyboard right now.
 pub fn available() -> bool {
     OpenOptions::new().write(true).open(DEVICE).is_ok()
@@ -156,6 +213,8 @@ mod tests {
         assert_eq!(std::mem::size_of::<InputEvent>(), 24);
         assert!(SETUP_COMMAND.contains(UDEV_RULE_PATH));
         assert!(SETUP_COMMAND.contains(UDEV_RULE), "command must install exactly UDEV_RULE");
+        assert!(enable_script().contains(UDEV_RULE) && enable_script().contains(UDEV_RULE_PATH));
+        assert!(disable_script().contains(UDEV_RULE_PATH));
     }
 
     #[test]

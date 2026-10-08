@@ -67,10 +67,6 @@
     "shortDescription": "Quick notes, clipboard history and port manager",
     "linux": {
       "deb": {
-        "files": {
-          "/usr/lib/udev/rules.d/70-quickdesk-uinput.rules": "packaging/70-quickdesk-uinput.rules"
-        },
-        "postInstallScript": "packaging/postinst.sh",
         "postRemoveScript": "packaging/postrm.sh"
       }
     }

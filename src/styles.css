@@ -169,3 +169,14 @@ button.icon:hover { background: var(--bg-subtle); color: var(--fg); }
 .radio { display: flex; gap: 8px; align-items: baseline; cursor: pointer; }
 .setup-box { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; background: var(--bg-subtle); max-width: 680px; display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
 .setup-command { margin: 0; padding: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; font-size: 12px; white-space: pre-wrap; word-break: break-all; user-select: all; }
+
+/* Welcome */
+.welcome { max-width: 600px; margin: 0 auto; padding: 36px 24px; display: flex; flex-direction: column; gap: 14px; }
+.welcome h1 { margin: 0; font-size: 22px; }
+.welcome p { margin: 0; }
+.welcome-keys { display: grid; grid-template-columns: max-content 1fr; gap: 10px 14px; margin: 0; align-items: baseline; }
+.welcome-keys dd { margin: 0; }
+.welcome-option { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-subtle); cursor: pointer; }
+.welcome-option input { margin-top: 3px; }
+.welcome-option small { display: block; margin-top: 4px; }
+.btn.big { padding: 8px 18px; font-size: 14px; }

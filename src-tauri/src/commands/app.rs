@@ -102,3 +102,28 @@ pub fn clipboard_write(app: AppHandle, text: String) -> super::CmdResult<()> {
     let _ = app;
     qd_platform::paste::write_text(&text).map_err(|e| super::CmdError::new("internal", e))
 }
+
+const ONBOARDING_KEY: &str = "onboarding.done";
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Onboarding {
+    done: bool,
+    /// Offer the one-time "instant auto-paste" opt-in.
+    offer_uinput: bool,
+}
+
+#[tauri::command]
+pub fn app_onboarding(state: State<'_, AppState>) -> super::CmdResult<Onboarding> {
+    let done = qd_core::settings::get(&*state.db.conn()?, ONBOARDING_KEY)?.unwrap_or(false);
+    #[cfg(target_os = "linux")]
+    let offer_uinput = !qd_platform::uinput::available() && qd_platform::uinput::pkexec_available();
+    #[cfg(not(target_os = "linux"))]
+    let offer_uinput = false;
+    Ok(Onboarding { done, offer_uinput })
+}
+
+#[tauri::command]
+pub fn app_onboarding_finish(state: State<'_, AppState>) -> super::CmdResult<()> {
+    Ok(qd_core::settings::set(&*state.db.conn()?, ONBOARDING_KEY, &true)?)
+}

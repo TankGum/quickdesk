@@ -129,6 +129,8 @@ export interface PasteInfo {
   method: PasteMethod;
   effective: PasteMethod;
   uinputAvailable: boolean;
+  ruleInstalled: boolean;
+  canEnable: boolean;
   setupCommand: string | null;
 }
 
@@ -164,6 +166,10 @@ export const api = {
   clipPaste: (id: number) => invoke<void>("clip_paste", { id }),
   clipPasteInfo: () => invoke<PasteInfo>("clip_paste_info"),
   clipSetPasteMethod: (method: PasteMethod) => invoke<void>("clip_set_paste_method", { method }),
+  clipUinputEnable: () => invoke<void>("clip_uinput_enable"),
+  clipUinputDisable: () => invoke<void>("clip_uinput_disable"),
+  onboarding: () => invoke<{ done: boolean; offerUinput: boolean }>("app_onboarding"),
+  onboardingFinish: () => invoke<void>("app_onboarding_finish"),
   clipSetAutoPaste: (enabled: boolean) => invoke<void>("clip_set_auto_paste", { enabled }),
   clipPin: (id: number, pinned: boolean) => invoke<ClipEntry>("clip_pin", { id, pinned }),
   clipDelete: (id: number) => invoke<void>("clip_delete", { id }),

@@ -97,7 +97,11 @@ pub struct PasteInfo {
     /// What `method` resolves to right now (auto → uinput or portal).
     effective: qd_platform::paste::PasteMethod,
     uinput_available: bool,
-    /// One-time command that grants /dev/uinput (Linux).
+    /// Our udev rule is installed (so "Disable" makes sense).
+    rule_installed: bool,
+    /// The app can install the rule itself behind a password dialog.
+    can_enable: bool,
+    /// Manual fallback that grants /dev/uinput (Linux).
     setup_command: Option<&'static str>,
 }
 
@@ -105,15 +109,37 @@ pub struct PasteInfo {
 pub fn clip_paste_info(state: State<'_, AppState>) -> PasteInfo {
     let method = state.clipboard.paste_method();
     #[cfg(target_os = "linux")]
-    let (available, setup) = (qd_platform::uinput::available(), Some(qd_platform::uinput::SETUP_COMMAND));
+    let (available, installed, can_enable, setup) = {
+        use qd_platform::uinput;
+        (uinput::available(), uinput::rule_installed(), uinput::pkexec_available(), Some(uinput::SETUP_COMMAND))
+    };
     #[cfg(not(target_os = "linux"))]
-    let (available, setup) = (false, None);
+    let (available, installed, can_enable, setup) = (false, false, false, None);
     PasteInfo {
         method,
         effective: qd_platform::paste::AutoPaster::resolve(method),
         uinput_available: available,
+        rule_installed: installed,
+        can_enable,
         setup_command: setup,
     }
+}
+
+/// Install the uinput rule behind the desktop's password dialog.
+#[tauri::command]
+pub async fn clip_uinput_enable() -> CmdResult<()> {
+    #[cfg(target_os = "linux")]
+    return super::blocking(|| qd_platform::uinput::enable().map_err(|e| CmdError::new("uinput", e))).await;
+    #[cfg(not(target_os = "linux"))]
+    Err(CmdError::new("unsupported", "only available on Linux"))
+}
+
+#[tauri::command]
+pub async fn clip_uinput_disable() -> CmdResult<()> {
+    #[cfg(target_os = "linux")]
+    return super::blocking(|| qd_platform::uinput::disable().map_err(|e| CmdError::new("uinput", e))).await;
+    #[cfg(not(target_os = "linux"))]
+    Err(CmdError::new("unsupported", "only available on Linux"))
 }
 
 #[tauri::command]
