@@ -12,7 +12,7 @@ pub enum Target {
 impl Target {
     pub const HOTKEY_TARGETS: [Target; 3] = [Target::Notes, Target::Clipboard, Target::Ports];
 
-    fn parse(s: &str) -> Option<Self> {
+    pub fn parse(s: &str) -> Option<Self> {
         match s {
             "notes" | "note" => Some(Target::Notes),
             "clipboard" | "clip" => Some(Target::Clipboard),

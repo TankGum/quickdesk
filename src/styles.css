@@ -57,3 +57,36 @@ kbd { padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; bac
 .settings table { border-collapse: collapse; width: 100%; max-width: 480px; }
 .settings th, .settings td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--border); }
 button.danger { margin-top: 24px; padding: 6px 12px; border: 1px solid var(--danger); color: var(--danger); background: none; border-radius: 6px; cursor: pointer; }
+
+/* Shared controls */
+.toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+.search, .composer {
+  width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg-subtle); color: var(--fg); font: inherit; outline: none;
+}
+.search:focus, .composer:focus, .note-edit:focus { border-color: var(--accent); }
+.composer { resize: none; margin-bottom: 12px; }
+.banner { padding: 8px 10px; border-radius: 6px; margin-bottom: 10px; }
+.banner.error, .popup-hint.error { color: var(--danger); }
+.banner.error { border: 1px solid var(--danger); }
+.badge { font-size: 11px; padding: 1px 6px; border-radius: 10px; border: 1px solid var(--border); }
+.badge.warn { color: #b45309; border-color: #f59e0b; }
+button.icon { border: none; background: none; cursor: pointer; color: var(--muted); padding: 2px 6px; border-radius: 4px; font-size: 14px; }
+button.icon:hover { background: var(--bg-subtle); color: var(--fg); }
+.toast {
+  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 12px; align-items: center; padding: 8px 14px; border-radius: 8px;
+  background: var(--fg); color: var(--bg); box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
+}
+.toast button { border: none; background: none; color: var(--accent); font-weight: 600; cursor: pointer; }
+
+/* Notes */
+.note-list { list-style: none; margin: 0; padding: 0; }
+.note { display: flex; gap: 8px; align-items: flex-start; padding: 10px 4px; border-bottom: 1px solid var(--border); }
+.note .delete { visibility: hidden; }
+.note:hover .delete { visibility: visible; }
+.pin.on { color: #f59e0b; }
+.note-main { flex: 1; min-width: 0; }
+.note-body { white-space: pre-wrap; overflow-wrap: anywhere; cursor: text; }
+.note-edit { width: 100%; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; resize: vertical; outline: none; }
+.note-meta { display: flex; gap: 8px; align-items: center; margin-top: 4px; color: var(--muted); font-size: 12px; }

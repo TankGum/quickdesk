@@ -1,6 +1,6 @@
-// Hand-written IPC bindings for M1. Replaced by tauri-specta output once
-// module commands arrive (M2).
+// Hand-written IPC bindings. Keep in sync with src-tauri/src/commands/*.
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useEffect } from "react";
 
@@ -44,11 +44,39 @@ export interface Shown {
   tab: string | null;
 }
 
+export interface Note {
+  id: string;
+  body: string;
+  pinned: boolean;
+  createdAt: number;
+  updatedAt: number;
+  conflictOf: string | null;
+}
+
+/** Shape of every rejected command (see `CmdError` in Rust). */
+export interface CmdError {
+  code: string;
+  message: string;
+}
+
+export function errorMessage(e: unknown): string {
+  if (typeof e === "object" && e !== null && "message" in e) return String((e as CmdError).message);
+  return String(e);
+}
+
 export const api = {
   appInfo: () => invoke<AppInfo>("app_info"),
+  notesCreate: (body: string) => invoke<Note>("notes_create", { body }),
+  notesUpdate: (id: string, patch: { body?: string; pinned?: boolean }) =>
+    invoke<Note>("notes_update", { id, ...patch }),
+  notesDelete: (id: string) => invoke<void>("notes_delete", { id }),
+  notesRestore: (id: string) => invoke<Note>("notes_restore", { id }),
+  notesList: () => invoke<Note[]>("notes_list"),
+  notesSearch: (query: string) => invoke<Note[]>("notes_search", { query }),
   focusReport: (report: FocusReport) => invoke<void>("diag_focus_report", { report }),
   focusStats: () => invoke<FocusStats>("diag_focus_stats"),
   quit: () => invoke<void>("app_quit"),
+  show: (target: "notes" | "clipboard" | "ports" | "main") => invoke<void>("app_show", { target }),
 };
 
 export const currentWindow = getCurrentWebviewWindow();
@@ -85,6 +113,16 @@ export function useShown(onShown: (s: Shown) => void, input?: () => HTMLElement 
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+}
+
+/** Re-run `fn` whenever the backend emits `event` (to any window). */
+export function useBackendEvent(event: string, fn: () => void) {
+  useEffect(() => {
+    const unlisten = listen(event, () => fn());
+    return () => {
+      void unlisten.then((f) => f());
+    };
+  }, [event, fn]);
 }
 
 export function useEscapeToHide() {

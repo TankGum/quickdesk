@@ -8,7 +8,7 @@ mod windows;
 
 use std::sync::{Mutex, OnceLock};
 
-use qd_core::{settings, Db};
+use qd_core::{settings, Clock, Db};
 use qd_platform::Session;
 use tauri::{AppHandle, Manager, RunEvent, Runtime};
 use tracing_appender::non_blocking::WorkerGuard;
@@ -36,17 +36,24 @@ pub fn run(args: Vec<String>) {
             dispatch(app, Forwarded { args: argv.into_iter().skip(1).collect(), sent_at_ms: now_ms() });
         }))
         .invoke_handler(tauri::generate_handler![
-            commands::app_info,
-            commands::diag_focus_report,
-            commands::diag_focus_stats,
-            commands::app_quit,
+            commands::app::app_info,
+            commands::app::diag_focus_report,
+            commands::app::diag_focus_stats,
+            commands::app::app_quit,
+            commands::app::app_show,
+            commands::notes::notes_create,
+            commands::notes::notes_update,
+            commands::notes::notes_delete,
+            commands::notes::notes_restore,
+            commands::notes::notes_list,
+            commands::notes::notes_search,
         ])
         .on_window_event(windows::on_window_event)
         .setup(move |app| {
             init_logging(app.path().app_log_dir()?);
             let data_dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&data_dir)?;
-            let db = Db::open(&data_dir.join("quickdesk.db"), &[])?;
+            let db = Db::open(&data_dir.join("quickdesk.db"), &[&qd_notes::NotesModule])?;
             let (device_id, hotkeys) = {
                 let conn = db.conn()?;
                 (settings::device_id(&conn)?, settings::get_or_init(&conn, hotkeys::SETTINGS_KEY, HotkeyConfig::default)?)
@@ -64,6 +71,7 @@ pub fn run(args: Vec<String>) {
 
             app.manage(AppState {
                 db,
+                clock: Clock::new(device_id.clone()),
                 data_dir,
                 device_id,
                 session,

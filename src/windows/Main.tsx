@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { NotesTab } from "../modules/notes/NotesTab";
 import { api, AppInfo, FocusStats, useShown } from "../shared/ipc";
 
 const TABS = ["notes", "clipboard", "ports", "settings"] as const;
@@ -7,9 +8,12 @@ type Tab = (typeof TABS)[number];
 
 export function Main() {
   const [tab, setTab] = useState<Tab>("notes");
+  // Bumped on every show so the active tab can re-focus its input.
+  const [shownAt, setShownAt] = useState(0);
 
   useShown((s) => {
     if (s.tab && (TABS as readonly string[]).includes(s.tab)) setTab(s.tab as Tab);
+    setShownAt(s.shownAtMs);
   });
 
   return (
@@ -22,14 +26,15 @@ export function Main() {
         ))}
       </nav>
       <section className="content">
-        {tab === "settings" ? <Settings /> : <div className="empty">{placeholder[tab]}</div>}
+        {tab === "notes" && <NotesTab focusSignal={shownAt} />}
+        {tab === "settings" && <Settings />}
+        {(tab === "clipboard" || tab === "ports") && <div className="empty">{placeholder[tab]}</div>}
       </section>
     </div>
   );
 }
 
-const placeholder: Record<Exclude<Tab, "settings">, string> = {
-  notes: "Quick Notes arrive in Milestone 2.",
+const placeholder: Record<"clipboard" | "ports", string> = {
   clipboard: "Clipboard history arrives in Milestone 4.",
   ports: "Port Manager arrives in Milestone 3.",
 };

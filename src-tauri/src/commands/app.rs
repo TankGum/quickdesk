@@ -89,3 +89,11 @@ pub fn diag_focus_stats(state: State<'_, AppState>) -> FocusStats {
 pub fn app_quit(app: AppHandle) {
     crate::quit(&app);
 }
+
+#[tauri::command]
+pub fn app_show(app: AppHandle, target: String) -> super::CmdResult<()> {
+    let target = crate::cli::Target::parse(&target)
+        .ok_or_else(|| super::CmdError::new("invalid", format!("unknown target {target:?}")))?;
+    crate::windows::show(&app, target, now_ms());
+    Ok(())
+}

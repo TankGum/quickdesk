@@ -2751,6 +2751,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "qd-notes"
+version = "0.1.0"
+dependencies = [
+ "qd-core",
+ "rusqlite",
+ "serde",
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "qd-platform"
 version = "0.1.0"
 dependencies = [
@@ -2772,6 +2782,7 @@ name = "quickdesk"
 version = "0.1.0"
 dependencies = [
  "qd-core",
+ "qd-notes",
  "qd-platform",
  "serde",
  "serde_json",

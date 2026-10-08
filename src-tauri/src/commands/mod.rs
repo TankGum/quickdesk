@@ -1,0 +1,38 @@
+//! Tauri command handlers: thin wrappers that call module crates and emit events.
+
+pub mod app;
+pub mod notes;
+
+use serde::Serialize;
+
+/// Error shape every command returns to the frontend.
+#[derive(Debug, Serialize)]
+pub struct CmdError {
+    pub code: &'static str,
+    pub message: String,
+}
+
+pub type CmdResult<T> = Result<T, CmdError>;
+
+impl CmdError {
+    pub fn new(code: &'static str, message: impl Into<String>) -> Self {
+        CmdError { code, message: message.into() }
+    }
+}
+
+impl From<qd_core::Error> for CmdError {
+    fn from(e: qd_core::Error) -> Self {
+        CmdError::new("internal", e.to_string())
+    }
+}
+
+impl From<qd_notes::Error> for CmdError {
+    fn from(e: qd_notes::Error) -> Self {
+        let code = match e {
+            qd_notes::Error::NotFound(_) => "not_found",
+            qd_notes::Error::EmptyBody => "invalid",
+            _ => "internal",
+        };
+        CmdError::new(code, e.to_string())
+    }
+}
