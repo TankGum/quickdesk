@@ -12,7 +12,7 @@
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Ubuntu+Sans:wght@400;500;700&display=swap">
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
@@ -74,17 +74,24 @@
         <span class="desktop__activities">Activities</span>
         <span class="desktop__clock" id="clock">Tue Oct 7 09:41</span>
         <span class="desktop__sys">
-          <button type="button" class="desktop__ring" data-ring aria-label="AI usage (tray)">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="2.2"/><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="26.4 37.7" transform="rotate(-90 8 8)"/></svg>
+          <!-- QuickDesk's two tray icons, as on a real GNOME top bar -->
+          <button type="button" class="desktop__tray" data-ring aria-label="AI usage ring">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,.27)" stroke-width="2.4"/><circle cx="8" cy="8" r="6" fill="none" stroke="#f59e0b" stroke-width="2.4" stroke-dasharray="30.5 37.7" transform="rotate(-90 8 8)"/></svg>
           </button>
-          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 12.5a1.2 1.2 0 1 1 0 .01M3.5 8.2a6.4 6.4 0 0 1 9 0M5.4 10.2a3.7 3.7 0 0 1 5.2 0M1.6 6.2a9.2 9.2 0 0 1 12.8 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10l-3.5-3H2z" fill="currentColor"/><path d="M10.5 5.5a3.5 3.5 0 0 1 0 5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-          <svg viewBox="0 0 20 16" aria-hidden="true"><rect x="1" y="4" width="15" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.3"/><rect x="3" y="6" width="9" height="4" rx="1" fill="currentColor"/><rect x="17" y="6.5" width="1.6" height="3" rx=".6" fill="currentColor"/></svg>
+          <button type="button" class="desktop__tray" data-app-tray aria-label="QuickDesk menu">
+            <img src="assets/img/app-icon.png" alt="" width="16" height="16">
+          </button>
+          <span class="desktop__ime">en</span>
+          <span class="desktop__quick">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 12.5a1.2 1.2 0 1 1 0 .01M3.5 8.2a6.4 6.4 0 0 1 9 0M5.4 10.2a3.7 3.7 0 0 1 5.2 0M1.6 6.2a9.2 9.2 0 0 1 12.8 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10l-3.5-3H2z" fill="currentColor"/><path d="M10.5 5.5a3.5 3.5 0 0 1 0 5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <svg viewBox="0 0 20 16" aria-hidden="true"><rect x="1" y="4" width="15" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.3"/><rect x="3" y="6" width="9" height="4" rx="1" fill="currentColor"/><rect x="17" y="6.5" width="1.6" height="3" rx=".6" fill="currentColor"/></svg>
+          </span>
         </span>
       </div>
 
       <div class="desktop__dock" aria-hidden="true">
-        <i style="--c:#ff7a45"></i><i style="--c:#3a86ff"></i><i style="--c:#8338ec"></i><i style="--c:#2ec4b6"></i><i class="is-qd"></i>
+        <i style="--c:#ff7a45"></i><i style="--c:#3a86ff"></i><i style="--c:#8338ec"></i><i style="--c:#2ec4b6"></i><i class="is-qd"><img src="assets/img/app-icon.png" alt=""></i>
       </div>
 
       <p class="desktop__empty" aria-hidden="true"><span>Press <kbd>N</kbd> <kbd>V</kbd> <kbd>P</kbd> or <kbd>A</kbd></span></p>
@@ -92,24 +99,48 @@
       <div class="desktop__stage">
 
         <!-- The real QuickDesk UI (npm run build:demo) running on sample data. -->
-        <div class="appwin appwin--main" data-appwin="main" style="--w: 900px; --h: 636px">
-          <div class="appwin__bar"><span>QuickDesk</span><button type="button" class="appwin__close" data-close aria-label="Close">×</button></div>
-          <iframe title="QuickDesk main window (demo)" src="demo/index.html?window=main&amp;theme=dark" width="900" height="600"></iframe>
+        <div class="appwin appwin--main" data-appwin="main" style="--w: 903px; --h: 643px">
+          <div class="appwin__bar">
+            <span>QuickDesk</span>
+            <span class="appwin__btns">
+              <button type="button" data-close aria-label="Minimise"><svg viewBox="0 0 16 16"><path d="M4.5 8.5h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+              <button type="button" aria-label="Maximise" tabindex="-1"><svg viewBox="0 0 16 16"><rect x="4.5" y="4.5" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
+              <button type="button" data-close aria-label="Close"><svg viewBox="0 0 16 16"><path d="m5 5 6 6m0-6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+            </span>
+          </div>
+          <iframe title="QuickDesk main window (demo)" src="demo/index.html?window=main&amp;theme=dark" width="903" height="603"></iframe>
         </div>
         <div class="appwin appwin--popup" data-appwin="clip-popup" style="--w: 520px; --h: 420px">
           <iframe title="QuickDesk clipboard popup (demo)" src="demo/index.html?window=clip-popup&amp;theme=dark" width="520" height="420"></iframe>
         </div>
+        <div class="appwin appwin--popup" data-appwin="note-popup" style="--w: 480px; --h: 140px">
+          <iframe title="QuickDesk quick note popup (demo)" src="demo/index.html?window=note-popup&amp;theme=dark" width="480" height="140"></iframe>
+        </div>
 
-        <!-- AI usage: tray menu under the ring -->
-        <div class="panel panel--menu" data-panel="ai" role="tabpanel" aria-label="AI usage">
-          <ul class="tray-menu" data-tray>
-            <li><span class="ring" style="--p:42"></span><span>Claude · 5-hour limit</span><b>42%</b><em>resets in 2h 10m</em></li>
-            <li><span class="ring" style="--p:18"></span><span>Claude · Weekly limit</span><b>18%</b><em>resets in 4d 6h</em></li>
-            <li><span class="ring ring--warn" style="--p:81"></span><span>Codex · 5-hour limit</span><b>81%</b><em>resets in 38m</em></li>
-            <li><span class="ring" style="--p:27"></span><span>Codex · Weekly limit</span><b>27%</b><em>resets in 5d 2h</em></li>
+        <!-- The tray menus are GNOME's own menus; these copy how they look. -->
+        <div class="shell-menu shell-menu--app" data-menu="app">
+          <ul>
+            <li data-open="note-popup">✏️ Quick note</li>
+            <li data-open="notes">📝 Notes</li>
+            <li data-open="clipboard">📋 Clipboard</li>
+            <li data-open="ports">🔌 Ports</li>
             <li class="sep"></li>
-            <li class="plain"><span>Ring shows</span><em>▸</em></li>
-            <li class="plain"><span>Refresh</span></li>
+            <li data-pause>⏸️ Pause clipboard history</li>
+            <li class="sep"></li>
+            <li data-open="main">🏠 Open QuickDesk</li>
+            <li data-quit>⛔ Quit QuickDesk</li>
+          </ul>
+        </div>
+
+        <div class="shell-menu shell-menu--ai" data-menu="ai" data-panel="ai">
+          <ul data-tray>
+            <li>Claude · 5-hour&nbsp;&nbsp; 42%&nbsp;&nbsp; · &nbsp;&nbsp;resets in 2h 10m</li>
+            <li>Claude · Weekly&nbsp;&nbsp; 18%&nbsp;&nbsp; · &nbsp;&nbsp;resets in 4d 6h</li>
+            <li>Codex · 5-hour&nbsp;&nbsp; 81%&nbsp;&nbsp; · &nbsp;&nbsp;resets in 38m</li>
+            <li>Codex · Weekly&nbsp;&nbsp; 27%&nbsp;&nbsp; · &nbsp;&nbsp;resets in 5d 2h</li>
+            <li class="sep"></li>
+            <li class="sub">Ring shows</li>
+            <li>Refresh</li>
           </ul>
         </div>
 
@@ -219,11 +250,19 @@
       </header>
 
       <!-- The real AI tab, same as the demo above. -->
-      <div class="shot reveal" data-shot style="--w: 900px; --h: 636px">
+      <div class="shot reveal" data-shot style="--w: 903px; --h: 643px">
         <div class="appwin appwin--main is-static">
-          <div class="appwin__bar"><span>QuickDesk</span><span class="appwin__close" aria-hidden="true">×</span></div>
-          <iframe title="QuickDesk AI usage tab (demo)" src="demo/index.html?window=main&amp;tab=ai&amp;theme=dark" width="900" height="600" loading="lazy"></iframe>
+          <div class="appwin__bar">
+            <span>QuickDesk</span>
+            <span class="appwin__btns" aria-hidden="true">
+              <i><svg viewBox="0 0 16 16"><path d="M4.5 8.5h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></i>
+              <i><svg viewBox="0 0 16 16"><rect x="4.5" y="4.5" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></i>
+              <i><svg viewBox="0 0 16 16"><path d="m5 5 6 6m0-6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></i>
+            </span>
+          </div>
+          <iframe title="QuickDesk AI usage tab (demo)" src="demo/index.html?window=main&amp;tab=ai&amp;theme=dark" width="903" height="603" loading="lazy"></iframe>
         </div>
+      </div>
       </div>
 
       <ul class="points reveal">

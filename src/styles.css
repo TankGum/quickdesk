@@ -29,7 +29,10 @@
   --mod-text: color-mix(in srgb, var(--mod) 72%, var(--fg));
   --accent: var(--mod);
 
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Ubuntu, Cantarell, sans-serif;
+  /* The demo build swaps these for web fonts that match Ubuntu's. */
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Ubuntu, Cantarell, sans-serif;
+  --mono: ui-monospace, "JetBrains Mono", "Ubuntu Mono", monospace;
+  font-family: var(--font);
   font-size: 14px;
   letter-spacing: -0.005em;
   color: var(--fg);
@@ -79,7 +82,7 @@ button { font: inherit; color: inherit; letter-spacing: inherit; }
 input, textarea, select { font: inherit; letter-spacing: inherit; }
 ::selection { background: color-mix(in srgb, var(--mod) 35%, transparent); }
 input[type="checkbox"], input[type="radio"] { accent-color: var(--mod); }
-code { font-family: ui-monospace, "JetBrains Mono", "Ubuntu Mono", monospace; font-size: 12.5px; }
+code { font-family: var(--mono); font-size: 12.5px; }
 kbd {
   display: inline-block;
   min-width: 1.6em;
@@ -132,6 +135,9 @@ kbd {
 }
 .tabs button:hover { background: var(--hover); color: var(--fg); }
 .tabs button.active { background: var(--raised); color: var(--fg); }
+/* WebKitGTK draws a grey ring on the clicked tab; use the module colour, keyboard only. */
+.tabs button:focus { outline: none; }
+.tabs button:focus-visible { box-shadow: 0 0 0 2px color-mix(in srgb, var(--dot, var(--mod)) 55%, transparent); }
 .tab-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dot, var(--mod)); opacity: 0.45; transition: opacity 0.15s, box-shadow 0.15s; }
 .tabs button.active .tab-dot { opacity: 1; box-shadow: 0 0 8px var(--dot, var(--mod)); }
 .content { flex: 1; overflow: auto; padding: 14px 18px; }
@@ -231,13 +237,13 @@ button.icon:hover { background: var(--hover); color: var(--fg); }
 .port-table tbody tr:hover { background: var(--hover); }
 .port-table .port { width: 120px; }
 .port-table .port b {
-  display: inline-block; font: 500 12.5px/1 ui-monospace, "JetBrains Mono", monospace;
+  display: inline-block; font: 500 12.5px/1 var(--mono);
   padding: 5px 8px; border-radius: 6px;
   color: color-mix(in srgb, var(--ports) 78%, var(--fg)); background: color-mix(in srgb, var(--ports) 14%, transparent);
 }
 .port-table .addrs { color: var(--faint); font-size: 11px; margin-top: 5px; }
 .port-table .owner { min-width: 0; max-width: 340px; }
-.port-table .cmd { color: var(--faint); font-size: 12px; font-family: ui-monospace, monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 340px; margin-top: 2px; }
+.port-table .cmd { color: var(--faint); font-size: 12px; font-family: var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 340px; margin-top: 2px; }
 .port-table .pid { width: 70px; font-variant-numeric: tabular-nums; color: var(--muted); }
 .port-table .actions { text-align: right; white-space: nowrap; }
 .port-table .actions > * + * { margin-left: 4px; }
@@ -261,7 +267,7 @@ button.icon:hover { background: var(--hover); color: var(--fg); }
   flex: none; width: 30px; height: 30px; border-radius: 8px;
   display: grid; place-items: center; font-size: 15px; background: var(--hover); color: var(--muted);
 }
-.clip-icon.text { font: 600 11px/1 ui-monospace, "JetBrains Mono", monospace; }
+.clip-icon.text { font: 600 11px/1 var(--mono); }
 .clip-icon.pinned { color: var(--notes); background: color-mix(in srgb, var(--notes) 16%, transparent); }
 .clip-icon.thumb { object-fit: cover; padding: 0; }
 .clip-list li.selected .clip-icon:not(.pinned):not(.thumb) { background: color-mix(in srgb, var(--mod) 30%, transparent); color: var(--fg); }
@@ -278,7 +284,7 @@ button.icon:hover { background: var(--hover); color: var(--fg); }
 .clip-history li .delete { visibility: hidden; }
 .clip-history li:hover .delete { visibility: visible; }
 .clip-main { flex: 1; min-width: 0; cursor: pointer; }
-.clip-content { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 7.5em; overflow: hidden; font-family: ui-monospace, "JetBrains Mono", monospace; font-size: 12.5px; }
+.clip-content { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 7.5em; overflow: hidden; font-family: var(--mono); font-size: 12.5px; }
 .paste-pref { margin: 0 0 12px; align-items: flex-start; }
 .paste-pref small { display: inline; }
 
@@ -392,7 +398,7 @@ button.icon:hover { background: var(--hover); color: var(--fg); }
 .note-toolbar .tool.bold { font-weight: 800; }
 .note-toolbar .tool.italic { font-style: italic; font-family: Georgia, serif; }
 .note-toolbar .tool.strike { text-decoration: line-through; }
-.note-toolbar .tool.code, .note-toolbar .tool.codeBlock { font-family: ui-monospace, monospace; font-size: 12px; }
+.note-toolbar .tool.code, .note-toolbar .tool.codeBlock { font-family: var(--mono); font-size: 12px; }
 .tool-sep { width: 1px; height: 18px; background: var(--border-2); margin: 0 6px; }
 .note-rich-wrap { flex: 1; min-height: 0; overflow-y: auto; }
 .note-rich { outline: none; min-height: 100%; padding: 12px 18px 16px; font-size: 14px; line-height: 1.6; }

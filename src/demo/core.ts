@@ -142,13 +142,14 @@ const usage: UsageSnapshot = {
     {
       provider: "claude",
       name: "Claude",
-      plan: "Max",
+      plan: "Pro",
       source: "live",
       asOf: now,
       error: null,
       windows: [
         { id: "five_hour", label: "5h", usedPercent: 42, resetsAt: now + 2 * HOUR + 10 * MIN, detail: null },
         { id: "weekly", label: "weekly", usedPercent: 18, resetsAt: now + 4 * DAY + 6 * HOUR, detail: null },
+        { id: "extra_off", label: "extra usage", usedPercent: null, resetsAt: null, detail: null },
       ],
     },
     {
@@ -165,7 +166,7 @@ const usage: UsageSnapshot = {
     },
     {
       provider: "antigravity",
-      name: "Antigravity",
+      name: "Gemini (Antigravity)",
       plan: null,
       source: "local",
       asOf: now - 3 * DAY,
@@ -315,3 +316,8 @@ export async function invoke<T>(cmd: string, args: Args = {}): Promise<T> {
   // Unknown commands (settings the demo cannot perform) just succeed.
   return (fn ? fn(args) : undefined) as T;
 }
+
+// The page's tray menu (a GNOME menu, not part of this UI) can pause history.
+window.addEventListener("message", ({ data }) => {
+  if (data?.source === "quickdesk-page" && data.type === "pause") void invoke("clip_set_paused", { paused: data.paused });
+});

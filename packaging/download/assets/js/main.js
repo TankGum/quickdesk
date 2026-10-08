@@ -49,7 +49,8 @@
   const comboKeys = $$('.combo .key', demo);
   const tabs = $$('[data-mode]', demo);
   const wins = Object.fromEntries($$('[data-appwin]', demo).map((w) => [w.dataset.appwin, w]));
-  const trayMenu = $('[data-panel="ai"]', demo);
+  const menus = Object.fromEntries($$('[data-menu]', demo).map((m) => [m.dataset.menu, m]));
+  const trayButtons = { ai: $('[data-ring]', desktop), app: $('[data-app-tray]', desktop) };
   const toast = $('#toast');
 
   let current = null;
@@ -87,9 +88,23 @@
     pressTimers.push(setTimeout(() => comboKeys.forEach((k) => k.classList.remove('is-down')), 520));
   }
 
+  // Drop a tray menu down under its icon, like GNOME Shell.
+  function openMenu(name) {
+    Object.entries(menus).forEach(([n, m]) => m.classList.toggle('is-open', n === name));
+    Object.entries(trayButtons).forEach(([n, b]) => b.classList.toggle('is-active', n === name));
+    const menu = menus[name];
+    if (!menu) return;
+    const icon = trayButtons[name].getBoundingClientRect();
+    const box = stage.getBoundingClientRect();
+    const x = icon.left + icon.width / 2 - box.left - menu.offsetWidth / 2;
+    menu.style.left = `${Math.max(8, Math.min(x, box.width - menu.offsetWidth - 8))}px`;
+  }
+  const menuOpen = () => Object.values(menus).some((m) => m.classList.contains('is-open'));
+
   function showWindow(win, tab) {
     Object.entries(wins).forEach(([name, w]) => w.classList.toggle('is-open', name === win));
-    trayMenu.classList.remove('is-open');
+    openMenu(null);
+    desktop.classList.add('has-panel');
     // What Rust sends when a hotkey fires: the window switches to that tab.
     post(win, { type: 'show', tab: tab ?? null });
   }
@@ -102,7 +117,7 @@
     desktop.classList.add('has-panel');
     if (m.tray) {
       Object.values(wins).forEach((w) => w.classList.remove('is-open'));
-      trayMenu.classList.add('is-open');
+      openMenu('ai');
     } else {
       showWindow(m.win, m.tab);
     }
@@ -112,7 +127,7 @@
   function closePanel() {
     current = null;
     Object.values(wins).forEach((w) => w.classList.remove('is-open'));
-    trayMenu.classList.remove('is-open');
+    openMenu(null);
     tabs.forEach((t) => t.setAttribute('aria-selected', 'false'));
     desktop.classList.remove('has-panel');
     demo.classList.remove('is-tray');
@@ -129,16 +144,57 @@
   }));
 
   // The ring in the top bar toggles the AI usage menu, like the real tray icon.
-  $('[data-ring]', desktop).addEventListener('click', () => {
+  trayButtons.ai.addEventListener('click', () => {
     takeOver();
-    if (current === 'ai' && trayMenu.classList.contains('is-open')) closePanel();
+    if (menus.ai.classList.contains('is-open')) closePanel();
     else openPanel('ai');
   });
 
-  // Like the real tray: clicking a usage line opens the AI tab.
-  $('[data-tray]', demo).addEventListener('click', () => {
+  // Like the real tray: a usage line opens the AI tab; Refresh refreshes.
+  $('[data-tray]', demo).addEventListener('click', (e) => {
+    const li = e.target.closest('li');
+    if (!li || li.classList.contains('sep') || li.classList.contains('sub')) return;
     takeOver();
+    if (li.textContent.trim() === 'Refresh') {
+      openMenu(null);
+      if (!Object.values(wins).some((w) => w.classList.contains('is-open'))) closePanel();
+      showToast('Usage refreshed');
+      return;
+    }
     showWindow('main', 'ai');
+  });
+
+  // QuickDesk's own tray icon and menu.
+  trayButtons.app.addEventListener('click', () => {
+    takeOver();
+    if (menus.app.classList.contains('is-open')) {
+      openMenu(null);
+      if (!Object.values(wins).some((w) => w.classList.contains('is-open'))) closePanel();
+    } else {
+      desktop.classList.add('has-panel');
+      openMenu('app');
+    }
+  });
+  let paused = false;
+  menus.app.addEventListener('click', (e) => {
+    const li = e.target.closest('li');
+    if (!li || li.classList.contains('sep')) return;
+    takeOver();
+    const open = li.dataset.open;
+    if (open && MODES[open]) openPanel(open);
+    else if (open === 'note-popup') { tabs.forEach((t) => t.setAttribute('aria-selected', 'false')); showWindow('note-popup'); }
+    else if (open === 'main') showWindow('main', null);
+    else if ('pause' in li.dataset) {
+      paused = !paused;
+      li.textContent = paused ? '▶️ Clipboard history paused: click to resume' : '⏸️ Pause clipboard history';
+      Object.keys(wins).forEach((w) => post(w, { type: 'pause', paused }));
+      openMenu(null);
+      if (!Object.values(wins).some((w) => w.classList.contains('is-open'))) closePanel();
+      showToast(paused ? 'Clipboard history paused' : 'Clipboard history resumed');
+    } else if ('quit' in li.dataset) {
+      closePanel();
+      showToast('Quit — in the real app, QuickDesk would close now');
+    }
   });
 
   $$('[data-close]', demo).forEach((b) => b.addEventListener('click', () => {
@@ -148,7 +204,7 @@
 
   // Click on the wallpaper (outside any window) closes, like a real overlay.
   desktop.addEventListener('click', (e) => {
-    if (current && !e.target.closest('.panel, .appwin, [data-ring]')) {
+    if ((current || menuOpen()) && !e.target.closest('.shell-menu, .appwin, .desktop__tray')) {
       takeOver();
       closePanel();
     }
@@ -159,7 +215,7 @@
     if (!data || data.source !== 'quickdesk-demo') return;
     if (data.type === 'hide') {
       wins[data.label]?.classList.remove('is-open');
-      if (!Object.values(wins).some((w) => w.classList.contains('is-open')) && !trayMenu.classList.contains('is-open')) closePanel();
+      if (!Object.values(wins).some((w) => w.classList.contains('is-open')) && !menuOpen()) closePanel();
     }
     if (data.type === 'toast') showToast(data.text);
     if (data.type === 'interact') takeOver();
@@ -173,7 +229,7 @@
   document.addEventListener('keydown', (e) => {
     if (e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
 
-    if (e.key === 'Escape' && current) {
+    if (e.key === 'Escape' && (current || menuOpen())) {
       takeOver();
       closePanel();
       return;

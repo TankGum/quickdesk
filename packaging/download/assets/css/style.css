@@ -24,6 +24,8 @@
 
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  /* The mock Ubuntu desktop uses Ubuntu's own font, like the app windows in it. */
+  --shell: "Ubuntu Sans", Ubuntu, system-ui, sans-serif;
   --ease: cubic-bezier(.22, 1, .36, 1);
   --wrap: 1120px;
   --nav-h: 52px;
@@ -377,9 +379,10 @@ kbd {
   transition: opacity .35s;
   pointer-events: none;
 }
-.desktop.has-panel::after { opacity: 1; }
+/* No dimming: GNOME does not dim the desktop behind windows or menus. */
 
 .desktop__bar {
+  font-family: var(--shell);
   position: absolute;
   inset: 0 0 auto;
   z-index: 3;
@@ -418,10 +421,8 @@ kbd {
   border-radius: 10px;
   background: linear-gradient(145deg, var(--c), color-mix(in srgb, var(--c) 60%, #000));
 }
-.desktop__dock i.is-qd {
-  background: url("../img/favicon.svg") center / cover no-repeat;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, .15);
-}
+.desktop__dock i.is-qd { background: none; }
+.desktop__dock i.is-qd img { width: 100%; height: 100%; }
 
 .desktop__empty {
   position: absolute;
@@ -486,7 +487,6 @@ kbd {
   transform: translate(-50%, -50%) scale(1);
   pointer-events: auto;
 }
-.panel[data-panel="ai"] { --pc: var(--ai); }
 @keyframes blink { 50% { opacity: .35; } }
 
 @keyframes caret { 50% { opacity: 0; } }
@@ -509,64 +509,50 @@ kbd {
 #demo.is-tray .combo { opacity: 0; }
 .demo.is-tray .combo__tray { opacity: 1; }
 
-.desktop__ring {
+/* GNOME Shell: tray buttons and their menus (copied from the real thing) */
+.desktop__tray {
   display: grid;
   place-items: center;
-  width: 22px;
+  width: 30px;
   height: 22px;
-  margin-right: 2px;
   padding: 0;
   border: 0;
-  border-radius: 6px;
+  border-radius: 999px;
   background: none;
-  color: var(--ai);
   cursor: pointer;
-  transition: background-color .2s;
+  transition: background-color .15s;
 }
-.desktop__ring:hover, .demo.is-tray .desktop__ring { background: rgba(255, 255, 255, .16); }
+.desktop__tray:hover { background: rgba(255, 255, 255, .17); }
+.desktop__tray.is-active { background: #515151; }
+.desktop__tray svg, .desktop__tray img { width: 16px; height: 16px; }
+.desktop__ime { padding: 0 6px; font-weight: 500; }
+.desktop__quick { display: inline-flex; gap: 10px; align-items: center; padding: 0 6px; }
+.desktop__quick svg { width: 15px; height: 15px; }
 
-/* Tray menu (AI usage) drops down from the top bar instead of the centre */
-.panel--menu {
-  left: auto;
-  right: 74px;
-  top: 6px;
-  width: min(410px, calc(100% - 24px));
-  border-radius: 12px;
-  transform: translateY(-8px) scale(.98);
-  transform-origin: top right;
+.shell-menu {
+  position: absolute;
+  z-index: 3;
+  top: 4px;
+  left: 0;
+  font: 400 14.5px/1.2 var(--shell);
+  text-align: left;
+  color: #f2f2f2;
+  background: #1d1d1d;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .6);
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity .2s, transform .25s var(--ease);
+  pointer-events: none;
 }
-.panel--menu.is-open { transform: none; }
-.tray-menu { margin: 0; padding: 6px; list-style: none; font-size: 13px; }
-.tray-menu li {
-  display: grid;
-  grid-template-columns: 18px minmax(0, 1fr) auto;
-  grid-template-areas: "ring label pct" "ring when when";
-  align-items: center;
-  column-gap: 10px;
-  padding: 7px 10px;
-  border-radius: 8px;
-}
-.tray-menu li > span:nth-child(2) { grid-area: label; }
-.tray-menu li:not(.sep) { cursor: pointer; }
-.tray-menu li:not(.sep):hover { background: rgba(255, 255, 255, .07); }
-.tray-menu .ring { grid-area: ring; }
-.tray-menu b { grid-area: pct; font-weight: 600; }
-.tray-menu em { grid-area: when; font-style: normal; font-size: 11.5px; color: var(--text-3); }
-.tray-menu li.plain { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: none; color: var(--text-2); }
-.tray-menu li.plain > span { grid-area: auto; }
-.tray-menu li.plain em { grid-area: auto; font-size: 13px; }
-.tray-menu li.sep { padding: 0; margin: 5px 4px; height: 1px; background: var(--line-2); }
-.ring {
-  --p: 0;
-  --rc: var(--ai);
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: conic-gradient(var(--rc) calc(var(--p) * 1%), rgba(255, 255, 255, .18) 0);
-  -webkit-mask: radial-gradient(circle, transparent 4.5px, #000 5px);
-  mask: radial-gradient(circle, transparent 4.5px, #000 5px);
-}
-.ring--warn { --rc: #ff9f0a; }
+.shell-menu.is-open { opacity: 1; transform: none; pointer-events: auto; }
+.shell-menu ul { margin: 0; padding: 8px 0; list-style: none; }
+.shell-menu li { margin: 0 6px; padding: 10px 14px; border-radius: 8px; white-space: nowrap; cursor: pointer; }
+.shell-menu li:hover { background: rgba(255, 255, 255, .08); }
+.shell-menu li.sep { height: 1px; margin: 6px 14px; padding: 0; background: rgba(255, 255, 255, .13); cursor: default; }
+.shell-menu li.sub { display: flex; justify-content: space-between; gap: 40px; }
+.shell-menu li.sub::after { content: "›"; font-size: 18px; line-height: .8; }
 
 /* Ports — story rows */
 .ports__row {
@@ -889,6 +875,7 @@ kbd {
    page always shows the UI that ships. JS sets --s to fit the space. */
 .appwin {
   position: absolute;
+  font-family: var(--shell);
   left: 50%;
   top: 50%;
   width: var(--w);
@@ -910,37 +897,33 @@ kbd {
   pointer-events: auto;
 }
 .appwin iframe { display: block; flex: 1; width: 100%; border: 0; background: #161618; color-scheme: dark; }
+/* GNOME (libadwaita) header bar, measured from the real window */
 .appwin__bar {
   position: relative;
   flex: none;
-  height: 36px;
+  height: 40px;
   display: grid;
   place-items: center;
-  background: #232326;
-  border-bottom: 1px solid rgba(255, 255, 255, .08);
-  font-size: 13px;
-  font-weight: 600;
-  color: #e8e8ea;
+  background: #222;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
 }
-.appwin__close {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  width: 22px;
-  height: 22px;
-  margin-top: -11px;
+.appwin__btns { position: absolute; right: 9px; top: 8px; display: flex; gap: 10px; }
+.appwin__btns > * {
+  width: 24px;
+  height: 24px;
   padding: 0;
   display: grid;
   place-items: center;
   border: 0;
   border-radius: 50%;
-  background: rgba(255, 255, 255, .1);
-  color: #e8e8ea;
-  font-size: 15px;
-  line-height: 1;
+  background: #373737;
+  color: #f5f5f5;
   cursor: pointer;
 }
-.appwin__close:hover { background: rgba(255, 255, 255, .2); }
+.appwin__btns > *:hover { background: #454545; }
+.appwin__btns svg { width: 16px; height: 16px; }
 /* Popups are undecorated windows. */
 .appwin--popup { border-radius: 4px; }
 
@@ -949,7 +932,7 @@ kbd {
   position: relative;
   width: 100%;
   max-width: 980px;
-  aspect-ratio: 900 / 636;
+  aspect-ratio: 903 / 643;
   margin: 0 auto;
 }
 .shot .appwin {
@@ -1166,7 +1149,6 @@ kbd {
   .ports__row { grid-template-columns: 64px minmax(0, 1fr) 54px 50px; }
   .ports__row .ports__act .mini:not(.mini--danger) { display: none; }
   .hide-sm { display: none; }
-  .panel--menu { right: 12px; }
   .combo__tray { transform: translateY(-42px); font-size: 15px; padding-inline: 16px; }
 
   .sync { grid-template-columns: 1fr; }

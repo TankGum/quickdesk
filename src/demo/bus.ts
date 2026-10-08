@@ -22,6 +22,15 @@ export const params = new URLSearchParams(location.search);
 const theme = params.get("theme");
 if (theme) document.documentElement.dataset.theme = theme;
 
+// The app uses the system font, which on Ubuntu 24.04 is Ubuntu Sans. Load it
+// so visitors on any OS see the app as it looks on Ubuntu.
+const fonts = document.createElement("link");
+fonts.rel = "stylesheet";
+fonts.href = "https://fonts.googleapis.com/css2?family=Ubuntu+Sans:wght@400;500;600;700&family=Ubuntu+Sans+Mono:wght@400;500&display=swap";
+document.head.appendChild(fonts);
+document.documentElement.style.setProperty("--font", '"Ubuntu Sans", Ubuntu, system-ui, sans-serif');
+document.documentElement.style.setProperty("--mono", '"Ubuntu Sans Mono", "Ubuntu Mono", ui-monospace, monospace');
+
 /** Tell the embedding page something happened (hide, toast, …). */
 export function toPage(type: string, data: Record<string, unknown> = {}) {
   if (window.parent !== window) window.parent.postMessage({ source: "quickdesk-demo", type, ...data }, "*");
