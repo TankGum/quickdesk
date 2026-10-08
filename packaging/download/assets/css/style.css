@@ -196,11 +196,25 @@ kbd {
 .nav__links a { transition: color .2s; }
 .nav__links a:hover { color: var(--text); }
 
+/* GitHub links */
+.nav__gh { display: grid; place-items: center; margin-left: 24px; color: var(--text-2); transition: color .2s; }
+.nav__gh:hover { color: var(--text); }
+.nav__gh svg { width: 18px; height: 18px; }
+.btn--gh { display: inline-flex; align-items: center; gap: 10px; }
+.btn--gh svg { width: 20px; height: 20px; }
+
+.oss { padding-block: 120px; border-top: 1px solid var(--line); }
+.oss__inner { text-align: center; }
+.oss__mark { display: inline-grid; place-items: center; width: 64px; height: 64px; margin-bottom: 24px; border-radius: 18px; background: rgba(255, 255, 255, .07); }
+.oss__mark svg { width: 34px; height: 34px; }
+.oss__cta { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+.oss__repo { margin: 22px 0 0; color: var(--text-3); font-size: 14px; }
+
 /* Language switch (nav) */
 .lang {
   display: inline-flex;
   gap: 2px;
-  margin-left: 24px;
+  margin-left: 16px;
   margin-right: 12px;
   padding: 2px;
   border-radius: 999px;
@@ -1210,7 +1224,7 @@ kbd {
 
 @media (max-width: 640px) {
   .nav__links { display: none; }
-  .lang { margin-left: auto; }
+  .nav__gh { margin-left: auto; }
   .bento { grid-template-columns: 1fr; }
   .tile--wide { grid-column: auto; }
   .tile { min-height: 0; }

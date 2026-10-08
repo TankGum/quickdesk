@@ -31,6 +31,7 @@
       <a href="#ai" data-i18n="t2">AI usage</a>
       <a href="#faq">FAQ</a>
     </nav>
+    <a class="nav__gh" href="https://github.com/TankGum/quickdesk" aria-label="QuickDesk on GitHub" title="GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
     <div class="lang" role="group" aria-label="Language">
       <button type="button" data-lang="en" aria-pressed="true">EN</button>
       <button type="button" data-lang="vi" aria-pressed="false">VI</button>
@@ -49,6 +50,7 @@
     <p class="hero__sub reveal" data-i18n="t6">Encrypted notes, clipboard history, a live port manager and your AI usage limits — summoned instantly with <kbd>Super</kbd> <kbd>Alt</kbd>.</p>
     <div class="hero__cta reveal">
       <a class="btn btn--primary btn--lg" href="#download" data-i18n="t7">Download for Linux</a>
+      <a class="btn btn--secondary btn--lg btn--gh" href="https://github.com/TankGum/quickdesk"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span data-i18n="gh-hero">View on GitHub</span></a>
       <a class="btn btn--link" href="#demo" data-i18n="t8">Try the shortcuts <span aria-hidden="true">›</span></a>
     </div>
     <p class="hero__meta reveal">v{{VERSION}} · Ubuntu 22.04+ · Debian 12+ · Fedora · x86_64</p>
@@ -379,6 +381,20 @@
     </div>
   </section>
 
+  <!-- ============ OPEN SOURCE ============ -->
+  <section class="oss">
+    <div class="wrap wrap--narrow oss__inner reveal">
+      <span class="oss__mark"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></span>
+      <h2 class="section-title center" data-i18n="gh-title">Open source, MIT licensed.</h2>
+      <p class="lead center" data-i18n="gh-lead">Read every line, build it yourself, report a bug or send a pull request. QuickDesk is developed in the open on GitHub.</p>
+      <div class="oss__cta">
+        <a class="btn btn--primary" href="https://github.com/TankGum/quickdesk"><span data-i18n="gh-star">Star on GitHub</span></a>
+        <a class="btn btn--secondary" href="https://github.com/TankGum/quickdesk/issues" data-i18n="gh-issues">Report an issue</a>
+      </div>
+      <p class="oss__repo"><code>github.com/TankGum/quickdesk</code></p>
+    </div>
+  </section>
+
   <!-- ============ FAQ ============ -->
   <section class="faq" id="faq">
     <div class="wrap wrap--narrow">
@@ -554,7 +570,12 @@
 "t100": "Tắt “Tự chạy QuickDesk khi đăng nhập” trong Cài đặt, thoát app từ khay hệ thống, rồi chạy <code>sudo apt remove quick-desk</code> (Debian/Ubuntu) hoặc <code>sudo dnf remove QuickDesk</code> (Fedora), hoặc chỉ cần xoá file AppImage. Ghi chú và lịch sử clipboard vẫn nằm trong <code>~/.local/share/io.github.tankgum.quickdesk</code> cho tới khi bạn xoá thư mục đó.",
 "t101": "© <span id=\"year\">2026</span> QuickDesk · Giấy phép MIT. Làm cho Linux, bằng cả tấm lòng.",
 "title": "QuickDesk — Ghi chú, clipboard, cổng & hạn mức AI. Chỉ cách một phím tắt.",
-"description": "QuickDesk là tiện ích desktop Linux miễn phí, mã nguồn mở: ghi chú mã hoá đầu-cuối, lịch sử clipboard, trình quản lý cổng và hạn mức AI, gọi ra bằng Super + Alt + N, V hoặc P."
+"description": "QuickDesk là tiện ích desktop Linux miễn phí, mã nguồn mở: ghi chú mã hoá đầu-cuối, lịch sử clipboard, trình quản lý cổng và hạn mức AI, gọi ra bằng Super + Alt + N, V hoặc P.",
+"gh-hero": "Xem trên GitHub",
+"gh-title": "Mã nguồn mở, giấy phép MIT.",
+"gh-lead": "Đọc từng dòng code, tự build, báo lỗi hoặc gửi pull request. QuickDesk được phát triển công khai trên GitHub.",
+"gh-star": "Star trên GitHub",
+"gh-issues": "Báo lỗi"
 }
 </script>
 <script src="assets/js/main.js" defer></script>
