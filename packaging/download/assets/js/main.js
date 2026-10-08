@@ -68,19 +68,6 @@
     f.contentWindow?.postMessage({ source: 'quickdesk-page', type: 'lang', lang }, '*');
   }));
 
-  /* ---------- Reveal on scroll (staggered per parent) ---------- */
-  const revealIO = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-      const el = entry.target;
-      const siblings = $$(':scope > .reveal', el.parentElement);
-      el.style.transitionDelay = `${Math.min(siblings.indexOf(el), 4) * 80}ms`;
-      el.classList.add('is-in');
-      revealIO.unobserve(el);
-    });
-  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-  $$('.reveal').forEach((el) => revealIO.observe(el));
-
   /* ---------- Interactive demo ---------- */
   // The windows are the real QuickDesk UI (demo/ = `npm run build:demo`),
   // running on sample data in iframes. This script only plays the desktop:

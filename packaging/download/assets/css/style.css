@@ -540,7 +540,6 @@ kbd {
   transition: opacity .3s;
   pointer-events: none;
 }
-/* The id beats `.js .reveal.is-in`, which would keep the keys visible. */
 #demo.is-tray .combo { opacity: 0; }
 .demo.is-tray .combo__tray { opacity: 1; }
 
@@ -786,9 +785,8 @@ kbd {
 .stack {
   position: relative;
   height: 440px;
-  --k: 0;
+  --k: 1;
 }
-.stack.is-in { --k: 1; }
 .card {
   --x: 0px; --y: 0px; --r: 0deg;
   position: absolute;
@@ -1154,15 +1152,6 @@ kbd {
 .footer__links { display: flex; flex-wrap: wrap; gap: 8px 22px; }
 .footer__links a:hover { color: var(--text); }
 .footer__copy { margin: 0 0 0 auto; }
-
-/* ---------- Reveal on scroll ---------- */
-
-.js .reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity .9s var(--ease), transform .9s var(--ease);
-}
-.js .reveal.is-in { opacity: 1; transform: none; }
 
 /* ---------- Responsive ---------- */
 
