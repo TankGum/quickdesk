@@ -20,7 +20,7 @@ pub const UDEV_RULE_PATH: &str = "/etc/udev/rules.d/70-quickdesk-uinput.rules";
 pub const SETUP_COMMAND: &str = concat!(
     "echo 'KERNEL==\"uinput\", SUBSYSTEM==\"misc\", TAG+=\"uaccess\", OPTIONS+=\"static_node=uinput\"' ",
     "| sudo tee /etc/udev/rules.d/70-quickdesk-uinput.rules && ",
-    "sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=uinput"
+    "sudo udevadm control --reload-rules && sudo udevadm trigger --action=change --sysname-match=uinput && sudo udevadm settle"
 );
 
 // linux/input-event-codes.h
