@@ -480,6 +480,7 @@ M1 → M5 đã xong. Những chỗ khác so với spec ban đầu:
 | Port Manager | Docker là stretch | **Đã có:** map port → container qua `/var/run/docker.sock`, kèm nút Stop container | Trên máy dev, phần lớn port là của Docker |
 | Clipboard Windows/macOS | Listener native | Fallback poll 500ms qua `arboard`, **chưa lọc được nội dung sensitive** | Chưa có máy Windows/macOS để kiểm thử |
 | Hotkey | `Super+Shift+N/V/P`, Notes mở popup | `Super+Alt+N/V/P`; Notes mở màn quản lý; popup ghi nhanh là tuỳ chọn | Theo phản hồi người dùng, cộng với vấn đề của Unikey |
+| Clipboard: chọn mục | Chỉ copy (Wayland không cho giả lập phím) | **Auto-paste** qua xdg-desktop-portal RemoteDesktop (chỉ quyền bàn phím, restore token nên chỉ hỏi 1 lần, session đóng sau 45s rảnh), gõ Shift+Insert sau khi ghi CLIPBOARD + PRIMARY; Ctrl+Enter = chỉ copy | Người dùng cần paste trực tiếp như Win+V |
 | Bucket layout | `quickdesk/v1/…` | `<prefix>/v1/…`, prefix cấu hình được (mặc định `quickdesk`) | Cho phép nhiều app dùng chung một bucket |
 | Pull | Chỉ đọc log của máy khác | Đọc cả log của chính mình (từ cursor) | Khôi phục được thay đổi của mình khi DB local bị restore từ bản cũ |
 | Build Linux | — | Cần thêm `libdbus-1-dev` | Dùng cho Secret Service (OS keyring) |

@@ -7,9 +7,13 @@ Tauri 2 + Rust + React. Design: [`docs/SPEC.md`](docs/SPEC.md).
 | Hotkey | Opens |
 |---|---|
 | `Super+Alt+N` | Notes manager (cursor in "New note"; Ctrl+F searches) |
-| `Super+Alt+V` | Clipboard popup (↑↓, Enter copies) |
+| `Super+Alt+V` | Clipboard popup (↑↓, Enter pastes into the previous app, Ctrl+Enter copies only) |
 | `Super+Alt+P` | Port Manager |
 | *(unset)* | Quick-note popup; also in the tray menu |
+
+Auto-paste uses the desktop's RemoteDesktop portal (keyboard only): GNOME asks once, then
+remembers. It types Shift+Insert, which pastes in browsers, editors and terminals alike. Turn it
+off in the Clipboard tab to just copy.
 
 All hotkeys can be changed in Settings → Hotkeys. Super+Alt is the default because Vietnamese
 input methods (IBus Unikey/Bamboo) swallow Super+Shift+letter while a text field is focused.
