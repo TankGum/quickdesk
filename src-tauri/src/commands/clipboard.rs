@@ -1,5 +1,7 @@
-use qd_clipboard::ClipEntry;
 use std::time::Duration;
+
+use qd_clipboard::{ClipEntry, Payload};
+use qd_platform::paste::Chord;
 
 use tauri::{AppHandle, Emitter, Manager, State};
 
@@ -10,45 +12,73 @@ use crate::state::AppState;
 
 const DEFAULT_LIMIT: u32 = 200;
 
+/// `kind`: `text`, `image`, `files`, or none for all.
 #[tauri::command]
-pub fn clip_list(state: State<'_, AppState>, limit: Option<u32>) -> CmdResult<Vec<ClipEntry>> {
-    Ok(qd_clipboard::list(&*state.db.conn()?, limit.unwrap_or(DEFAULT_LIMIT))?)
+pub fn clip_list(state: State<'_, AppState>, limit: Option<u32>, kind: Option<String>) -> CmdResult<Vec<ClipEntry>> {
+    Ok(qd_clipboard::list(&*state.db.conn()?, kind.as_deref(), limit.unwrap_or(DEFAULT_LIMIT))?)
 }
 
 #[tauri::command]
-pub fn clip_search(state: State<'_, AppState>, query: String, limit: Option<u32>) -> CmdResult<Vec<ClipEntry>> {
-    Ok(qd_clipboard::search(&*state.db.conn()?, &query, limit.unwrap_or(DEFAULT_LIMIT))?)
+pub fn clip_search(
+    state: State<'_, AppState>,
+    query: String,
+    limit: Option<u32>,
+    kind: Option<String>,
+) -> CmdResult<Vec<ClipEntry>> {
+    Ok(qd_clipboard::search(&*state.db.conn()?, &query, kind.as_deref(), limit.unwrap_or(DEFAULT_LIMIT))?)
 }
 
-fn copy_entry(app: &AppHandle, state: &AppState, id: i64) -> CmdResult<()> {
-    let text = {
+/// Put an entry back on the clipboard; returns the keystroke that pastes it.
+fn copy_entry(app: &AppHandle, state: &AppState, id: i64) -> CmdResult<Chord> {
+    let payload = {
         let conn = state.db.conn()?;
         // Touch first so the watcher sees our own write as a repeat, not a new copy.
         qd_clipboard::touch(&conn, id, now_ms() as i64)?;
-        qd_clipboard::content(&conn, id)?
+        qd_clipboard::payload(&conn, &state.clipboard.blobs, id)?
     };
-    qd_platform::paste::write_text(&text).map_err(|e| CmdError::new("internal", e))?;
+    let fail = |e: String| CmdError::new("internal", e);
+    state.clipboard.expect_own_write();
+    let chord = match payload {
+        Payload::Text(text) => {
+            qd_platform::paste::write_text(&text).map_err(fail)?;
+            Chord::ShiftInsert
+        }
+        Payload::Image { path, .. } => {
+            let bytes =
+                std::fs::read(&path).map_err(|e| CmdError::new("missing", format!("image file is gone: {e}")))?;
+            qd_platform::paste::write_image(&bytes).map_err(fail)?;
+            Chord::CtrlV
+        }
+        Payload::Files(paths) => {
+            let existing: Vec<String> = paths.into_iter().filter(|p| std::path::Path::new(p).exists()).collect();
+            if existing.is_empty() {
+                return Err(CmdError::new("missing", "these files no longer exist"));
+            }
+            qd_platform::paste::write_files(&existing).map_err(fail)?;
+            Chord::CtrlV
+        }
+    };
     let _ = app.emit("clipboard://changed", ());
-    Ok(())
+    Ok(chord)
 }
 
 /// Put an entry back on the system clipboard and move it to the top.
 #[tauri::command]
 pub fn clip_copy(app: AppHandle, state: State<'_, AppState>, id: i64) -> CmdResult<()> {
-    copy_entry(&app, &state, id)
+    copy_entry(&app, &state, id).map(drop)
 }
 
 /// Copy an entry, hide the popup and type it into the app that had focus before.
 /// On failure the text is still on the clipboard.
 #[tauri::command]
 pub async fn clip_paste(app: AppHandle, id: i64) -> CmdResult<()> {
-    copy_entry(&app, &app.state::<AppState>(), id)?;
+    let chord = copy_entry(&app, &app.state::<AppState>(), id)?;
     if let Some(w) = app.get_webview_window(crate::windows::CLIP_POPUP) {
         let _ = w.hide();
     }
     // Give the compositor time to hand focus back to the previous window.
     tokio::time::sleep(Duration::from_millis(120)).await;
-    crate::clipboard::paste_into_focused(&app).await.map_err(|e| {
+    crate::clipboard::paste_into_focused(&app, chord).await.map_err(|e| {
         tracing::warn!(error = %e, "auto-paste failed");
         CmdError::new("paste_failed", e)
     })
@@ -68,14 +98,14 @@ pub fn clip_pin(app: AppHandle, state: State<'_, AppState>, id: i64, pinned: boo
 
 #[tauri::command]
 pub fn clip_delete(app: AppHandle, state: State<'_, AppState>, id: i64) -> CmdResult<()> {
-    qd_clipboard::delete(&*state.db.conn()?, id)?;
+    qd_clipboard::delete(&*state.db.conn()?, &state.clipboard.blobs, id)?;
     let _ = app.emit("clipboard://changed", ());
     Ok(())
 }
 
 #[tauri::command]
 pub fn clip_clear(app: AppHandle, state: State<'_, AppState>, keep_pinned: bool) -> CmdResult<usize> {
-    let n = qd_clipboard::clear(&*state.db.conn()?, keep_pinned)?;
+    let n = qd_clipboard::clear(&*state.db.conn()?, &state.clipboard.blobs, keep_pinned)?;
     let _ = app.emit("clipboard://changed", ());
     Ok(n)
 }

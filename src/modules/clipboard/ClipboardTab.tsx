@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
 import { locale, useI18n } from "../../shared/i18n";
-import { api, errorMessage } from "../../shared/ipc";
+import { api, ClipKind, errorMessage } from "../../shared/ipc";
 import { absoluteTime, relativeTime } from "../../shared/time";
+import { ClipPreview } from "./ClipPreview";
+import { KindFilter } from "./KindFilter";
 import { RecordingStatus } from "./RecordingStatus";
 import { useClipboard } from "./useClipboard";
 
@@ -12,7 +14,8 @@ export function ClipboardTab({ focusSignal }: { focusSignal: number }) {
   const [confirmClear, setConfirmClear] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const search = useRef<HTMLInputElement>(null);
-  const { entries, status, error, setError } = useClipboard(query, 500);
+  const [kind, setKind] = useState<ClipKind | undefined>(undefined);
+  const { entries, status, error, setError } = useClipboard(query, 500, kind);
 
   useEffect(() => {
     search.current?.focus();
@@ -53,6 +56,7 @@ export function ClipboardTab({ focusSignal }: { focusSignal: number }) {
           </button>
         )}
       </div>
+      <KindFilter value={kind} onChange={setKind} />
       {status && <RecordingStatus status={status} onError={setError} />}
       {status && (
         <label className="switch paste-pref" title={t("clip.pastePrefTitle")}>
@@ -79,11 +83,12 @@ export function ClipboardTab({ focusSignal }: { focusSignal: number }) {
                 {c.pinned ? "★" : "☆"}
               </button>
               <div className="clip-main" onClick={() => void run(api.clipCopy(c.id), t("clip.copiedToClipboard"))} title={t("clip.clickToCopy")}>
-                <pre className="clip-content">{c.preview}{c.chars > c.preview.length ? "…" : ""}</pre>
+                <ClipPreview c={c} />
                 <div className="note-meta">
                   <span title={t("clip.firstCopied", { time: absoluteTime(c.firstCopiedAt) })}>{relativeTime(c.lastCopiedAt)}</span>
                   {c.copyCount > 1 && <span>{t("clip.copiedTimes", { n: c.copyCount })}</span>}
-                  <span>{t("clip.chars", { n: c.chars.toLocaleString(locale()) })}</span>
+                  {c.kind === "text" && <span>{t("clip.chars", { n: c.chars.toLocaleString(locale()) })}</span>}
+                  {c.kind === "files" && <span>· {t("clip.files", { n: c.preview.split("\n").filter(Boolean).length })}</span>}
                 </div>
               </div>
               <button className="icon delete" title={t("common.delete")} onClick={() => void run(api.clipDelete(c.id))}>

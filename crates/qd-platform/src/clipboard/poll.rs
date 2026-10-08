@@ -1,4 +1,5 @@
 //! Portable fallback for Windows / macOS: poll the clipboard text.
+//! (Images and files are only captured by the Linux watcher so far.)
 //! TODO: native listeners (AddClipboardFormatListener, NSPasteboard
 //! changeCount) and their "concealed" markers for password managers.
 
@@ -6,7 +7,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
-use super::{set_state, ClipEvent, WatcherState, MAX_BYTES};
+use super::{set_state, ClipContent, ClipEvent, WatcherState, MAX_TEXT_BYTES};
 
 const INTERVAL: Duration = Duration::from_millis(500);
 
@@ -26,8 +27,8 @@ pub(super) fn spawn(on_event: impl Fn(ClipEvent) + Send + 'static, state: Arc<Mu
                 let Ok(text) = clipboard.get_text() else { continue };
                 if last.as_deref() != Some(text.as_str()) {
                     last = Some(text.clone());
-                    if text.len() <= MAX_BYTES && !text.trim().is_empty() {
-                        on_event(ClipEvent { text, source_app: None });
+                    if text.len() <= MAX_TEXT_BYTES && !text.trim().is_empty() {
+                        on_event(ClipEvent { content: ClipContent::Text(text), source_app: None });
                     }
                 }
             }

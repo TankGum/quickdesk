@@ -1,23 +1,23 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { api, ClipEntry, ClipStatus, errorMessage, useBackendEvent } from "../../shared/ipc";
+import { api, ClipEntry, ClipKind, ClipStatus, errorMessage, useBackendEvent } from "../../shared/ipc";
 
-/** Clipboard entries matching `query`, kept fresh via backend events. */
-export function useClipboard(query: string, limit: number) {
+/** Clipboard entries matching `query` (and `kind`), kept fresh via backend events. */
+export function useClipboard(query: string, limit: number, kind?: ClipKind) {
   const [entries, setEntries] = useState<ClipEntry[]>([]);
   const [status, setStatus] = useState<ClipStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(() => {
     const q = query.trim();
-    (q ? api.clipSearch(q, limit) : api.clipList(limit))
+    (q ? api.clipSearch(q, limit, kind) : api.clipList(limit, kind))
       .then((e) => {
         setEntries(e);
         setError(null);
       })
       .catch((e) => setError(errorMessage(e)));
     void api.clipStatus().then(setStatus);
-  }, [query, limit]);
+  }, [query, limit, kind]);
 
   useEffect(() => {
     const id = setTimeout(refresh, 60);

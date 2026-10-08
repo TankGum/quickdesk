@@ -27,21 +27,49 @@ pub enum PasteMethod {
 
 use std::sync::{Mutex, OnceLock};
 
-/// Put `text` on the system clipboard (and the PRIMARY selection on Linux).
-pub fn write_text(text: &str) -> Result<(), String> {
+/// Run `f` with the process-wide clipboard handle. It is kept alive for the
+/// whole process: on X11 the owner must keep serving the data it set.
+fn with_clipboard<T>(f: impl FnOnce(&mut arboard::Clipboard) -> Result<T, String>) -> Result<T, String> {
     static CLIPBOARD: OnceLock<Mutex<Option<arboard::Clipboard>>> = OnceLock::new();
-    // Kept alive for the whole process: on X11 the owner must keep serving the data.
     let mut guard = CLIPBOARD.get_or_init(|| Mutex::new(None)).lock().unwrap_or_else(|e| e.into_inner());
     if guard.is_none() {
         *guard = Some(arboard::Clipboard::new().map_err(|e| format!("clipboard unavailable: {e}"))?);
     }
-    let cb = guard.as_mut().expect("initialized above");
-    #[cfg(target_os = "linux")]
-    {
-        use arboard::{LinuxClipboardKind, SetExtLinux};
-        cb.set().clipboard(LinuxClipboardKind::Primary).text(text.to_owned()).map_err(|e| e.to_string())?;
-    }
-    cb.set_text(text.to_owned()).map_err(|e| e.to_string())
+    f(guard.as_mut().expect("initialized above"))
+}
+
+/// Put an encoded image (PNG/JPEG) on the clipboard; apps receive PNG.
+pub fn write_image(encoded: &[u8]) -> Result<(), String> {
+    let rgba = image::load_from_memory(encoded).map_err(|e| format!("cannot decode image: {e}"))?.to_rgba8();
+    let (width, height) = rgba.dimensions();
+    let data = arboard::ImageData { width: width as usize, height: height as usize, bytes: rgba.into_raw().into() };
+    with_clipboard(|cb| cb.set_image(data).map_err(|e| e.to_string()))
+}
+
+/// Put a list of files on the clipboard, as a file manager's "Copy" does.
+pub fn write_files(paths: &[String]) -> Result<(), String> {
+    with_clipboard(|cb| cb.set().file_list(paths).map_err(|e| e.to_string()))
+}
+
+/// Which keystroke pastes this kind of content.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Chord {
+    /// Text: also works in terminals, where Ctrl+V does not.
+    ShiftInsert,
+    /// Images and files: what file managers, chat apps and browsers expect.
+    CtrlV,
+}
+
+/// Put `text` on the system clipboard (and the PRIMARY selection on Linux).
+pub fn write_text(text: &str) -> Result<(), String> {
+    with_clipboard(|cb| {
+        #[cfg(target_os = "linux")]
+        {
+            use arboard::{LinuxClipboardKind, SetExtLinux};
+            cb.set().clipboard(LinuxClipboardKind::Primary).text(text.to_owned()).map_err(|e| e.to_string())?;
+        }
+        cb.set_text(text.to_owned()).map_err(|e| e.to_string())
+    })
 }
 
 #[cfg(target_os = "linux")]
@@ -52,11 +80,29 @@ mod imp {
     use ashpd::desktop::{PersistMode, Session};
     use tokio::sync::Mutex;
 
-    use super::PasteMethod;
-    use crate::uinput::{self, VirtualKeyboard, KEY_INSERT, KEY_LEFTSHIFT};
+    use super::{Chord, PasteMethod};
+    use crate::uinput::{self, VirtualKeyboard, KEY_INSERT, KEY_LEFTCTRL, KEY_LEFTSHIFT, KEY_V};
 
+    // X keysyms for the portal.
     const SHIFT_L: i32 = 0xffe1;
     const INSERT: i32 = 0xff63;
+    const CONTROL_L: i32 = 0xffe3;
+    const V: i32 = 0x0076;
+
+    impl Chord {
+        fn keycodes(self) -> [u16; 2] {
+            match self {
+                Chord::ShiftInsert => [KEY_LEFTSHIFT, KEY_INSERT],
+                Chord::CtrlV => [KEY_LEFTCTRL, KEY_V],
+            }
+        }
+        fn keysyms(self) -> [i32; 2] {
+            match self {
+                Chord::ShiftInsert => [SHIFT_L, INSERT],
+                Chord::CtrlV => [CONTROL_L, V],
+            }
+        }
+    }
 
     struct Active {
         proxy: RemoteDesktop,
@@ -82,25 +128,30 @@ mod imp {
             }
         }
 
-        /// Type Shift+Insert into the focused window. For the portal,
+        /// Type the paste `chord` into the focused window. For the portal,
         /// `restore_token` comes from a previous call and the returned token must
         /// be stored for the next one.
-        pub async fn paste(&self, method: PasteMethod, restore_token: Option<&str>) -> Result<Option<String>, String> {
+        pub async fn paste(
+            &self,
+            method: PasteMethod,
+            restore_token: Option<&str>,
+            chord: Chord,
+        ) -> Result<Option<String>, String> {
             match Self::resolve(method) {
                 PasteMethod::Uinput => {
                     self.close_portal().await;
-                    self.paste_uinput().map(|_| None)
+                    self.paste_uinput(chord).map(|_| None)
                 }
-                _ => self.paste_portal(restore_token).await,
+                _ => self.paste_portal(restore_token, chord).await,
             }
         }
 
-        fn paste_uinput(&self) -> Result<(), String> {
+        fn paste_uinput(&self, chord: Chord) -> Result<(), String> {
             let mut kb = self.keyboard.lock().unwrap_or_else(|e| e.into_inner());
             if kb.is_none() {
                 *kb = Some(VirtualKeyboard::create()?);
             }
-            let result = kb.as_mut().expect("created above").chord(&[KEY_LEFTSHIFT, KEY_INSERT]);
+            let result = kb.as_mut().expect("created above").chord(&chord.keycodes());
             if result.is_err() {
                 *kb = None; // recreate next time
             }
@@ -113,7 +164,7 @@ mod imp {
             }
         }
 
-        async fn paste_portal(&self, restore_token: Option<&str>) -> Result<Option<String>, String> {
+        async fn paste_portal(&self, restore_token: Option<&str>, chord: Chord) -> Result<Option<String>, String> {
             let mut active = self.active.lock().await;
             let mut new_token = None;
             if active.is_none() {
@@ -124,7 +175,7 @@ mod imp {
                 tokio::time::sleep(Duration::from_millis(150)).await;
             }
             let a = active.as_mut().expect("opened above");
-            let result = Self::shift_insert(a).await;
+            let result = Self::press(a, chord).await;
             if result.is_err() {
                 // Session may have been revoked; reopen next time.
                 if let Some(a) = active.take() {
@@ -167,17 +218,18 @@ mod imp {
             Ok((Active { proxy, session, last_used: Instant::now() }, token))
         }
 
-        async fn shift_insert(a: &Active) -> Result<(), String> {
+        async fn press(a: &Active, chord: Chord) -> Result<(), String> {
             let key =
                 |sym: i32, state: KeyState| a.proxy.notify_keyboard_keysym(&a.session, sym, state, Default::default());
             let step = Duration::from_millis(8);
-            key(SHIFT_L, KeyState::Pressed).await.map_err(|e| e.to_string())?;
+            let [modifier, k] = chord.keysyms();
+            key(modifier, KeyState::Pressed).await.map_err(|e| e.to_string())?;
             tokio::time::sleep(step).await;
-            key(INSERT, KeyState::Pressed).await.map_err(|e| e.to_string())?;
+            key(k, KeyState::Pressed).await.map_err(|e| e.to_string())?;
             tokio::time::sleep(step).await;
-            key(INSERT, KeyState::Released).await.map_err(|e| e.to_string())?;
+            key(k, KeyState::Released).await.map_err(|e| e.to_string())?;
             tokio::time::sleep(step).await;
-            key(SHIFT_L, KeyState::Released).await.map_err(|e| e.to_string())
+            key(modifier, KeyState::Released).await.map_err(|e| e.to_string())
         }
 
         /// Close the session if unused for `idle`.
@@ -196,7 +248,7 @@ mod imp {
 mod imp {
     use std::time::Duration;
 
-    use super::PasteMethod;
+    use super::{Chord, PasteMethod};
 
     #[derive(Default)]
     pub struct AutoPaster;
@@ -209,6 +261,7 @@ mod imp {
             &self,
             _method: PasteMethod,
             _restore_token: Option<&str>,
+            _chord: Chord,
         ) -> Result<Option<String>, String> {
             Err("auto-paste is not supported on this platform yet".into())
         }

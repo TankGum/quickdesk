@@ -114,7 +114,7 @@ pub fn run(args: Vec<String>) {
                 (
                     settings::device_id(&conn)?,
                     HotkeyConfig::load(&conn)?,
-                    clipboard::ClipboardService::new(&conn),
+                    clipboard::ClipboardService::new(&conn, data_dir.join("clipboard-images")),
                     settings::get::<i18n::LangPref>(&conn, i18n::SETTINGS_KEY)?.unwrap_or_default(),
                     ai_usage::AiUsageService::new(&conn),
                 )

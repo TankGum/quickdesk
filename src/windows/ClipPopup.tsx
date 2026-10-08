@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 
 import { RecordingStatus } from "../modules/clipboard/RecordingStatus";
-import { oneLine, useClipboard } from "../modules/clipboard/useClipboard";
+import { ClipPreview } from "../modules/clipboard/ClipPreview";
+import { KindFilter } from "../modules/clipboard/KindFilter";
+import { useClipboard } from "../modules/clipboard/useClipboard";
 import { useI18n } from "../shared/i18n";
-import { api, errorMessage, hideWindow, useShown } from "../shared/ipc";
+import { api, ClipKind, errorMessage, hideWindow, useShown } from "../shared/ipc";
 import { relativeTime } from "../shared/time";
 
 const POPUP_LIMIT = 50;
@@ -14,7 +16,8 @@ export function ClipPopup() {
   const list = useRef<HTMLUListElement>(null);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(0);
-  const { entries, status, error, setError } = useClipboard(query, POPUP_LIMIT);
+  const [kind, setKind] = useState<ClipKind | undefined>(undefined);
+  const { entries, status, error, setError } = useClipboard(query, POPUP_LIMIT, kind);
 
   useShown(() => {
     setQuery("");
@@ -103,6 +106,7 @@ export function ClipPopup() {
         onChange={(e) => setQuery(e.target.value)}
         autoFocus
       />
+      <KindFilter value={kind} onChange={setKind} compact />
       {status?.paused && <RecordingStatus status={status} compact onError={setError} />}
       {banner && <div className="clip-banner">{banner}</div>}
       {entries.length === 0 ? (
@@ -116,7 +120,7 @@ export function ClipPopup() {
               onMouseEnter={() => setSelected(i)}
               onClick={() => void pick(i)}
             >
-              <span className="clip-text">{oneLine(c.preview)}</span>
+              <ClipPreview c={c} compact />
               <span className="clip-meta">
                 {c.pinned && "★ "}
                 {relativeTime(c.lastCopiedAt)}

@@ -4,9 +4,12 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use std::time::Duration;
 
-use qd_clipboard::{Ingested, Policy};
+use std::path::PathBuf;
+use std::time::Instant;
+
+use qd_clipboard::{Captured, Ingested, Policy};
 use qd_core::settings;
-use qd_platform::clipboard::{spawn_watcher, WatcherHandle, WatcherState};
+use qd_platform::clipboard::{spawn_watcher, ClipContent, WatcherHandle, WatcherState};
 use qd_platform::paste::{AutoPaster, PasteMethod};
 use serde::Serialize;
 use tauri::menu::CheckMenuItem;
@@ -24,6 +27,9 @@ const PASTE_METHOD_KEY: &str = "clipboard.paste_method";
 /// Close the RemoteDesktop session (and GNOME's indicator) after this long unused.
 const PASTE_SESSION_IDLE: Duration = Duration::from_secs(45);
 const PRUNE_EVERY: Duration = Duration::from_secs(3600);
+/// Our own clipboard writes come back through the watcher; ignore them.
+/// (Images in particular are re-encoded, so they would not dedup by hash.)
+const OWN_WRITE_ECHO: Duration = Duration::from_millis(1500);
 
 pub struct ClipboardService {
     pub policy: Policy,
@@ -35,6 +41,9 @@ pub struct ClipboardService {
     auto_paste: AtomicBool,
     pub paster: AutoPaster,
     paste_method: Mutex<PasteMethod>,
+    /// Where image entries keep their files.
+    pub blobs: PathBuf,
+    ignore_until: Mutex<Option<Instant>>,
 }
 
 #[derive(Serialize)]
@@ -52,7 +61,7 @@ pub struct ClipStatus {
 }
 
 impl ClipboardService {
-    pub fn new(conn: &rusqlite::Connection) -> Self {
+    pub fn new(conn: &rusqlite::Connection, blobs: PathBuf) -> Self {
         ClipboardService {
             policy: Policy::default(),
             paused: AtomicBool::new(settings::get(conn, PAUSED_KEY).ok().flatten().unwrap_or(false)),
@@ -62,7 +71,18 @@ impl ClipboardService {
             auto_paste: AtomicBool::new(settings::get(conn, AUTO_PASTE_KEY).ok().flatten().unwrap_or(true)),
             paster: AutoPaster::default(),
             paste_method: Mutex::new(settings::get(conn, PASTE_METHOD_KEY).ok().flatten().unwrap_or_default()),
+            blobs,
+            ignore_until: Mutex::new(None),
         }
+    }
+
+    /// Call right before writing to the clipboard ourselves.
+    pub fn expect_own_write(&self) {
+        *self.ignore_until.lock().unwrap_or_else(|e| e.into_inner()) = Some(Instant::now() + OWN_WRITE_ECHO);
+    }
+
+    fn is_own_echo(&self) -> bool {
+        self.ignore_until.lock().unwrap_or_else(|e| e.into_inner()).is_some_and(|t| Instant::now() < t)
     }
 
     pub fn paste_method(&self) -> PasteMethod {
@@ -146,11 +166,11 @@ pub fn set_auto_paste(app: &AppHandle, enabled: bool) -> qd_core::Result<()> {
 }
 
 /// Type the clipboard into the focused app, remembering the portal grant.
-pub async fn paste_into_focused(app: &AppHandle) -> Result<(), String> {
+pub async fn paste_into_focused(app: &AppHandle, chord: qd_platform::paste::Chord) -> Result<(), String> {
     let state = app.state::<AppState>();
     let token: Option<String> =
         settings::get(&*state.db.conn().map_err(|e| e.to_string())?, PASTE_TOKEN_KEY).map_err(|e| e.to_string())?;
-    let new_token = state.clipboard.paster.paste(state.clipboard.paste_method(), token.as_deref()).await?;
+    let new_token = state.clipboard.paster.paste(state.clipboard.paste_method(), token.as_deref(), chord).await?;
     if let Some(t) = new_token {
         // Tokens are single-use: always keep the latest one.
         settings::set(&*state.db.conn().map_err(|e| e.to_string())?, PASTE_TOKEN_KEY, &t).map_err(|e| e.to_string())?;
@@ -164,12 +184,34 @@ pub fn start(app: &AppHandle) {
     let handle = app.clone();
     let watcher = spawn_watcher(move |ev| {
         let state = handle.state::<AppState>();
-        if state.clipboard.is_paused() {
+        let svc = &state.clipboard;
+        if svc.is_paused() || svc.is_own_echo() {
             return;
         }
+        // Decode images before taking the database lock.
+        let prepared = match &ev.content {
+            ClipContent::Image { mime, bytes } => match qd_clipboard::prepare_image(mime, bytes.clone(), &svc.policy) {
+                Ok(img) => Some(img),
+                Err(reason) => return tracing::debug!(?reason, "image skipped"),
+            },
+            _ => None,
+        };
+        let captured = match (&ev.content, &prepared) {
+            (ClipContent::Text(t), _) => Captured::Text(t),
+            (ClipContent::Files(paths), _) => Captured::Files(paths),
+            (ClipContent::Image { .. }, Some(img)) => Captured::Image(img),
+            (ClipContent::Image { .. }, None) => return,
+        };
         let result = state.db.conn().map_err(|e| e.to_string()).and_then(|conn| {
-            qd_clipboard::ingest(&conn, &ev.text, ev.source_app.as_deref(), now_ms() as i64, &state.clipboard.policy)
-                .map_err(|e| e.to_string())
+            qd_clipboard::ingest_capture(
+                &conn,
+                &svc.blobs,
+                captured,
+                ev.source_app.as_deref(),
+                now_ms() as i64,
+                &svc.policy,
+            )
+            .map_err(|e| e.to_string())
         });
         match result {
             Ok(Ingested::Inserted(_) | Ingested::Bumped(_)) => {
@@ -199,7 +241,8 @@ pub fn start(app: &AppHandle) {
     let handle = app.clone();
     let _ = std::thread::Builder::new().name("qd-clip-prune".into()).spawn(move || loop {
         let state = handle.state::<AppState>();
-        match state.db.conn().map(|c| qd_clipboard::prune(&c, &state.clipboard.policy, now_ms() as i64)) {
+        let svc = &state.clipboard;
+        match state.db.conn().map(|c| qd_clipboard::prune(&c, &svc.blobs, &svc.policy, now_ms() as i64)) {
             Ok(Ok(n)) if n > 0 => {
                 tracing::info!(removed = n, "clipboard retention");
                 let _ = handle.emit("clipboard://changed", ());

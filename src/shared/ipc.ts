@@ -83,8 +83,12 @@ export interface PortEntry {
   container: Container | null;
 }
 
+export type ClipKind = "text" | "image" | "files";
+
 export interface ClipEntry {
   id: number;
+  kind: ClipKind;
+  /** Text: first 400 characters. Files: the paths, one per line. */
   preview: string;
   chars: number;
   pinned: boolean;
@@ -92,6 +96,11 @@ export interface ClipEntry {
   firstCopiedAt: number;
   lastCopiedAt: number;
   copyCount: number;
+  byteSize: number;
+  width: number | null;
+  height: number | null;
+  /** data: URL of a small PNG, for images. */
+  thumb: string | null;
 }
 
 export interface ClipStatus {
@@ -198,8 +207,9 @@ export const api = {
   portsStopContainer: (id: string) => invoke<void>("ports_stop_container", { id }),
   portsOpen: (port: number) => invoke<void>("ports_open", { port }),
   clipboardWrite: (text: string) => invoke<void>("clipboard_write", { text }),
-  clipList: (limit?: number) => invoke<ClipEntry[]>("clip_list", { limit }),
-  clipSearch: (query: string, limit?: number) => invoke<ClipEntry[]>("clip_search", { query, limit }),
+  clipList: (limit?: number, kind?: ClipKind) => invoke<ClipEntry[]>("clip_list", { limit, kind }),
+  clipSearch: (query: string, limit?: number, kind?: ClipKind) =>
+    invoke<ClipEntry[]>("clip_search", { query, limit, kind }),
   clipCopy: (id: number) => invoke<void>("clip_copy", { id }),
   clipPaste: (id: number) => invoke<void>("clip_paste", { id }),
   clipPasteInfo: () => invoke<PasteInfo>("clip_paste_info"),

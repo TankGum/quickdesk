@@ -3,7 +3,7 @@ resolver = "2"
 members = ["crates/*", "src-tauri"]
 
 [workspace.package]
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 license = "MIT"
 
@@ -21,3 +21,4 @@ serde_json = "1"
 thiserror = "2"
 tracing = "0.1"
 uuid = { version = "1", features = ["v7", "v5"] }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }

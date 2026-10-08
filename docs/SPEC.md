@@ -485,4 +485,6 @@ M1 → M5 đã xong. Những chỗ khác so với spec ban đầu:
 | Pull | Chỉ đọc log của máy khác | Đọc cả log của chính mình (từ cursor) | Khôi phục được thay đổi của mình khi DB local bị restore từ bản cũ |
 | Build Linux | — | Cần thêm `libdbus-1-dev` | Dùng cho Secret Service (OS keyring) |
 
-Chưa làm: packaging, autostart, `PortalBackend` (GNOME ≥ 48 / KDE), Worker relay (§6.7), clipboard image/file, đổi passphrase từ UI (API đã có: `Keyring::change_passphrase`).
+Đã có thêm: clipboard **ảnh** (lưu file + thumbnail, giới hạn 10 MB/ảnh, 200 MB tổng) và **file** (chỉ lưu đường dẫn), dán lại bằng Ctrl+V; autostart; gói .deb.
+
+Chưa làm: `PortalBackend` (GNOME ≥ 48 / KDE), Worker relay (§6.7), ảnh/file trên Windows/macOS, đổi passphrase từ UI (API đã có: `Keyring::change_passphrase`).

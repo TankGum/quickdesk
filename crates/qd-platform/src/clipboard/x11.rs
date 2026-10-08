@@ -18,7 +18,7 @@ use x11rb::protocol::xproto::{
 use x11rb::protocol::Event;
 use x11rb::rust_connection::RustConnection;
 
-use super::{set_state, ClipEvent, WatcherState, MAX_BYTES};
+use super::{parse_file_list, set_state, ClipContent, ClipEvent, WatcherState, MAX_IMAGE_BYTES, MAX_TEXT_BYTES};
 
 /// Coalesce bursts: one copy can produce a dozen owner-change events.
 const DEBOUNCE: Duration = Duration::from_millis(120);
@@ -36,6 +36,10 @@ struct Atoms {
     property: Atom,
     /// Set by KeePassXC, KDE and others for secrets.
     password_hint: Atom,
+    gnome_files: Atom,
+    uri_list: Atom,
+    png: Atom,
+    jpeg: Atom,
 }
 
 impl Atoms {
@@ -50,8 +54,52 @@ impl Atoms {
             incr: get("INCR")?,
             property: get("QUICKDESK_SELECTION")?,
             password_hint: get("x-kde-passwordManagerHint")?,
+            gnome_files: get("x-special/gnome-copied-files")?,
+            uri_list: get("text/uri-list")?,
+            png: get("image/png")?,
+            jpeg: get("image/jpeg")?,
         })
     }
+}
+
+/// What a pending conversion will deliver.
+#[derive(Clone)]
+enum Kind {
+    Text,
+    Files,
+    Image(&'static str),
+}
+
+impl Kind {
+    fn cap(&self) -> usize {
+        match self {
+            Kind::Image(_) => MAX_IMAGE_BYTES,
+            Kind::Text | Kind::Files => MAX_TEXT_BYTES,
+        }
+    }
+}
+
+/// Pick what to read: copied files beat text (a file manager also offers the
+/// paths as text), text beats images (rich editors often offer a rendering).
+fn choose(atoms: &Atoms, targets: &[Atom]) -> Option<(Atom, Kind)> {
+    let has = |a: Atom| targets.contains(&a);
+    let text = [atoms.utf8, atoms.text_plain_utf8, AtomEnum::STRING.into()].into_iter().find(|t| has(*t));
+    if has(atoms.gnome_files) {
+        return Some((atoms.gnome_files, Kind::Files));
+    }
+    if has(atoms.uri_list) && text.is_none() {
+        return Some((atoms.uri_list, Kind::Files));
+    }
+    if let Some(t) = text {
+        return Some((t, Kind::Text));
+    }
+    if has(atoms.png) {
+        return Some((atoms.png, Kind::Image("image/png")));
+    }
+    if has(atoms.jpeg) {
+        return Some((atoms.jpeg, Kind::Image("image/jpeg")));
+    }
+    None
 }
 
 enum Phase {
@@ -65,13 +113,15 @@ enum Phase {
         since: Instant,
         time: Timestamp,
     },
-    AwaitText {
+    AwaitData {
         since: Instant,
+        kind: Kind,
     },
     /// Large selection arriving in chunks (INCR protocol).
     Incremental {
         since: Instant,
         buf: Vec<u8>,
+        kind: Kind,
     },
 }
 
@@ -151,7 +201,7 @@ fn run(on_event: &impl Fn(ClipEvent), state: &Arc<Mutex<WatcherState>>) -> Resul
         let deadline = match &phase {
             Phase::Idle => None,
             Phase::Pending { at, .. } => Some(*at + DEBOUNCE),
-            Phase::AwaitTargets { since, .. } | Phase::AwaitText { since } | Phase::Incremental { since, .. } => {
+            Phase::AwaitTargets { since, .. } | Phase::AwaitData { since, .. } | Phase::Incremental { since, .. } => {
                 Some(*since + CONVERT_TIMEOUT)
             }
         };
@@ -177,45 +227,43 @@ fn run(on_event: &impl Fn(ClipEvent), state: &Arc<Mutex<WatcherState>>) -> Resul
                     tracing::debug!("skipping selection marked as secret");
                     continue;
                 }
-                let target = [atoms.utf8, atoms.text_plain_utf8, AtomEnum::STRING.into()]
-                    .into_iter()
-                    .find(|t| targets.contains(t));
-                if let Some(target) = target {
+                if let Some((target, kind)) = choose(&atoms, &targets) {
                     conn.convert_selection(win, atoms.clipboard, target, atoms.property, time)?;
                     conn.flush()?;
-                    phase = Phase::AwaitText { since: now };
+                    phase = Phase::AwaitData { since: now, kind };
                 }
             }
-            (Some(Event::SelectionNotify(ev)), Phase::AwaitText { .. }) => {
+            (Some(Event::SelectionNotify(ev)), Phase::AwaitData { kind, .. }) => {
+                let kind = kind.clone();
                 phase = Phase::Idle;
                 if ev.property == x11rb::NONE {
                     continue;
                 }
                 let reply = conn
-                    .get_property(true, win, atoms.property, AtomEnum::ANY, 0, (MAX_BYTES / 4) as u32 + 1)?
+                    .get_property(true, win, atoms.property, AtomEnum::ANY, 0, (kind.cap() / 4) as u32 + 1)?
                     .reply()?;
                 conn.flush()?;
                 if reply.type_ == atoms.incr {
                     // Deleting the property (done above) tells the owner to start sending chunks.
-                    phase = Phase::Incremental { since: now, buf: Vec::new() };
+                    phase = Phase::Incremental { since: now, buf: Vec::new(), kind };
                 } else if reply.bytes_after == 0 {
-                    emit(on_event, &reply.value);
+                    emit(on_event, &kind, reply.value);
                 } else {
-                    tracing::debug!("skipping selection larger than {MAX_BYTES} bytes");
+                    tracing::debug!(cap = kind.cap(), "skipping oversized selection");
                 }
             }
-            (Some(Event::PropertyNotify(ev)), Phase::Incremental { buf, since })
+            (Some(Event::PropertyNotify(ev)), Phase::Incremental { buf, since, kind })
                 if ev.atom == atoms.property && ev.state == Property::NEW_VALUE =>
             {
                 let reply = conn.get_property(true, win, atoms.property, AtomEnum::ANY, 0, u32::MAX / 4)?.reply()?;
                 conn.flush()?;
                 *since = now;
                 if reply.value.is_empty() {
-                    let done = std::mem::take(buf);
+                    let (done, kind) = (std::mem::take(buf), kind.clone());
                     phase = Phase::Idle;
-                    emit(on_event, &done);
-                } else if buf.len() + reply.value.len() > MAX_BYTES {
-                    tracing::debug!("incremental selection exceeded {MAX_BYTES} bytes; dropped");
+                    emit(on_event, &kind, done);
+                } else if buf.len() + reply.value.len() > kind.cap() {
+                    tracing::debug!(cap = kind.cap(), "incremental selection too large; dropped");
                     phase = Phase::Idle;
                 } else {
                     buf.extend_from_slice(&reply.value);
@@ -231,7 +279,7 @@ fn run(on_event: &impl Fn(ClipEvent), state: &Arc<Mutex<WatcherState>>) -> Resul
             }
             (
                 None,
-                Phase::AwaitTargets { since, .. } | Phase::AwaitText { since } | Phase::Incremental { since, .. },
+                Phase::AwaitTargets { since, .. } | Phase::AwaitData { since, .. } | Phase::Incremental { since, .. },
             ) if now >= *since + CONVERT_TIMEOUT => {
                 tracing::debug!("selection owner did not answer in time");
                 phase = Phase::Idle;
@@ -247,9 +295,25 @@ fn run(on_event: &impl Fn(ClipEvent), state: &Arc<Mutex<WatcherState>>) -> Resul
     }
 }
 
-fn emit(on_event: &impl Fn(ClipEvent), bytes: &[u8]) {
-    let text = String::from_utf8_lossy(bytes).into_owned();
-    if !text.trim().is_empty() {
-        on_event(ClipEvent { text, source_app: None });
-    }
+fn emit(on_event: &impl Fn(ClipEvent), kind: &Kind, bytes: Vec<u8>) {
+    let content = match kind {
+        Kind::Text => {
+            let text = String::from_utf8_lossy(&bytes).into_owned();
+            if text.trim().is_empty() {
+                return;
+            }
+            ClipContent::Text(text)
+        }
+        Kind::Files => match parse_file_list(&String::from_utf8_lossy(&bytes)) {
+            Some(paths) => ClipContent::Files(paths),
+            None => return,
+        },
+        Kind::Image(mime) => {
+            if bytes.is_empty() {
+                return;
+            }
+            ClipContent::Image { mime: (*mime).to_owned(), bytes }
+        }
+    };
+    on_event(ClipEvent { content, source_app: None });
 }

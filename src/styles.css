@@ -312,3 +312,21 @@ select option { color: var(--fg); background-color: var(--bg); }
 .note .delete { align-self: center; font-size: 13px; }
 .note .delete { visibility: visible; opacity: 0.5; }
 .note:hover .delete, .note .delete:focus-visible { opacity: 1; }
+
+/* Clipboard media */
+.kind-filter { display: flex; gap: 6px; margin: 0 0 10px; flex-wrap: wrap; }
+.kind-filter.compact { margin: 6px 12px 2px; gap: 4px; }
+.chip { border: 1px solid var(--border); background: var(--bg); color: var(--fg); border-radius: 999px; padding: 3px 10px; font-size: 12px; cursor: pointer; }
+.chip:hover { background: var(--bg-subtle); }
+.chip.on { background: var(--accent); border-color: var(--accent); color: white; }
+.clip-image { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.clip-image img { max-width: 100%; max-height: 160px; border-radius: 6px; border: 1px solid var(--border); background: repeating-conic-gradient(#8881 0 25%, transparent 0 50%) 0 0 / 12px 12px; }
+.clip-image.compact { flex-direction: row; align-items: center; gap: 10px; min-width: 0; }
+.clip-image.compact img { height: 36px; max-width: 72px; object-fit: cover; }
+.clip-image-meta { font-size: 13px; }
+.clip-files { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.clip-file { display: flex; gap: 6px; align-items: baseline; min-width: 0; font-size: 13px; }
+.clip-file-name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.clip-file-dir { font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.clip-files.compact { flex-direction: row; gap: 8px; align-items: baseline; }
+.clip-list li > :first-child { min-width: 0; flex: 1; }

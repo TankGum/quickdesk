@@ -10,3 +10,5 @@ rusqlite.workspace = true
 serde.workspace = true
 thiserror.workspace = true
 blake3 = "1"
+image.workspace = true
+data-encoding = "2"

@@ -246,8 +246,10 @@ fn update_tray(app: &AppHandle, snap: &UsageSnapshot) {
                     let _ = set_ring(app, Some(choice));
                 }
             }
-            // Any usage line opens the AI tab.
-            _ => crate::windows::show(app, Target::Ai, now_ms()),
+            // Any usage line opens the AI tab. Menu events are app-wide in
+            // Tauri, so ignore entries that belong to the other tray menu.
+            id if id.starts_with("ai-") => crate::windows::show(app, Target::Ai, now_ms()),
+            _ => {}
         })
         .build(app);
     if let Err(e) = built {
