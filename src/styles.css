@@ -180,3 +180,20 @@ button.icon:hover { background: var(--bg-subtle); color: var(--fg); }
 .welcome-option input { margin-top: 3px; }
 .welcome-option small { display: block; margin-top: 4px; }
 .btn.big { padding: 8px 18px; font-size: 14px; }
+
+/* Clipboard recording status */
+.recording { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; }
+.recording.on { background: var(--bg-subtle); }
+.recording.on .dot { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; flex-shrink: 0; }
+.recording.paused { background: #fef3c7; color: #78350f; border: 1px solid #f59e0b; }
+@media (prefers-color-scheme: dark) { .recording.paused { background: #422006; color: #fde68a; } }
+.recording.compact { margin: 6px 12px 2px; padding: 6px 10px; font-size: 12px; }
+.recording-icon { font-size: 16px; }
+.recording-text { flex: 1; min-width: 0; }
+.menu-anchor { position: relative; }
+.menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 10; width: 280px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgb(0 0 0 / 0.15); padding: 6px; display: flex; flex-direction: column; }
+.menu-hint { font-size: 12px; color: var(--muted); padding: 6px 8px 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+.menu-item { text-align: left; border: none; background: none; padding: 7px 8px; border-radius: 6px; cursor: pointer; }
+.menu-item:hover { background: var(--bg-subtle); }
+.paste-pref { margin: 0 0 10px; align-items: flex-start; }
+.paste-pref small { display: inline; }

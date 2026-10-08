@@ -16,6 +16,8 @@ use crate::ipc::now_ms;
 use crate::state::AppState;
 
 const PAUSED_KEY: &str = "clipboard.paused";
+/// Unix ms when a timed pause ends; absent = paused until resumed by hand.
+const PAUSED_UNTIL_KEY: &str = "clipboard.paused_until";
 const AUTO_PASTE_KEY: &str = "clipboard.auto_paste";
 const PASTE_TOKEN_KEY: &str = "clipboard.paste_token";
 const PASTE_METHOD_KEY: &str = "clipboard.paste_method";
@@ -26,6 +28,7 @@ const PRUNE_EVERY: Duration = Duration::from_secs(3600);
 pub struct ClipboardService {
     pub policy: Policy,
     paused: AtomicBool,
+    paused_until: Mutex<Option<i64>>,
     watcher: Mutex<Option<WatcherHandle>>,
     /// Tray checkbox, kept in sync when pausing from the UI.
     pub tray_item: Mutex<Option<CheckMenuItem<Wry>>>,
@@ -42,6 +45,8 @@ pub struct ClipStatus {
     state: &'static str,
     detail: Option<String>,
     paused: bool,
+    /// When a timed pause ends (unix ms); `None` while paused = until resumed.
+    paused_until: Option<i64>,
     /// Picking an entry types it into the previous app (else: copy only).
     auto_paste: bool,
 }
@@ -51,6 +56,7 @@ impl ClipboardService {
         ClipboardService {
             policy: Policy::default(),
             paused: AtomicBool::new(settings::get(conn, PAUSED_KEY).ok().flatten().unwrap_or(false)),
+            paused_until: Mutex::new(settings::get(conn, PAUSED_UNTIL_KEY).ok().flatten()),
             watcher: Mutex::new(None),
             tray_item: Mutex::new(None),
             auto_paste: AtomicBool::new(settings::get(conn, AUTO_PASTE_KEY).ok().flatten().unwrap_or(true)),
@@ -68,7 +74,16 @@ impl ClipboardService {
     }
 
     pub fn is_paused(&self) -> bool {
-        self.paused.load(Ordering::Relaxed)
+        self.paused.load(Ordering::Relaxed) && !self.pause_expired()
+    }
+
+    fn paused_until(&self) -> Option<i64> {
+        *self.paused_until.lock().unwrap_or_else(|e| e.into_inner())
+    }
+
+    /// A timed pause whose end has passed (recording resumes on its own).
+    fn pause_expired(&self) -> bool {
+        self.paused.load(Ordering::Relaxed) && self.paused_until().is_some_and(|u| now_ms() as i64 >= u)
     }
 
     pub fn status(&self) -> ClipStatus {
@@ -82,20 +97,45 @@ impl ClipboardService {
                 WatcherState::Unavailable(e) => (w.backend, "unavailable", Some(e)),
             },
         };
-        ClipStatus { backend, state, detail, paused: self.is_paused(), auto_paste: self.auto_paste() }
+        let paused = self.is_paused();
+        ClipStatus {
+            backend,
+            state,
+            detail,
+            paused,
+            paused_until: if paused { self.paused_until() } else { None },
+            auto_paste: self.auto_paste(),
+        }
     }
 }
 
 /// Pause or resume recording; persists, updates the tray and notifies windows.
-pub fn set_paused(app: &AppHandle, paused: bool) -> qd_core::Result<()> {
+/// Tray label that says what clicking it will do.
+pub fn tray_label(paused: bool) -> &'static str {
+    if paused {
+        "Clipboard history paused: click to resume"
+    } else {
+        "Pause clipboard history"
+    }
+}
+
+/// Pause recording (for `minutes`, or until resumed when `None`) or resume it.
+pub fn set_paused(app: &AppHandle, paused: bool, minutes: Option<u32>) -> qd_core::Result<()> {
     let state = app.state::<AppState>();
+    let until = minutes.filter(|_| paused).map(|m| now_ms() as i64 + i64::from(m) * 60_000);
     state.clipboard.paused.store(paused, Ordering::Relaxed);
-    settings::set(&*state.db.conn()?, PAUSED_KEY, &paused)?;
+    *state.clipboard.paused_until.lock().unwrap_or_else(|e| e.into_inner()) = until;
+    {
+        let conn = state.db.conn()?;
+        settings::set(&conn, PAUSED_KEY, &paused)?;
+        settings::set(&conn, PAUSED_UNTIL_KEY, &until)?;
+    }
     if let Some(item) = state.clipboard.tray_item.lock().unwrap_or_else(|e| e.into_inner()).as_ref() {
         let _ = item.set_checked(paused);
+        let _ = item.set_text(tray_label(paused));
     }
     let _ = app.emit("clipboard://changed", ());
-    tracing::info!(paused, "clipboard history");
+    tracing::info!(paused, ?until, "clipboard history");
     Ok(())
 }
 
@@ -155,7 +195,13 @@ pub fn start(app: &AppHandle) {
     tauri::async_runtime::spawn(async move {
         loop {
             tokio::time::sleep(Duration::from_secs(10)).await;
-            handle.state::<AppState>().clipboard.paster.close_if_idle(PASTE_SESSION_IDLE).await;
+            let state = handle.state::<AppState>();
+            state.clipboard.paster.close_if_idle(PASTE_SESSION_IDLE).await;
+            if state.clipboard.pause_expired() {
+                if let Err(e) = set_paused(&handle, false, None) {
+                    tracing::error!(error = %e, "failed to resume clipboard history");
+                }
+            }
         }
     });
 

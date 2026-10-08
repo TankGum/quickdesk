@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { api, errorMessage } from "../../shared/ipc";
 import { absoluteTime, relativeTime } from "../../shared/time";
+import { RecordingStatus } from "./RecordingStatus";
 import { useClipboard } from "./useClipboard";
 
 export function ClipboardTab({ focusSignal }: { focusSignal: number }) {
@@ -35,26 +36,6 @@ export function ClipboardTab({ focusSignal }: { focusSignal: number }) {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === "Escape" && setQuery("")}
         />
-        {status && (
-          <label className="switch" title="Choosing an entry in the popup types it into the app you were using">
-            <input
-              type="checkbox"
-              checked={status.autoPaste}
-              onChange={(e) => void run(api.clipSetAutoPaste(e.target.checked))}
-            />
-            Auto-paste
-          </label>
-        )}
-        {status && (
-          <label className="switch" title="Stop recording new copies">
-            <input
-              type="checkbox"
-              checked={status.paused}
-              onChange={(e) => void run(api.clipSetPaused(e.target.checked))}
-            />
-            Pause
-          </label>
-        )}
         {confirmClear ? (
           <>
             <button className="btn danger" onClick={() => void run(api.clipClear(true), "History cleared").then(() => setConfirmClear(false))}>
@@ -70,6 +51,16 @@ export function ClipboardTab({ focusSignal }: { focusSignal: number }) {
           </button>
         )}
       </div>
+      {status && <RecordingStatus status={status} onError={setError} />}
+      {status && (
+        <label className="switch paste-pref" title="Uses Settings → Auto-paste">
+          <input type="checkbox" checked={status.autoPaste} onChange={(e) => void run(api.clipSetAutoPaste(e.target.checked))} />
+          <span>
+            Paste right away when I pick an entry in the popup
+            <small className="muted"> (off: it is only copied, then press Ctrl+V yourself)</small>
+          </span>
+        </label>
+      )}
       {status && status.state !== "running" && status.state !== "starting" && (
         <div className="banner error">
           Clipboard watcher {status.state} ({status.backend}){status.detail ? `: ${status.detail}` : ""}

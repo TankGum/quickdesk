@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
+import { RecordingStatus } from "../modules/clipboard/RecordingStatus";
 import { oneLine, useClipboard } from "../modules/clipboard/useClipboard";
 import { api, errorMessage, hideWindow, useShown } from "../shared/ipc";
 import { relativeTime } from "../shared/time";
@@ -86,11 +87,9 @@ export function ClipPopup() {
 
   const banner =
     error ??
-    (status?.paused
-      ? "History is paused (tray menu → Pause clipboard history)"
-      : status && status.state !== "running" && status.state !== "starting"
-        ? `Clipboard watcher ${status.state}: ${status.detail ?? ""}`
-        : null);
+    (status && status.state !== "running" && status.state !== "starting"
+      ? `Clipboard watcher ${status.state}: ${status.detail ?? ""}`
+      : null);
 
   return (
     <div className="popup clip" onKeyDown={onKeyDown}>
@@ -102,6 +101,7 @@ export function ClipPopup() {
         onChange={(e) => setQuery(e.target.value)}
         autoFocus
       />
+      {status?.paused && <RecordingStatus status={status} compact onError={setError} />}
       {banner && <div className="clip-banner">{banner}</div>}
       {entries.length === 0 ? (
         <div className="empty">{query ? "No matches." : "Nothing copied yet."}</div>

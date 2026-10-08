@@ -86,8 +86,8 @@ pub fn clip_status(state: State<'_, AppState>) -> ClipStatus {
 }
 
 #[tauri::command]
-pub fn clip_set_paused(app: AppHandle, paused: bool) -> CmdResult<()> {
-    Ok(crate::clipboard::set_paused(&app, paused)?)
+pub fn clip_set_paused(app: AppHandle, paused: bool, minutes: Option<u32>) -> CmdResult<()> {
+    Ok(crate::clipboard::set_paused(&app, paused, minutes)?)
 }
 
 #[derive(serde::Serialize)]

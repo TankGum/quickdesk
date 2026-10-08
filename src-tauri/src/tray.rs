@@ -11,7 +11,14 @@ const PAUSE_CLIP: &str = "pause_clipboard";
 
 pub fn build(app: &App, clip_paused: bool) -> tauri::Result<()> {
     let item = |id: &str, text: &str| MenuItem::with_id(app, id, text, true, None::<&str>);
-    let pause = CheckMenuItem::with_id(app, PAUSE_CLIP, "Pause clipboard history", true, clip_paused, None::<&str>)?;
+    let pause = CheckMenuItem::with_id(
+        app,
+        PAUSE_CLIP,
+        crate::clipboard::tray_label(clip_paused),
+        true,
+        clip_paused,
+        None::<&str>,
+    )?;
     let menu = Menu::with_items(
         app,
         &[
@@ -41,7 +48,7 @@ pub fn build(app: &App, clip_paused: bool) -> tauri::Result<()> {
                 "main" => Target::Main,
                 PAUSE_CLIP => {
                     let paused = !app.state::<AppState>().clipboard.is_paused();
-                    if let Err(e) = crate::clipboard::set_paused(app, paused) {
+                    if let Err(e) = crate::clipboard::set_paused(app, paused, None) {
                         tracing::error!(error = %e, "failed to toggle clipboard pause");
                     }
                     return;

@@ -97,6 +97,8 @@ export interface ClipStatus {
   state: "starting" | "running" | "retrying" | "unavailable";
   detail: string | null;
   paused: boolean;
+  /** Unix ms when a timed pause ends; null while paused = until resumed. */
+  pausedUntil: number | null;
   autoPaste: boolean;
 }
 
@@ -175,7 +177,7 @@ export const api = {
   clipDelete: (id: number) => invoke<void>("clip_delete", { id }),
   clipClear: (keepPinned: boolean) => invoke<number>("clip_clear", { keepPinned }),
   clipStatus: () => invoke<ClipStatus>("clip_status"),
-  clipSetPaused: (paused: boolean) => invoke<void>("clip_set_paused", { paused }),
+  clipSetPaused: (paused: boolean, minutes?: number) => invoke<void>("clip_set_paused", { paused, minutes }),
   syncStatus: () => invoke<SyncStatus>("sync_status"),
   syncConnect: (config: S3Config, secret: string) => invoke<{ initialized: boolean }>("sync_connect", { config, secret }),
   syncCreate: (passphrase: string) => invoke<string>("sync_create", { passphrase }),
