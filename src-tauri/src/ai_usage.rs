@@ -5,9 +5,9 @@ use std::sync::Mutex;
 use std::time::Duration;
 
 use qd_ai_usage::{ProviderUsage, UsageWindow};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::image::Image;
-use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
+use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Emitter, Manager, Wry};
 
@@ -18,6 +18,40 @@ use crate::state::AppState;
 
 const TRAY_ID: &str = "ai-usage";
 const SETTING_TRAY: &str = "ai.tray";
+const SETTING_RING: &str = "ai.ring";
+
+/// Which limit the top-bar ring shows.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RingChoice {
+    pub provider: String,
+    pub window: String,
+}
+
+/// The ring's value: the chosen limit when it has a percentage, otherwise
+/// the highest 5-hour usage across tools ("automatic").
+pub fn pick(providers: &[ProviderUsage], choice: Option<&RingChoice>) -> (Option<f64>, Option<RingChoice>) {
+    let percent_of = |c: &RingChoice| {
+        providers
+            .iter()
+            .find(|p| p.provider == c.provider)
+            .and_then(|p| p.windows.iter().find(|w| w.id == c.window))
+            .and_then(|w| w.used_percent)
+    };
+    if let Some(c) = choice {
+        if let Some(p) = percent_of(c) {
+            return (Some(p), Some(c.clone()));
+        }
+    }
+    providers
+        .iter()
+        .flat_map(|p| p.windows.iter().filter(|w| w.is_five_hour()).map(move |w| (p, w)))
+        .filter_map(|(p, w)| {
+            w.used_percent.map(|pct| (pct, RingChoice { provider: p.provider.clone(), window: w.id.clone() }))
+        })
+        .max_by(|a, b| a.0.total_cmp(&b.0))
+        .map_or((None, None), |(pct, c)| (Some(pct), Some(c)))
+}
 const REFRESH_EVERY: Duration = Duration::from_secs(120);
 
 #[derive(Debug, Clone, Serialize, Default)]
@@ -25,8 +59,11 @@ const REFRESH_EVERY: Duration = Duration::from_secs(120);
 pub struct UsageSnapshot {
     pub providers: Vec<ProviderUsage>,
     pub updated_at: Option<i64>,
-    /// Highest 5-hour usage across tools: what the ring shows.
+    /// What the ring shows (percent) and which limit that is.
     pub headline: Option<f64>,
+    pub ring_shows: Option<RingChoice>,
+    /// The user's choice; `None` = automatic.
+    pub ring: Option<RingChoice>,
     pub tray_enabled: bool,
 }
 
@@ -38,8 +75,9 @@ pub struct AiUsageService {
 impl AiUsageService {
     pub fn new(conn: &rusqlite::Connection) -> Self {
         let tray_enabled = qd_core::settings::get(conn, SETTING_TRAY).ok().flatten().unwrap_or(true);
+        let ring = qd_core::settings::get(conn, SETTING_RING).ok().flatten();
         AiUsageService {
-            snapshot: Mutex::new(UsageSnapshot { tray_enabled, ..Default::default() }),
+            snapshot: Mutex::new(UsageSnapshot { tray_enabled, ring, ..Default::default() }),
             tx: Mutex::new(None),
         }
     }
@@ -58,12 +96,11 @@ impl AiUsageService {
 /// Collect now (blocking) and publish.
 pub fn refresh(app: &AppHandle) {
     let providers = qd_ai_usage::collect();
-    let headline = qd_ai_usage::headline_percent(&providers);
     let state = app.state::<AppState>();
     let snap = {
         let mut s = state.ai.snapshot.lock().unwrap_or_else(|e| e.into_inner());
+        (s.headline, s.ring_shows) = pick(&providers, s.ring.as_ref());
         s.providers = providers;
-        s.headline = headline;
         s.updated_at = Some(now_ms() as i64);
         s.clone()
     };
@@ -101,6 +138,21 @@ pub fn set_tray_enabled(app: &AppHandle, enabled: bool) -> qd_core::Result<()> {
     Ok(())
 }
 
+/// Choose what the ring shows (`None` = automatic) and redraw it.
+pub fn set_ring(app: &AppHandle, choice: Option<RingChoice>) -> qd_core::Result<()> {
+    let state = app.state::<AppState>();
+    qd_core::settings::set(&*state.db.conn()?, SETTING_RING, &choice)?;
+    let snap = {
+        let mut s = state.ai.snapshot.lock().unwrap_or_else(|e| e.into_inner());
+        (s.headline, s.ring_shows) = pick(&s.providers, choice.as_ref());
+        s.ring = choice;
+        s.clone()
+    };
+    update_tray(app, &snap);
+    let _ = app.emit("ai://usage", snap);
+    Ok(())
+}
+
 /// Re-render after a language change.
 pub fn relabel(app: &AppHandle) {
     let snap = app.state::<AppState>().ai.snapshot();
@@ -130,6 +182,15 @@ fn update_tray(app: &AppHandle, snap: &UsageSnapshot) {
         .show_menu_on_left_click(true)
         .on_menu_event(|app, event| match event.id().as_ref() {
             "ai-refresh" => app.state::<AppState>().ai.refresh_soon(),
+            "ai-ring-auto" => {
+                let _ = set_ring(app, None);
+            }
+            id if id.starts_with("ai-ring-") => {
+                let snap = app.state::<AppState>().ai.snapshot();
+                if let Some(choice) = ring_choice_for_id(&snap, id) {
+                    let _ = set_ring(app, Some(choice));
+                }
+            }
             _ => crate::windows::show(app, Target::Ai, now_ms()),
         })
         .build(app);
@@ -154,12 +215,56 @@ fn build_menu(app: &AppHandle, lang: Lang, snap: &UsageSnapshot) -> tauri::Resul
         }
     }
     menu.append(&PredefinedMenuItem::separator(app)?)?;
+    menu.append(&ring_submenu(app, lang, snap)?)?;
     if let Some(at) = snap.updated_at {
         menu.append(&line("ai-updated".into(), tx(lang, "updated").replace("{time}", &fmt_time(at)))?)?;
     }
     menu.append(&line("ai-refresh".into(), tx(lang, "refresh").into())?)?;
     menu.append(&line("ai-open".into(), tx(lang, "open").into())?)?;
     Ok(menu)
+}
+
+/// Selectable limits: every window that reports a percentage.
+fn ring_options(snap: &UsageSnapshot) -> impl Iterator<Item = (usize, usize, &ProviderUsage, &UsageWindow)> {
+    snap.providers
+        .iter()
+        .enumerate()
+        .flat_map(|(i, p)| p.windows.iter().enumerate().map(move |(j, w)| (i, j, p, w)))
+        .filter(|(_, _, _, w)| w.used_percent.is_some())
+}
+
+fn ring_choice_for_id(snap: &UsageSnapshot, id: &str) -> Option<RingChoice> {
+    ring_options(snap)
+        .find(|(i, j, _, _)| id == format!("ai-ring-{i}-{j}"))
+        .map(|(_, _, p, w)| RingChoice { provider: p.provider.clone(), window: w.id.clone() })
+}
+
+fn ring_submenu(app: &AppHandle, lang: Lang, snap: &UsageSnapshot) -> tauri::Result<Submenu<Wry>> {
+    let sub = Submenu::with_id(app, "ai-ring", tx(lang, "ring"), true)?;
+    sub.append(&CheckMenuItem::with_id(
+        app,
+        "ai-ring-auto",
+        tx(lang, "ring_auto"),
+        true,
+        snap.ring.is_none(),
+        None::<&str>,
+    )?)?;
+    for (i, j, p, w) in ring_options(snap) {
+        let label = match tx(lang, &w.id) {
+            "" => w.label.clone(),
+            l => l.to_owned(),
+        };
+        let checked = snap.ring.as_ref().is_some_and(|c| c.provider == p.provider && c.window == w.id);
+        sub.append(&CheckMenuItem::with_id(
+            app,
+            format!("ai-ring-{i}-{j}"),
+            format!("{} · {label}", p.name),
+            true,
+            checked,
+            None::<&str>,
+        )?)?;
+    }
+    Ok(sub)
 }
 
 fn tx(lang: Lang, key: &str) -> &'static str {
@@ -271,6 +376,20 @@ fn tx(lang: Lang, key: &str) -> &'static str {
                 "Does not report a quota percentage"
             }
         }
+        "ring" => {
+            if vi {
+                "Vòng tròn hiển thị"
+            } else {
+                "Ring shows"
+            }
+        }
+        "ring_auto" => {
+            if vi {
+                "Tự động (limit 5 giờ cao nhất)"
+            } else {
+                "Automatic (highest 5-hour limit)"
+            }
+        }
         "error" => {
             if vi {
                 "Lỗi: "
@@ -364,6 +483,41 @@ fn local_parts(ms: i64) -> (String, String) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn provider(id: &str, windows: &[(&str, Option<f64>)]) -> ProviderUsage {
+        ProviderUsage {
+            provider: id.into(),
+            name: id.into(),
+            plan: None,
+            windows: windows
+                .iter()
+                .map(|(w, p)| UsageWindow {
+                    id: (*w).into(),
+                    label: (*w).into(),
+                    used_percent: *p,
+                    resets_at: None,
+                    detail: None,
+                })
+                .collect(),
+            source: "live",
+            as_of: None,
+            error: None,
+        }
+    }
+
+    #[test]
+    fn ring_follows_the_choice_and_falls_back_to_highest_five_hour() {
+        let ps = [
+            provider("claude", &[("five_hour", Some(64.0)), ("weekly", Some(51.0))]),
+            provider("codex", &[("five_hour", Some(80.0)), ("monthly", Some(76.0))]),
+        ];
+        let choice = |p: &str, w: &str| RingChoice { provider: p.into(), window: w.into() };
+        assert_eq!(pick(&ps, None), (Some(80.0), Some(choice("codex", "five_hour"))));
+        assert_eq!(pick(&ps, Some(&choice("claude", "weekly"))), (Some(51.0), Some(choice("claude", "weekly"))));
+        // A choice that has no number right now falls back to automatic.
+        assert_eq!(pick(&ps, Some(&choice("gemini", "five_hour"))).0, Some(80.0));
+        assert_eq!(pick(&[provider("codex", &[("monthly", Some(76.0))])], None), (None, None));
+    }
 
     #[test]
     fn durations_read_naturally() {

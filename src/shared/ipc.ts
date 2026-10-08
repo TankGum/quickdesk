@@ -156,10 +156,19 @@ export interface ProviderUsage {
   error: string | null;
 }
 
+export interface RingChoice {
+  provider: string;
+  window: string;
+}
+
 export interface UsageSnapshot {
   providers: ProviderUsage[];
   updatedAt: number | null;
+  /** Percent the top-bar ring shows, and which limit that is. */
   headline: number | null;
+  ringShows: RingChoice | null;
+  /** The user's choice; null = automatic. */
+  ring: RingChoice | null;
   trayEnabled: boolean;
 }
 
@@ -214,6 +223,7 @@ export const api = {
   aiUsage: () => invoke<UsageSnapshot>("ai_usage_get"),
   aiUsageRefresh: () => invoke<UsageSnapshot>("ai_usage_refresh"),
   aiSetTray: (enabled: boolean) => invoke<void>("ai_set_tray", { enabled }),
+  aiSetRing: (choice: RingChoice | null) => invoke<void>("ai_set_ring", { choice }),
   focusReport: (report: FocusReport) => invoke<void>("diag_focus_report", { report }),
   focusStats: () => invoke<FocusStats>("diag_focus_stats"),
   quit: () => invoke<void>("app_quit"),

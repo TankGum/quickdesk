@@ -236,3 +236,7 @@ button.icon:hover { background: var(--bg-subtle); color: var(--fg); }
 .ai-fill.ok { background: #22c55e; }
 .ai-fill.warn { background: #f59e0b; }
 .ai-fill.high { background: #ef4444; }
+.ai-tray { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; margin-bottom: 12px; }
+.ai-ring-pick { display: flex; gap: 6px; align-items: center; }
+.ai-ring-pick select { padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-subtle); color: var(--fg); font: inherit; }
+.ring-badge { margin-left: 8px; color: var(--accent); border-color: var(--accent); }

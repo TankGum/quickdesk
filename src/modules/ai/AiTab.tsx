@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { Key, t, useI18n } from "../../shared/i18n";
-import { api, errorMessage, ProviderUsage, UsageSnapshot, UsageWindow, useBackendEvent } from "../../shared/ipc";
+import { api, errorMessage, ProviderUsage, RingChoice, UsageSnapshot, UsageWindow, useBackendEvent } from "../../shared/ipc";
 import { absoluteTime, clockTime, relativeTime } from "../../shared/time";
 
 const STALE_MS = 60_000;
@@ -21,6 +21,13 @@ function duration(ms: number): string {
 }
 
 /** Today: "16:20"; otherwise date and time. */
+function windowLabel(w: UsageWindow): string {
+  const key = `ai.window.${w.id}` as Key;
+  return t(key) === key ? w.label : t(key);
+}
+
+const same = (a: RingChoice | null, p: string, w: string) => !!a && a.provider === p && a.window === w;
+
 function when(ms: number): string {
   return new Date(ms).toDateString() === new Date().toDateString() ? clockTime(ms) : absoluteTime(ms);
 }
@@ -73,21 +80,46 @@ export function AiTab({ focusSignal }: { focusSignal: number }) {
           {busy ? t("ai.refreshing") : t("ai.refresh")}
         </button>
       </div>
-      <label className="switch ai-tray">
-        <input
-          type="checkbox"
-          checked={snap.trayEnabled}
-          onChange={(e) => void api.aiSetTray(e.target.checked).catch((x) => setError(errorMessage(x)))}
-        />
-        {t("ai.tray")}
-      </label>
+      <div className="ai-tray">
+        <label className="switch">
+          <input
+            type="checkbox"
+            checked={snap.trayEnabled}
+            onChange={(e) => void api.aiSetTray(e.target.checked).catch((x) => setError(errorMessage(x)))}
+          />
+          {t("ai.tray")}
+        </label>
+        {snap.trayEnabled && (
+          <label className="ai-ring-pick">
+            <span className="muted">{t("ai.ring")}:</span>
+            <select
+              value={snap.ring ? `${snap.ring.provider}|${snap.ring.window}` : ""}
+              onChange={(e) => {
+                const [provider, window] = e.target.value.split("|");
+                void api.aiSetRing(e.target.value ? { provider, window } : null).catch((x) => setError(errorMessage(x)));
+              }}
+            >
+              <option value="">{t("ai.ringAuto")}</option>
+              {snap.providers.flatMap((p) =>
+                p.windows
+                  .filter((w) => w.usedPercent !== null)
+                  .map((w) => (
+                    <option key={`${p.provider}|${w.id}`} value={`${p.provider}|${w.id}`}>
+                      {p.name} · {windowLabel(w)} ({Math.round(w.usedPercent!)}%)
+                    </option>
+                  )),
+              )}
+            </select>
+          </label>
+        )}
+      </div>
       {error && <div className="banner error">{error}</div>}
       {snap.providers.length === 0 ? (
         <div className="empty">{t("ai.none")}</div>
       ) : (
         <div className="ai-cards">
           {snap.providers.map((p) => (
-            <ProviderCard key={p.provider} p={p} />
+            <ProviderCard key={p.provider} p={p} ringShows={snap.trayEnabled ? snap.ringShows : null} />
           ))}
         </div>
       )}
@@ -99,7 +131,7 @@ export function AiTab({ focusSignal }: { focusSignal: number }) {
   );
 }
 
-function ProviderCard({ p }: { p: ProviderUsage }) {
+function ProviderCard({ p, ringShows }: { p: ProviderUsage; ringShows: RingChoice | null }) {
   const errKey = p.error && (`ai.err.${p.error}` as Key);
   const knownErr = errKey && ["ai.err.login_expired", "ai.err.no_data", "ai.err.no_percent"].includes(errKey);
   return (
@@ -114,15 +146,14 @@ function ProviderCard({ p }: { p: ProviderUsage }) {
       </header>
       {p.error && <div className={knownErr ? "muted small" : "banner error"}>{knownErr ? t(errKey as Key) : p.error}</div>}
       {p.windows.map((w) => (
-        <WindowRow key={w.id} w={w} asOf={p.asOf} />
+        <WindowRow key={w.id} w={w} asOf={p.asOf} onTopBar={same(ringShows, p.provider, w.id)} />
       ))}
     </section>
   );
 }
 
-function WindowRow({ w, asOf }: { w: UsageWindow; asOf: number | null }) {
-  const key = `ai.window.${w.id}` as Key;
-  const label = t(key) === key ? w.label : t(key);
+function WindowRow({ w, asOf, onTopBar }: { w: UsageWindow; asOf: number | null; onTopBar: boolean }) {
+  const label = windowLabel(w);
   if (w.id === "quota_hit") {
     return (
       <div className="ai-window">
@@ -147,7 +178,10 @@ function WindowRow({ w, asOf }: { w: UsageWindow; asOf: number | null }) {
   return (
     <div className="ai-window">
       <div className="ai-window-head">
-        <span>{label}</span>
+        <span>
+          {label}
+          {onTopBar && <span className="badge ring-badge">◔ {t("ai.onTopBar")}</span>}
+        </span>
         <span className={pct !== null ? `ai-pct ${level(pct)}` : "muted"}>
           {pct !== null ? `${Math.round(pct)}%` : ""}
           {w.detail && <span className="muted"> {w.detail}</span>}

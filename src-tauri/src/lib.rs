@@ -74,6 +74,7 @@ pub fn run(args: Vec<String>) {
             commands::ai::ai_usage_get,
             commands::ai::ai_usage_refresh,
             commands::ai::ai_set_tray,
+            commands::ai::ai_set_ring,
             commands::app::app_set_language,
             commands::app::app_onboarding_finish,
             commands::ports::ports_scan,
