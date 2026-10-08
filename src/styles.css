@@ -90,3 +90,21 @@ button.icon:hover { background: var(--bg-subtle); color: var(--fg); }
 .note-body { white-space: pre-wrap; overflow-wrap: anywhere; cursor: text; }
 .note-edit { width: 100%; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; resize: vertical; outline: none; }
 .note-meta { display: flex; gap: 8px; align-items: center; margin-top: 4px; color: var(--muted); font-size: 12px; }
+
+/* Buttons */
+.btn { padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); cursor: pointer; font-size: 12px; white-space: nowrap; }
+.btn:hover { background: var(--bg-subtle); }
+.btn.danger { color: var(--danger); border-color: var(--danger); }
+
+/* Ports */
+.port-table { width: 100%; border-collapse: collapse; }
+.port-table th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12px; padding: 4px 8px; border-bottom: 1px solid var(--border); }
+.port-table td { padding: 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.port-table .port { width: 110px; font-variant-numeric: tabular-nums; }
+.port-table .port b { font-size: 15px; }
+.port-table .addrs { color: var(--muted); font-size: 11px; }
+.port-table .owner { min-width: 0; max-width: 340px; }
+.port-table .cmd { color: var(--muted); font-size: 12px; font-family: ui-monospace, monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 340px; }
+.port-table .pid { width: 70px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.port-table .actions { text-align: right; white-space: nowrap; }
+.port-table .actions > * + * { margin-left: 4px; }

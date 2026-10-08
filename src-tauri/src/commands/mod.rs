@@ -2,6 +2,7 @@
 
 pub mod app;
 pub mod notes;
+pub mod ports;
 
 use serde::Serialize;
 
@@ -35,4 +36,21 @@ impl From<qd_notes::Error> for CmdError {
         };
         CmdError::new(code, e.to_string())
     }
+}
+
+impl From<qd_ports::Error> for CmdError {
+    fn from(e: qd_ports::Error) -> Self {
+        let code = match e {
+            qd_ports::Error::PermissionDenied(_) => "permission_denied",
+            qd_ports::Error::NoSuchProcess(_) => "not_found",
+            qd_ports::Error::Protected(_) => "invalid",
+            _ => "internal",
+        };
+        CmdError::new(code, e.to_string())
+    }
+}
+
+/// Run blocking work off the main thread.
+pub async fn blocking<T: Send + 'static>(f: impl FnOnce() -> CmdResult<T> + Send + 'static) -> CmdResult<T> {
+    tauri::async_runtime::spawn_blocking(f).await.map_err(|e| CmdError::new("internal", e.to_string()))?
 }

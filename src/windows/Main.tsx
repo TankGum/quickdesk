@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { NotesTab } from "../modules/notes/NotesTab";
+import { PortsTab } from "../modules/ports/PortsTab";
 import { api, AppInfo, FocusStats, useShown } from "../shared/ipc";
 
 const TABS = ["notes", "clipboard", "ports", "settings"] as const;
@@ -28,16 +29,12 @@ export function Main() {
       <section className="content">
         {tab === "notes" && <NotesTab focusSignal={shownAt} />}
         {tab === "settings" && <Settings />}
-        {(tab === "clipboard" || tab === "ports") && <div className="empty">{placeholder[tab]}</div>}
+        {tab === "ports" && <PortsTab focusSignal={shownAt} />}
+        {tab === "clipboard" && <div className="empty">Clipboard history arrives in Milestone 4.</div>}
       </section>
     </div>
   );
 }
-
-const placeholder: Record<"clipboard" | "ports", string> = {
-  clipboard: "Clipboard history arrives in Milestone 4.",
-  ports: "Port Manager arrives in Milestone 3.",
-};
 
 function Settings() {
   const [info, setInfo] = useState<AppInfo | null>(null);

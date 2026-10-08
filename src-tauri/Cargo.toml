@@ -15,11 +15,14 @@ tauri-build = { version = "2", features = [] }
 qd-core.workspace = true
 qd-platform.workspace = true
 qd-notes.workspace = true
+qd-ports.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 tracing.workspace = true
 tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-single-instance = "2"
 tauri-plugin-global-shortcut = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-clipboard-manager = "2"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing-appender = "0.2"

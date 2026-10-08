@@ -53,6 +53,23 @@ export interface Note {
   conflictOf: string | null;
 }
 
+export interface Container {
+  id: string;
+  name: string;
+  image: string;
+  privatePort: number;
+}
+
+export interface PortEntry {
+  port: number;
+  addrs: string[];
+  pid: number | null;
+  process: string | null;
+  cmdline: string | null;
+  user: string | null;
+  container: Container | null;
+}
+
 /** Shape of every rejected command (see `CmdError` in Rust). */
 export interface CmdError {
   code: string;
@@ -73,6 +90,12 @@ export const api = {
   notesRestore: (id: string) => invoke<Note>("notes_restore", { id }),
   notesList: () => invoke<Note[]>("notes_list"),
   notesSearch: (query: string) => invoke<Note[]>("notes_search", { query }),
+  portsScan: () => invoke<PortEntry[]>("ports_scan"),
+  portsKill: (pid: number, force: boolean) => invoke<void>("ports_kill", { pid, force }),
+  portsIsAlive: (pid: number) => invoke<boolean>("ports_is_alive", { pid }),
+  portsStopContainer: (id: string) => invoke<void>("ports_stop_container", { id }),
+  portsOpen: (port: number) => invoke<void>("ports_open", { port }),
+  clipboardWrite: (text: string) => invoke<void>("clipboard_write", { text }),
   focusReport: (report: FocusReport) => invoke<void>("diag_focus_report", { report }),
   focusStats: () => invoke<FocusStats>("diag_focus_stats"),
   quit: () => invoke<void>("app_quit"),

@@ -35,12 +35,20 @@ pub fn run(args: Vec<String>) {
         .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
             dispatch(app, Forwarded { args: argv.into_iter().skip(1).collect(), sent_at_ms: now_ms() });
         }))
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .invoke_handler(tauri::generate_handler![
             commands::app::app_info,
             commands::app::diag_focus_report,
             commands::app::diag_focus_stats,
             commands::app::app_quit,
             commands::app::app_show,
+            commands::app::clipboard_write,
+            commands::ports::ports_scan,
+            commands::ports::ports_kill,
+            commands::ports::ports_is_alive,
+            commands::ports::ports_stop_container,
+            commands::ports::ports_open,
             commands::notes::notes_create,
             commands::notes::notes_update,
             commands::notes::notes_delete,
