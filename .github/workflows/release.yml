@@ -56,6 +56,9 @@ jobs:
             target/release/bundle/rpm/*.rpm
             target/release/bundle/appimage/*.AppImage
 
+      - name: Build the download page demo
+        run: npm run build:demo
+
       - name: Publish to Cloudflare R2
         env:
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}

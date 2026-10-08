@@ -52,10 +52,12 @@ export function Main() {
   }
 
   return (
-    <div className="main">
-      <nav className="tabs">
+    // data-mod picks the module colour (notes yellow, clipboard blue, …).
+    <div className="main" data-mod={tab}>
+      <nav className="tabs" role="tablist">
         {TABS.map((name) => (
-          <button key={name} className={name === tab ? "active" : ""} onClick={() => setTab(name)}>
+          <button key={name} role="tab" aria-selected={name === tab} data-mod={name} className={name === tab ? "active" : ""} onClick={() => setTab(name)}>
+            <span className="tab-dot" />
             {t(`tab.${name}` as const)}
           </button>
         ))}

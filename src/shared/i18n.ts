@@ -65,7 +65,6 @@ const en = {
 
   // Quick note popup
   "notePopup.placeholder": "What do you want to remember?",
-  "notePopup.hint": "Enter ↵ save · Shift+Enter newline · Ctrl+Enter save & open · Esc close",
   "notePopup.saved": "Saved",
 
   // Notes tab
@@ -105,7 +104,7 @@ const en = {
   "notes.editTitle": "Edit note",
 
   // Clipboard (popup + tab)
-  "clip.searchPopup": "🔍 Search clipboard…",
+  "clip.searchPopup": "Search clipboard…",
   "clip.searchTab": "Search clipboard history…",
   "clip.kind.all": "All",
   "clip.kind.text": "Text",
@@ -118,11 +117,16 @@ const en = {
   "clip.emptyTab": "Nothing copied yet. Copy something anywhere and it shows up here.",
   "clip.pasteFailed": "Copied, but auto-paste failed ({error}). Press Ctrl+V / Ctrl+Shift+V.",
   "clip.watcher": "Clipboard watcher {state}: {detail}",
-  "clip.hint.select": "↑↓ select",
-  "clip.hint.paste": "Enter paste",
-  "clip.hint.copy": "Enter copy",
-  "clip.hint.copyOnly": "Ctrl+Enter copy only",
-  "clip.hint.rest": "Ctrl+P pin · Del delete · Esc close",
+  "hint.select": "select",
+  "hint.paste": "paste",
+  "hint.copy": "copy",
+  "hint.copyOnly": "copy only",
+  "hint.pin": "pin",
+  "hint.delete": "delete",
+  "hint.close": "close",
+  "hint.save": "save",
+  "hint.newline": "new line",
+  "hint.saveOpen": "save & open",
   "clip.clear": "Clear…",
   "clip.clearConfirm": "Clear (keep pinned)",
   "clip.cleared": "History cleared",
@@ -389,7 +393,6 @@ const vi: Record<Key, string> = {
   "welcome.footer": "Đổi phím tắt bất cứ lúc nào trong Cài đặt → Phím tắt.",
 
   "notePopup.placeholder": "Bạn muốn ghi nhớ điều gì?",
-  "notePopup.hint": "Enter ↵ lưu · Shift+Enter xuống dòng · Ctrl+Enter lưu và mở · Esc đóng",
   "notePopup.saved": "Đã lưu",
 
   "notes.search": "Tìm ghi chú…",
@@ -427,7 +430,7 @@ const vi: Record<Key, string> = {
   "editor.codeBlock": "Khối mã",
   "notes.editTitle": "Sửa ghi chú",
 
-  "clip.searchPopup": "🔍 Tìm trong clipboard…",
+  "clip.searchPopup": "Tìm trong clipboard…",
   "clip.searchTab": "Tìm trong lịch sử clipboard…",
   "clip.kind.all": "Tất cả",
   "clip.kind.text": "Văn bản",
@@ -440,11 +443,16 @@ const vi: Record<Key, string> = {
   "clip.emptyTab": "Chưa copy gì. Copy ở bất kỳ đâu, nội dung sẽ hiện ở đây.",
   "clip.pasteFailed": "Đã copy nhưng không tự dán được ({error}). Hãy bấm Ctrl+V / Ctrl+Shift+V.",
   "clip.watcher": "Bộ theo dõi clipboard {state}: {detail}",
-  "clip.hint.select": "↑↓ chọn",
-  "clip.hint.paste": "Enter dán",
-  "clip.hint.copy": "Enter copy",
-  "clip.hint.copyOnly": "Ctrl+Enter chỉ copy",
-  "clip.hint.rest": "Ctrl+P ghim · Del xoá · Esc đóng",
+  "hint.select": "chọn",
+  "hint.paste": "dán",
+  "hint.copy": "copy",
+  "hint.copyOnly": "chỉ copy",
+  "hint.pin": "ghim",
+  "hint.delete": "xoá",
+  "hint.close": "đóng",
+  "hint.save": "lưu",
+  "hint.newline": "xuống dòng",
+  "hint.saveOpen": "lưu và mở",
   "clip.clear": "Xoá lịch sử…",
   "clip.clearConfirm": "Xoá (giữ mục đã ghim)",
   "clip.cleared": "Đã xoá lịch sử",

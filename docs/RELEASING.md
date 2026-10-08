@@ -30,7 +30,12 @@ Repository → **Settings** → **Secrets and variables** → **Actions** → **
 ### 3. Download page
 
 The page lives in `packaging/download/`: `index.html` plus `assets/` (CSS, JS,
-images), which are uploaded next to it. When publishing, these placeholders in
+images), which are uploaded next to it. Its demo is **the real UI**:
+`npm run build:demo` builds the frontend with Tauri's API swapped for sample
+data (`src/demo/`, see `vite.config.ts`) into `dist-demo/`, published as
+`demo/` and shown in iframes. So any UI change ships to the page on the next
+release, with nothing to copy by hand; when you add a command, give it a demo
+answer in `src/demo/core.ts`. When publishing, these placeholders in
 `index.html` are filled in and the result is uploaded as `index.html`:
 
 `{{VERSION}}` `{{DATE}}` · `{{DEB_URL}}` `{{RPM_URL}}` `{{APPIMAGE_URL}}` (relative
@@ -39,11 +44,12 @@ links) · `{{DEB_SHA256}}` `{{RPM_SHA256}}` `{{APPIMAGE_SHA256}}` ·
 
 A page can instead read `latest.json` at runtime (same data as JSON).
 
-To check the page in a browser after a local `npx tauri build`, render it with the
-real values without uploading anything:
+To check the page in a browser, render it without uploading anything (download
+links and sizes are real only after a local `npx tauri build`):
 
 ```sh
-python3 scripts/publish_r2.py --preview /tmp/qd-page && xdg-open /tmp/qd-page/index.html
+python3 scripts/publish_r2.py --preview /tmp/qd-page
+python3 -m http.server -d /tmp/qd-page 8000   # then open http://localhost:8000
 ```
 
 ## Each release
@@ -64,6 +70,7 @@ python3 scripts/publish_r2.py --preview /tmp/qd-page && xdg-open /tmp/qd-page/in
    latest.json
    index.html
    assets/...
+   demo/...
    ```
    The packages are also attached to the workflow run as an artifact.
 

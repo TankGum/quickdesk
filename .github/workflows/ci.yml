@@ -34,6 +34,7 @@ jobs:
       - run: npm run typecheck
       # The Tauri crate embeds the built frontend, so build it before cargo.
       - run: npm run build
+      - run: npm run build:demo
 
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets -- -D warnings

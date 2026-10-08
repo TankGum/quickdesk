@@ -10,6 +10,7 @@ Bucket layout:
     latest.json            what the newest version is and where to get it
     index.html             the download page, if packaging/download/index.html exists
     assets/...             files the page uses (packaging/download/assets)
+    demo/...               the real UI on sample data (`npm run build:demo` → dist-demo)
 
 The download page template may use these placeholders:
     {{VERSION}} {{DATE}}
@@ -17,8 +18,10 @@ The download page template may use these placeholders:
     {{DEB_SHA256}} {{RPM_SHA256}} {{APPIMAGE_SHA256}}
     {{DEB_SIZE}} {{RPM_SIZE}} {{APPIMAGE_SIZE}}      (e.g. "9.2 MB")
 
-`python3 scripts/publish_r2.py --preview DIR` renders the page into DIR with the
-current build's values instead of uploading, to check it in a browser.
+`python3 scripts/publish_r2.py --preview DIR` builds the demo and renders the
+page into DIR instead of uploading; serve DIR over HTTP to check it (the demo
+is an ES module app, which browsers do not load from file://). Without a local
+`npx tauri build` the download links and sizes are placeholders.
 
 Environment: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET.
 R2_ENDPOINT overrides the endpoint (e.g. a local S3 server for testing).
@@ -37,6 +40,7 @@ ROOT = Path(__file__).resolve().parent.parent
 BUNDLE = ROOT / "target" / "release" / "bundle"
 TEMPLATE = ROOT / "packaging" / "download" / "index.html"
 PAGE_ASSETS = TEMPLATE.parent / "assets"
+DEMO = ROOT / "dist-demo"
 
 CONTENT_TYPES = {
     ".deb": "application/vnd.debian.binary-package",
@@ -74,10 +78,13 @@ def sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def page_assets() -> list[Path]:
-    if not PAGE_ASSETS.is_dir():
-        return []
-    return sorted(p for p in PAGE_ASSETS.rglob("*") if p.is_file() and not p.name.startswith("."))
+def page_files() -> list[tuple[Path, str]]:
+    """(source, published path) for everything the page loads besides index.html."""
+    files = []
+    for base, prefix in ((PAGE_ASSETS, "assets"), (DEMO, "demo")):
+        if base.is_dir():
+            files += [(p, f"{prefix}/{p.relative_to(base).as_posix()}") for p in sorted(base.rglob("*")) if p.is_file() and not p.name.startswith(".")]
+    return files
 
 
 def render_page(version: str, published: str, files: dict) -> str:
@@ -100,9 +107,12 @@ def main() -> None:
         "rpm": BUNDLE / "rpm" / f"QuickDesk-{version}-1.x86_64.rpm",
         "appimage": BUNDLE / "appimage" / f"QuickDesk_{version}_amd64.AppImage",
     }
+    preview = len(sys.argv) == 3 and sys.argv[1] == "--preview"
     missing = [str(p) for p in expected.values() if not p.is_file()]
-    if missing:
+    if missing and not preview:
         sys.exit("build output not found:\n  " + "\n  ".join(missing))
+    if TEMPLATE.is_file() and not (DEMO / "index.html").is_file() and not preview:
+        sys.exit("dist-demo not found: run `npm run build:demo` first")
 
     prefix = f"releases/{version}"
     files = {}
@@ -110,20 +120,21 @@ def main() -> None:
         files[kind] = {
             "name": path.name,
             "url": f"{prefix}/{path.name}",
-            "sha256": sha256(path),
-            "size": path.stat().st_size,
+            "sha256": sha256(path) if path.is_file() else "",
+            "size": path.stat().st_size if path.is_file() else 0,
         }
     published = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
 
-    if len(sys.argv) == 3 and sys.argv[1] == "--preview":
+    if preview:
+        subprocess.run(["npm", "run", "--silent", "build:demo"], cwd=ROOT, check=True)
         out = Path(sys.argv[2]).resolve()
         out.mkdir(parents=True, exist_ok=True)
         (out / "index.html").write_text(render_page(version, published, files))
-        for asset in page_assets():
-            dest = out / asset.relative_to(TEMPLATE.parent)
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            dest.write_bytes(asset.read_bytes())
-        print(f"preview written to {out / 'index.html'}")
+        for src, dest in page_files():
+            target = out / dest
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(src.read_bytes())
+        print(f"preview written to {out}; view it with: python3 -m http.server -d {out} 8000")
         return
 
     bucket = env("R2_BUCKET")
@@ -166,8 +177,8 @@ def main() -> None:
 
     if TEMPLATE.is_file():
         # Assets keep fixed names across releases, so they get a short cache too.
-        for asset in page_assets():
-            upload(asset, asset.relative_to(TEMPLATE.parent).as_posix(), "public, max-age=300")
+        for src, dest in page_files():
+            upload(src, dest, "public, max-age=300")
         index = out / "index.html"
         index.write_text(render_page(version, published, files))
         upload(index, "index.html", fresh)

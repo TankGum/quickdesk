@@ -29,10 +29,13 @@
   $$('.reveal').forEach((el) => revealIO.observe(el));
 
   /* ---------- Interactive demo ---------- */
+  // The windows are the real QuickDesk UI (demo/ = `npm run build:demo`),
+  // running on sample data in iframes. This script only plays the desktop:
+  // which window is up, the hotkey animation, the tray menu.
   const MODES = {
-    notes:     { letter: 'N', code: 'KeyN', color: 'var(--notes)' },
-    clipboard: { letter: 'V', code: 'KeyV', color: 'var(--clip)' },
-    ports:     { letter: 'P', code: 'KeyP', color: 'var(--ports)' },
+    notes:     { letter: 'N', code: 'KeyN', color: 'var(--notes)', win: 'main', tab: 'notes' },
+    clipboard: { letter: 'V', code: 'KeyV', color: 'var(--clip)', win: 'clip-popup' },
+    ports:     { letter: 'P', code: 'KeyP', color: 'var(--ports)', win: 'main', tab: 'ports' },
     // AI usage has no shortcut: it lives behind the ring in the top bar.
     ai:        { letter: 'A', code: 'KeyA', color: 'var(--ai)', tray: true },
   };
@@ -41,16 +44,37 @@
 
   const demo = $('#demo');
   const desktop = $('#desktop');
+  const stage = $('.desktop__stage', desktop);
   const letter = $('#comboLetter');
   const comboKeys = $$('.combo .key', demo);
   const tabs = $$('[data-mode]', demo);
-  const panels = $$('[data-panel]', demo);
+  const wins = Object.fromEntries($$('[data-appwin]', demo).map((w) => [w.dataset.appwin, w]));
+  const trayMenu = $('[data-panel="ai"]', demo);
   const toast = $('#toast');
 
   let current = null;
   let pressTimers = [];
   let autoTimer = null;
   let userTookOver = false;
+
+  // Scale each window to fit the mock screen (and the inline shots to their column).
+  function fit() {
+    const pad = 0.94;
+    Object.values(wins).forEach((w) => {
+      const s = Math.min(1, (stage.clientWidth * pad) / parseFloat(w.style.getPropertyValue('--w')),
+        (stage.clientHeight * pad) / parseFloat(w.style.getPropertyValue('--h')));
+      w.style.setProperty('--s', s.toFixed(4));
+    });
+    $$('[data-shot]').forEach((shot) => {
+      shot.firstElementChild.style.setProperty('--s', (shot.clientWidth / parseFloat(shot.style.getPropertyValue('--w'))).toFixed(4));
+    });
+  }
+  fit();
+  window.addEventListener('resize', fit);
+
+  const post = (win, msg) => {
+    wins[win]?.querySelector('iframe').contentWindow?.postMessage({ source: 'quickdesk-page', ...msg }, '*');
+  };
 
   function pressCombo(mode) {
     pressTimers.forEach(clearTimeout);
@@ -63,18 +87,32 @@
     pressTimers.push(setTimeout(() => comboKeys.forEach((k) => k.classList.remove('is-down')), 520));
   }
 
+  function showWindow(win, tab) {
+    Object.entries(wins).forEach(([name, w]) => w.classList.toggle('is-open', name === win));
+    trayMenu.classList.remove('is-open');
+    // What Rust sends when a hotkey fires: the window switches to that tab.
+    post(win, { type: 'show', tab: tab ?? null });
+  }
+
   function openPanel(mode) {
     current = mode;
-    demo.style.setProperty('--mode', MODES[mode].color);
-    panels.forEach((p) => p.classList.toggle('is-open', p.dataset.panel === mode));
+    const m = MODES[mode];
+    demo.style.setProperty('--mode', m.color);
     tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.mode === mode)));
     desktop.classList.add('has-panel');
+    if (m.tray) {
+      Object.values(wins).forEach((w) => w.classList.remove('is-open'));
+      trayMenu.classList.add('is-open');
+    } else {
+      showWindow(m.win, m.tab);
+    }
     pressCombo(mode);
   }
 
   function closePanel() {
     current = null;
-    panels.forEach((p) => p.classList.remove('is-open'));
+    Object.values(wins).forEach((w) => w.classList.remove('is-open'));
+    trayMenu.classList.remove('is-open');
     tabs.forEach((t) => t.setAttribute('aria-selected', 'false'));
     desktop.classList.remove('has-panel');
     demo.classList.remove('is-tray');
@@ -93,16 +131,38 @@
   // The ring in the top bar toggles the AI usage menu, like the real tray icon.
   $('[data-ring]', desktop).addEventListener('click', () => {
     takeOver();
-    if (current === 'ai') closePanel();
+    if (current === 'ai' && trayMenu.classList.contains('is-open')) closePanel();
     else openPanel('ai');
   });
 
-  // Click on the wallpaper (outside any panel) closes, like a real overlay.
+  // Like the real tray: clicking a usage line opens the AI tab.
+  $('[data-tray]', demo).addEventListener('click', () => {
+    takeOver();
+    showWindow('main', 'ai');
+  });
+
+  $$('[data-close]', demo).forEach((b) => b.addEventListener('click', () => {
+    takeOver();
+    closePanel();
+  }));
+
+  // Click on the wallpaper (outside any window) closes, like a real overlay.
   desktop.addEventListener('click', (e) => {
-    if (current && !e.target.closest('.panel, [data-ring]')) {
+    if (current && !e.target.closest('.panel, .appwin, [data-ring]')) {
       takeOver();
       closePanel();
     }
+  });
+
+  // Messages from the app windows: a popup hid itself, or wants a toast.
+  window.addEventListener('message', ({ data }) => {
+    if (!data || data.source !== 'quickdesk-demo') return;
+    if (data.type === 'hide') {
+      wins[data.label]?.classList.remove('is-open');
+      if (!Object.values(wins).some((w) => w.classList.contains('is-open')) && !trayMenu.classList.contains('is-open')) closePanel();
+    }
+    if (data.type === 'toast') showToast(data.text);
+    if (data.type === 'interact') takeOver();
   });
 
   function isInView(el) {
@@ -125,7 +185,7 @@
     e.preventDefault();
     takeOver();
 
-    // Same shortcut again toggles the panel, just like the app.
+    // Same shortcut again toggles the window, just like the app.
     if (current === mode) closePanel();
     else openPanel(mode);
 
@@ -134,7 +194,7 @@
     }
   });
 
-  // Auto-cycle through the panels until the visitor interacts.
+  // Auto-cycle through the windows until the visitor interacts.
   const demoIO = new IntersectionObserver(([entry]) => {
     clearInterval(autoTimer);
     if (!entry.isIntersecting || userTookOver) return;
@@ -143,7 +203,7 @@
     autoTimer = setInterval(() => {
       const next = ORDER[(ORDER.indexOf(current) + 1) % ORDER.length];
       openPanel(next);
-    }, 3800);
+    }, 4200);
   }, { threshold: 0.4 });
   demoIO.observe(desktop);
 
@@ -163,53 +223,6 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('is-on'), 2600);
   }
-
-  // Kill buttons inside the demo ports panel.
-  const portsBody = $('[data-panel="ports"] .ports', demo);
-  const portCount = $('[data-port-count]', demo);
-  portsBody.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-kill]');
-    if (!btn) return;
-    takeOver();
-    const row = btn.closest('.ports__row');
-    const [, proc, pid] = $$(':scope > span', row).map((s) => s.textContent.trim());
-    const container = row.dataset.container;
-    row.classList.add('is-killing');
-    setTimeout(() => {
-      row.remove();
-      const left = $$('.ports__row:not(.ports__row--head)', portsBody).length;
-      portCount.textContent = left;
-      portsBody.classList.toggle('is-empty', left === 0);
-      const nextRow = $('.ports__row:not(.ports__row--head)', portsBody);
-      if (nextRow && !$('.ports__row.is-sel', portsBody)) nextRow.classList.add('is-sel');
-    }, 320);
-    showToast(container ? `Container ${container} stopped` : `${proc.split(' ')[0]} (PID ${pid}) stopped`);
-  });
-
-  // Kind filter chips in the demo clipboard popup.
-  const chips = $('[data-chips]', demo);
-  const clips = $$('[data-clips] li', demo);
-  chips.addEventListener('click', (e) => {
-    const chip = e.target.closest('[data-kind]');
-    if (!chip) return;
-    takeOver();
-    const kind = chip.dataset.kind;
-    $$('[data-kind]', chips).forEach((c) => c.classList.toggle('is-on', c === chip));
-    let first = true;
-    clips.forEach((li) => {
-      li.hidden = kind !== 'all' && li.dataset.kind !== kind;
-      li.classList.toggle('is-sel', !li.hidden && first);
-      if (!li.hidden) first = false;
-    });
-  });
-
-  // Clicking an entry "pastes" it, like Enter in the real popup.
-  $('[data-clips]', demo).addEventListener('click', (e) => {
-    if (!e.target.closest('li')) return;
-    takeOver();
-    closePanel();
-    showToast('Pasted into the previous app');
-  });
 
   /* ---------- Notes: live sync typing ---------- */
   const sync = $('[data-sync]');

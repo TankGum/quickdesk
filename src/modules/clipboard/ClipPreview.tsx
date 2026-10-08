@@ -21,12 +21,27 @@ function fileIcon(p: string): string {
   return "📄";
 }
 
+/** Square tile in front of a popup row: ★ when pinned, else what kind it is. */
+export function ClipIcon({ c }: { c: ClipEntry }) {
+  if (c.pinned) return <span className="clip-icon pinned">★</span>;
+  if (c.kind === "image") {
+    return c.thumb ? <img className="clip-icon thumb" src={c.thumb} alt="" /> : <span className="clip-icon">🖼️</span>;
+  }
+  if (c.kind === "files") return <span className="clip-icon">{fileIcon(c.preview.split("\n")[0] ?? "")}</span>;
+  const text = c.preview.trim();
+  if (/^https?:\/\/\S+$/.test(text)) return <span className="clip-icon">↗</span>;
+  return <span className="clip-icon text">{COMMAND.test(text) && !text.includes("\n") ? ">_" : "Aa"}</span>;
+}
+
+const COMMAND = /^(\$ |sudo |ssh |git |docker |kubectl |npm |npx |pnpm |yarn |cargo |python3? |pip |make |curl |wget |apt |systemctl |cd |ls )/;
+
 /** How an entry looks in a list. `compact`: one line (popup). */
 export function ClipPreview({ c, compact = false }: { c: ClipEntry; compact?: boolean }) {
   if (c.kind === "image") {
     return (
       <div className={`clip-image ${compact ? "compact" : ""}`}>
-        {c.thumb && <img src={c.thumb} alt="" />}
+        {/* The popup row already shows the thumbnail as its icon. */}
+        {c.thumb && !compact && <img src={c.thumb} alt="" />}
         <span className="clip-image-meta">
           {t("clip.image", { w: c.width ?? "?", h: c.height ?? "?" })}
           <span className="muted"> · {formatBytes(c.byteSize)}</span>

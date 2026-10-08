@@ -67,7 +67,7 @@
       <button type="button" role="tab" data-mode="ports" aria-selected="false"><b>P</b>Ports</button>
       <button type="button" role="tab" data-mode="ai" aria-selected="false"><b>A</b>AI usage</button>
     </div>
-    <p class="demo__hint reveal">Try it now — press <kbd>N</kbd>, <kbd>V</kbd>, <kbd>P</kbd> or <kbd>A</kbd> on this page. <kbd>Esc</kbd> to close.</p>
+    <p class="demo__hint reveal">This is the real app running on sample data. Press <kbd>N</kbd>, <kbd>V</kbd>, <kbd>P</kbd> or <kbd>A</kbd>, then click around. <kbd>Esc</kbd> to close.</p>
 
     <div class="desktop reveal" id="desktop">
       <div class="desktop__bar">
@@ -91,80 +91,18 @@
 
       <div class="desktop__stage">
 
-        <!-- Notes manager -->
-        <div class="panel" data-panel="notes" role="tabpanel" aria-label="Notes">
-          <div class="panel__head">
-            <svg class="panel__search-ico" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m10.5 10.5 3.2 3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-            <span class="panel__search">Search notes…</span>
-            <span class="pill pill--live"><i></i>Synced · just now</span>
-          </div>
-          <div class="panel__body notes">
-            <ul class="notes__list">
-              <li class="is-sel"><strong>Deploy checklist</strong><span>Updated 2 min ago</span></li>
-              <li><strong>Ideas for v0.3</strong><span>Updated 1 h ago</span></li>
-              <li><strong>Standup — Tuesday</strong><span>Updated 5 h ago</span></li>
-              <li><strong>Server IPs</strong><span>Updated Mon</span></li>
-            </ul>
-            <article class="notes__editor">
-              <h4>Deploy checklist</h4>
-              <p class="muted">Updated 2 minutes ago · encrypted before it syncs</p>
-              <ul class="check">
-                <li class="done">Bump version to 0.2.0</li>
-                <li class="done">Run migrations on staging</li>
-                <li>Smoke-test clipboard images</li>
-                <li>Tag release &amp; publish .deb<span class="caret"></span></li>
-              </ul>
-            </article>
-          </div>
-          <div class="panel__foot"><span><kbd>↵</kbd> Open</span><span><kbd>Ctrl</kbd><kbd>N</kbd> New note</span><span><kbd>Ctrl</kbd><kbd>S</kbd> Save</span><span><kbd>Esc</kbd> Close</span></div>
+        <!-- The real QuickDesk UI (npm run build:demo) running on sample data. -->
+        <div class="appwin appwin--main" data-appwin="main" style="--w: 900px; --h: 636px">
+          <div class="appwin__bar"><span>QuickDesk</span><button type="button" class="appwin__close" data-close aria-label="Close">×</button></div>
+          <iframe title="QuickDesk main window (demo)" src="demo/index.html?window=main&amp;theme=dark" width="900" height="600"></iframe>
         </div>
-
-        <!-- Clipboard popup -->
-        <div class="panel" data-panel="clipboard" role="tabpanel" aria-label="Clipboard">
-          <div class="panel__head">
-            <svg class="panel__search-ico" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m10.5 10.5 3.2 3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-            <span class="panel__search">Search clipboard…</span>
-            <span class="pill">This device only</span>
-          </div>
-          <div class="chips" data-chips>
-            <button type="button" class="chip is-on" data-kind="all" tabindex="-1">All</button>
-            <button type="button" class="chip" data-kind="text" tabindex="-1">Text</button>
-            <button type="button" class="chip" data-kind="image" tabindex="-1">Images</button>
-            <button type="button" class="chip" data-kind="files" tabindex="-1">Files</button>
-          </div>
-          <ul class="panel__body clips" data-clips>
-            <li class="is-sel" data-kind="text"><span class="ico ico--code">&gt;_</span><code>docker compose up -d --build</code><span class="meta">now</span></li>
-            <li data-kind="image"><span class="ico ico--img"></span><span class="txt">Image 1280×720 <span class="muted">· 184 KB</span></span><span class="meta">4 min</span></li>
-            <li data-kind="files"><span class="ico ico--file">📄</span><span class="txt">release-notes.pdf <span class="muted">+2 more</span></span><span class="meta">9 min</span></li>
-            <li data-kind="text"><span class="ico ico--text">Aa</span><span class="txt">Họp dời sang 15:30, phòng 4B</span><span class="meta">12 min</span></li>
-            <li data-kind="text"><span class="ico ico--text">Aa</span><span class="txt">https://github.com/TankGum/quickdesk</span><span class="meta">25 min</span></li>
-            <li data-kind="text"><span class="ico ico--pin">★</span><code>ssh deploy@10.0.0.12</code><span class="meta">★ 3 d</span></li>
-          </ul>
-          <div class="panel__foot"><span><kbd>↵</kbd> Paste</span><span><kbd>Ctrl</kbd><kbd>↵</kbd> Copy only</span><span><kbd>Ctrl</kbd><kbd>P</kbd> Pin</span><span><kbd>Del</kbd> Delete</span></div>
-        </div>
-
-        <!-- Ports -->
-        <div class="panel" data-panel="ports" role="tabpanel" aria-label="Ports">
-          <div class="panel__head">
-            <svg class="panel__search-ico" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m10.5 10.5 3.2 3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-            <span class="panel__search">Filter by port, PID, process, container…</span>
-            <span class="pill pill--live pill--green"><i></i><span data-port-count>5</span>&nbsp;listening</span>
-          </div>
-          <div class="panel__body ports" role="table">
-            <div class="ports__row ports__row--head" role="row"><span>Port</span><span>Owner</span><span>PID</span><span class="hide-sm">Address</span><span></span></div>
-            <div class="ports__row is-sel" role="row"><span class="port">3000</span><span>node <em>vite --port 3000</em></span><span>48211</span><span class="hide-sm">127.0.0.1</span><span class="ports__act"><button type="button" class="mini" tabindex="-1">Open</button><button type="button" class="mini mini--danger" data-kill tabindex="-1">Kill</button></span></div>
-            <div class="ports__row" role="row" data-container="postgres-dev"><span class="port">5432</span><span>🐳 postgres-dev <em>postgres:16</em></span><span>—</span><span class="hide-sm">0.0.0.0 · ::</span><span class="ports__act"><button type="button" class="mini mini--danger" data-kill tabindex="-1">Stop</button></span></div>
-            <div class="ports__row" role="row"><span class="port">6379</span><span>redis-server</span><span>1187</span><span class="hide-sm">127.0.0.1</span><span class="ports__act"><button type="button" class="mini mini--danger" data-kill tabindex="-1">Kill</button></span></div>
-            <div class="ports__row" role="row"><span class="port">8080</span><span>java <em>spring-boot</em></span><span>50277</span><span class="hide-sm">::</span><span class="ports__act"><button type="button" class="mini mini--danger" data-kill tabindex="-1">Kill</button></span></div>
-            <div class="ports__row" role="row"><span class="port">9229</span><span>node <em>--inspect</em></span><span>48215</span><span class="hide-sm">127.0.0.1</span><span class="ports__act"><button type="button" class="mini mini--danger" data-kill tabindex="-1">Kill</button></span></div>
-            <p class="ports__empty">No listening TCP ports.</p>
-          </div>
-          <div class="panel__foot"><span>Open in browser</span><span>Copy PID / command</span><span>Refreshes every 2 s</span></div>
+        <div class="appwin appwin--popup" data-appwin="clip-popup" style="--w: 520px; --h: 420px">
+          <iframe title="QuickDesk clipboard popup (demo)" src="demo/index.html?window=clip-popup&amp;theme=dark" width="520" height="420"></iframe>
         </div>
 
         <!-- AI usage: tray menu under the ring -->
         <div class="panel panel--menu" data-panel="ai" role="tabpanel" aria-label="AI usage">
-          <ul class="tray-menu">
+          <ul class="tray-menu" data-tray>
             <li><span class="ring" style="--p:42"></span><span>Claude · 5-hour limit</span><b>42%</b><em>resets in 2h 10m</em></li>
             <li><span class="ring" style="--p:18"></span><span>Claude · Weekly limit</span><b>18%</b><em>resets in 4d 6h</em></li>
             <li><span class="ring ring--warn" style="--p:81"></span><span>Codex · 5-hour limit</span><b>81%</b><em>resets in 38m</em></li>
@@ -280,22 +218,12 @@
         <p class="lead">A small ring in the top bar shows how much of your Claude Code and Codex limits you’ve used, and when they reset — so you’re never cut off in the middle of a task.</p>
       </header>
 
-      <div class="ai-cards reveal">
-        <article class="ai-card">
-          <header><strong>Claude Code</strong><span class="tag tag--live">Live</span></header>
-          <div class="gauge"><span>5-hour limit</span><b>42%</b><i style="--p:42"></i><em>resets in 2 h 10 min</em></div>
-          <div class="gauge"><span>Weekly limit</span><b>18%</b><i style="--p:18"></i><em>resets in 4 d 6 h</em></div>
-        </article>
-        <article class="ai-card">
-          <header><strong>Codex</strong><span class="tag">From the tool’s logs</span></header>
-          <div class="gauge gauge--warn"><span>5-hour limit</span><b>81%</b><i style="--p:81"></i><em>resets in 38 min</em></div>
-          <div class="gauge"><span>Weekly limit</span><b>27%</b><i style="--p:27"></i><em>resets in 5 d 2 h</em></div>
-        </article>
-        <article class="ai-card">
-          <header><strong>Antigravity</strong><span class="tag">From the tool’s logs</span></header>
-          <p class="ai-card__note">Doesn’t report a percentage, so QuickDesk shows when you last ran out of quota.</p>
-          <div class="gauge gauge--plain"><span>Last ran out of quota</span><b>3 d ago</b></div>
-        </article>
+      <!-- The real AI tab, same as the demo above. -->
+      <div class="shot reveal" data-shot style="--w: 900px; --h: 636px">
+        <div class="appwin appwin--main is-static">
+          <div class="appwin__bar"><span>QuickDesk</span><span class="appwin__close" aria-hidden="true">×</span></div>
+          <iframe title="QuickDesk AI usage tab (demo)" src="demo/index.html?window=main&amp;tab=ai&amp;theme=dark" width="900" height="600" loading="lazy"></iframe>
+        </div>
       </div>
 
       <ul class="points reveal">

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
 import { RecordingStatus } from "../modules/clipboard/RecordingStatus";
-import { ClipPreview } from "../modules/clipboard/ClipPreview";
+import { ClipIcon, ClipPreview } from "../modules/clipboard/ClipPreview";
 import { KindFilter } from "../modules/clipboard/KindFilter";
 import { useClipboard } from "../modules/clipboard/useClipboard";
+import { Hints } from "../shared/Hints";
 import { useI18n } from "../shared/i18n";
 import { api, ClipKind, errorMessage, hideWindow, useShown } from "../shared/ipc";
 import { relativeTime } from "../shared/time";
@@ -97,7 +98,7 @@ export function ClipPopup() {
       : null);
 
   return (
-    <div className="popup clip" onKeyDown={onKeyDown}>
+    <div className="popup clip" data-mod="clipboard" onKeyDown={onKeyDown}>
       <input
         ref={input}
         className="popup-search"
@@ -120,25 +121,23 @@ export function ClipPopup() {
               onMouseEnter={() => setSelected(i)}
               onClick={() => void pick(i)}
             >
+              <ClipIcon c={c} />
               <ClipPreview c={c} compact />
-              <span className="clip-meta">
-                {c.pinned && "★ "}
-                {relativeTime(c.lastCopiedAt)}
-              </span>
+              <span className="clip-meta">{relativeTime(c.lastCopiedAt)}</span>
             </li>
           ))}
         </ul>
       )}
-      <div className="popup-hint">
-        {[
-          t("clip.hint.select"),
-          status?.autoPaste ? t("clip.hint.paste") : t("clip.hint.copy"),
-          status?.autoPaste ? t("clip.hint.copyOnly") : null,
-          t("clip.hint.rest"),
-        ]
-          .filter(Boolean)
-          .join(" · ")}
-      </div>
+      <Hints
+        className="popup-hint"
+        items={[
+          [["Enter"], status?.autoPaste ? t("hint.paste") : t("hint.copy")],
+          status?.autoPaste ? [["Ctrl", "Enter"], t("hint.copyOnly")] : null,
+          [["Ctrl", "P"], t("hint.pin")],
+          [["Del"], t("hint.delete")],
+          [["Esc"], t("hint.close")],
+        ]}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 
+import { Hints } from "../shared/Hints";
 import { useI18n } from "../shared/i18n";
 import { api, errorMessage, hideWindow, useEscapeToHide, useShown } from "../shared/ipc";
 
@@ -39,7 +40,7 @@ export function NotePopup() {
   };
 
   return (
-    <div className="popup">
+    <div className="popup" data-mod="notes">
       <textarea
         ref={input}
         className="popup-input"
@@ -50,9 +51,19 @@ export function NotePopup() {
         rows={3}
         autoFocus
       />
-      <div className={`popup-hint ${status?.kind === "error" ? "error" : ""}`}>
-        {status ? status.text : t("notePopup.hint")}
-      </div>
+      {status ? (
+        <div className={`popup-hint ${status.kind === "error" ? "error" : ""}`}>{status.text}</div>
+      ) : (
+        <Hints
+          className="popup-hint"
+          items={[
+            [["Enter"], t("hint.save")],
+            [["Shift", "Enter"], t("hint.newline")],
+            [["Ctrl", "Enter"], t("hint.saveOpen")],
+            [["Esc"], t("hint.close")],
+          ]}
+        />
+      )}
     </div>
   );
 }

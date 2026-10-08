@@ -1,14 +1,15 @@
 {
   "name": "quickdesk",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.1",
   "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "build:demo": "vite build --mode demo"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
