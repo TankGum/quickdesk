@@ -4,7 +4,9 @@
 pub fn prefix_query(input: &str) -> Option<String> {
     let terms: Vec<String> = input
         .split_whitespace()
-        .map(|t| t.chars().filter(|c| c.is_alphanumeric() || matches!(c, '_' | '-' | '.' | '/' | ':')).collect::<String>())
+        .map(|t| {
+            t.chars().filter(|c| c.is_alphanumeric() || matches!(c, '_' | '-' | '.' | '/' | ':')).collect::<String>()
+        })
         .filter(|t| t.chars().any(char::is_alphanumeric))
         .map(|t| format!("\"{t}\"*"))
         .collect();

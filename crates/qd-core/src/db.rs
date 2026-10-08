@@ -13,10 +13,7 @@ impl Module for Core {
     }
 
     fn migrations(&self) -> &'static [Migration] {
-        &[Migration {
-            version: 1,
-            sql: "CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);",
-        }]
+        &[Migration { version: 1, sql: "CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);" }]
     }
 }
 
@@ -100,8 +97,7 @@ mod tests {
 
     fn applied(db: &Db) -> Vec<(String, u32)> {
         let conn = db.conn().unwrap();
-        let mut stmt =
-            conn.prepare("SELECT module, version FROM schema_migrations ORDER BY module, version").unwrap();
+        let mut stmt = conn.prepare("SELECT module, version FROM schema_migrations ORDER BY module, version").unwrap();
         stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?))).unwrap().map(|r| r.unwrap()).collect()
     }
 
@@ -127,10 +123,7 @@ mod tests {
 
     #[test]
     fn failed_migration_is_rolled_back_and_reported() {
-        const BAD: &[Migration] = &[Migration {
-            version: 1,
-            sql: "CREATE TABLE fake_b (x INTEGER); THIS IS NOT SQL;",
-        }];
+        const BAD: &[Migration] = &[Migration { version: 1, sql: "CREATE TABLE fake_b (x INTEGER); THIS IS NOT SQL;" }];
         let err = Db::open_in_memory(&[&Fake(BAD)]).err().expect("should fail");
         assert!(matches!(err, Error::Migration { module: "fake", version: 1, .. }), "{err}");
     }

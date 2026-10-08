@@ -40,7 +40,8 @@ struct Atoms {
 
 impl Atoms {
     fn intern(conn: &RustConnection) -> Result<Self, BoxError> {
-        let get = |name: &str| -> Result<Atom, BoxError> { Ok(conn.intern_atom(false, name.as_bytes())?.reply()?.atom) };
+        let get =
+            |name: &str| -> Result<Atom, BoxError> { Ok(conn.intern_atom(false, name.as_bytes())?.reply()?.atom) };
         Ok(Atoms {
             clipboard: get("CLIPBOARD")?,
             targets: get("TARGETS")?,
@@ -56,11 +57,22 @@ impl Atoms {
 enum Phase {
     Idle,
     /// Owner changed; read it once things calm down.
-    Pending { at: Instant, time: Timestamp },
-    AwaitTargets { since: Instant, time: Timestamp },
-    AwaitText { since: Instant },
+    Pending {
+        at: Instant,
+        time: Timestamp,
+    },
+    AwaitTargets {
+        since: Instant,
+        time: Timestamp,
+    },
+    AwaitText {
+        since: Instant,
+    },
     /// Large selection arriving in chunks (INCR protocol).
-    Incremental { since: Instant, buf: Vec<u8> },
+    Incremental {
+        since: Instant,
+        buf: Vec<u8>,
+    },
 }
 
 pub(super) fn spawn(on_event: impl Fn(ClipEvent) + Send + 'static, state: Arc<Mutex<WatcherState>>) -> &'static str {
@@ -179,8 +191,9 @@ fn run(on_event: &impl Fn(ClipEvent), state: &Arc<Mutex<WatcherState>>) -> Resul
                 if ev.property == x11rb::NONE {
                     continue;
                 }
-                let reply =
-                    conn.get_property(true, win, atoms.property, AtomEnum::ANY, 0, (MAX_BYTES / 4) as u32 + 1)?.reply()?;
+                let reply = conn
+                    .get_property(true, win, atoms.property, AtomEnum::ANY, 0, (MAX_BYTES / 4) as u32 + 1)?
+                    .reply()?;
                 conn.flush()?;
                 if reply.type_ == atoms.incr {
                     // Deleting the property (done above) tells the owner to start sending chunks.
@@ -216,9 +229,10 @@ fn run(on_event: &impl Fn(ClipEvent), state: &Arc<Mutex<WatcherState>>) -> Resul
                 conn.flush()?;
                 phase = Phase::AwaitTargets { since: now, time: *time };
             }
-            (None, Phase::AwaitTargets { since, .. } | Phase::AwaitText { since } | Phase::Incremental { since, .. })
-                if now >= *since + CONVERT_TIMEOUT =>
-            {
+            (
+                None,
+                Phase::AwaitTargets { since, .. } | Phase::AwaitText { since } | Phase::Incremental { since, .. },
+            ) if now >= *since + CONVERT_TIMEOUT => {
                 tracing::debug!("selection owner did not answer in time");
                 phase = Phase::Idle;
             }

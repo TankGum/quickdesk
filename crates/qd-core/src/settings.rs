@@ -7,9 +7,8 @@ use serde::Serialize;
 use crate::Result;
 
 pub fn get<T: DeserializeOwned>(conn: &Connection, key: &str) -> Result<Option<T>> {
-    let raw: Option<String> = conn
-        .query_row("SELECT value FROM settings WHERE key = ?1", [key], |r| r.get(0))
-        .optional()?;
+    let raw: Option<String> =
+        conn.query_row("SELECT value FROM settings WHERE key = ?1", [key], |r| r.get(0)).optional()?;
     Ok(raw.map(|v| serde_json::from_str(&v)).transpose()?)
 }
 

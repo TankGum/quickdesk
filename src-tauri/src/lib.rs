@@ -3,7 +3,9 @@ mod clipboard;
 mod commands;
 mod hotkeys;
 pub mod ipc;
+mod secrets;
 mod state;
+mod sync;
 mod tray;
 mod windows;
 
@@ -58,6 +60,12 @@ pub fn run(args: Vec<String>) {
             commands::ports::ports_is_alive,
             commands::ports::ports_stop_container,
             commands::ports::ports_open,
+            commands::sync::sync_status,
+            commands::sync::sync_connect,
+            commands::sync::sync_create,
+            commands::sync::sync_unlock,
+            commands::sync::sync_now,
+            commands::sync::sync_disconnect,
             commands::notes::notes_create,
             commands::notes::notes_update,
             commands::notes::notes_delete,
@@ -70,10 +78,8 @@ pub fn run(args: Vec<String>) {
             init_logging(app.path().app_log_dir()?);
             let data_dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&data_dir)?;
-            let db = Db::open(
-                &data_dir.join("quickdesk.db"),
-                &[&qd_notes::NotesModule, &qd_clipboard::ClipboardModule],
-            )?;
+            let db =
+                Db::open(&data_dir.join("quickdesk.db"), &[&qd_notes::NotesModule, &qd_clipboard::ClipboardModule])?;
             let (device_id, hotkeys, clip_paused) = {
                 let conn = db.conn()?;
                 (
@@ -103,10 +109,12 @@ pub fn run(args: Vec<String>) {
                 hotkeys,
                 focus_reports: Mutex::new(Vec::new()),
                 clipboard: clipboard::ClipboardService::new(clip_paused),
+                sync: sync::SyncService::new(),
             });
 
             tray::build(app, clip_paused)?;
             clipboard::start(app.handle());
+            sync::start(app.handle());
 
             let handle = app.handle().clone();
             ipc::serve(move |msg| dispatch(&handle, msg))?;
@@ -128,7 +136,8 @@ fn init_logging(dir: std::path::PathBuf) {
     let file = tracing_appender::rolling::daily(dir, "quickdesk.log");
     let (writer, guard) = tracing_appender::non_blocking(file);
     let _ = LOG_GUARD.set(guard);
-    let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(if cfg!(debug_assertions) { "info,quickdesk_lib=debug" } else { "info" }));
+    let filter = EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| EnvFilter::new(if cfg!(debug_assertions) { "info,quickdesk_lib=debug" } else { "info" }));
     let _ = tracing_subscriber::fmt().with_env_filter(filter).with_writer(writer).with_ansi(false).try_init();
 }
 

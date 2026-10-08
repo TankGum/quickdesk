@@ -36,8 +36,8 @@ impl Session {
         wayland_display: Option<&str>,
         current_desktop: Option<&str>,
     ) -> Self {
-        let wayland = os == "linux"
-            && (session_type == Some("wayland") || wayland_display.is_some_and(|d| !d.is_empty()));
+        let wayland =
+            os == "linux" && (session_type == Some("wayland") || wayland_display.is_some_and(|d| !d.is_empty()));
         Session { os, wayland, desktop: current_desktop.unwrap_or_default().to_lowercase() }
     }
 

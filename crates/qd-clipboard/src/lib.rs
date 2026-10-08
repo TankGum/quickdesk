@@ -210,10 +210,8 @@ pub fn clear(conn: &Connection, keep_pinned: bool) -> Result<usize> {
 
 /// Apply retention: drop unpinned entries that are too old or beyond the cap.
 pub fn prune(conn: &Connection, policy: &Policy, now: i64) -> Result<usize> {
-    let old = conn.execute(
-        "DELETE FROM clip_entries WHERE pinned = 0 AND last_copied_at < ?1",
-        [now - policy.max_age_ms],
-    )?;
+    let old =
+        conn.execute("DELETE FROM clip_entries WHERE pinned = 0 AND last_copied_at < ?1", [now - policy.max_age_ms])?;
     let excess = conn.execute(
         "DELETE FROM clip_entries WHERE pinned = 0 AND id NOT IN (
            SELECT id FROM clip_entries WHERE pinned = 0 ORDER BY last_copied_at DESC LIMIT ?1)",
@@ -235,7 +233,8 @@ mod tests {
         entries.into_iter().map(|e| e.preview).collect()
     }
 
-    const P: Policy = Policy { max_entries: 1000, max_age_ms: 30 * 24 * 3600 * 1000, max_bytes: 1 << 20, burst_ms: 1500 };
+    const P: Policy =
+        Policy { max_entries: 1000, max_age_ms: 30 * 24 * 3600 * 1000, max_bytes: 1 << 20, burst_ms: 1500 };
 
     #[test]
     fn inserts_and_lists_newest_first() {

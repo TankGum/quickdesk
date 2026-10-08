@@ -18,11 +18,7 @@ pub struct HotkeyConfig {
 
 impl Default for HotkeyConfig {
     fn default() -> Self {
-        HotkeyConfig {
-            notes: "Super+Shift+N".into(),
-            clipboard: "Super+Shift+V".into(),
-            ports: "Super+Shift+P".into(),
-        }
+        HotkeyConfig { notes: "Super+Shift+N".into(), clipboard: "Super+Shift+V".into(), ports: "Super+Shift+P".into() }
     }
 }
 

@@ -73,8 +73,7 @@ pub fn diag_focus_report(state: State<'_, AppState>, mut report: FocusReport) {
 pub fn diag_focus_stats(state: State<'_, AppState>) -> FocusStats {
     let reports = state.focus_reports.lock().unwrap_or_else(|e| e.into_inner());
     let popups: Vec<&FocusReport> = reports.iter().filter(|r| r.label != crate::windows::MAIN).collect();
-    let mut latencies: Vec<u64> =
-        popups.iter().map(|r| r.reported_at_ms.saturating_sub(r.sent_at_ms)).collect();
+    let mut latencies: Vec<u64> = popups.iter().map(|r| r.reported_at_ms.saturating_sub(r.sent_at_ms)).collect();
     latencies.sort_unstable();
     FocusStats {
         total: popups.len(),

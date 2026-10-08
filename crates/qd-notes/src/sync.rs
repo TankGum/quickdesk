@@ -60,7 +60,9 @@ pub enum Applied {
     /// Concurrent, but resolved without a conflict copy.
     Merged,
     /// Concurrent edits with different bodies; the loser was saved as `copy_id`.
-    Conflict { copy_id: String },
+    Conflict {
+        copy_id: String,
+    },
 }
 
 const OP_COLS: &str = "id, hlc, base_hlc, body, pinned, created_at, updated_at, deleted_at, conflict_of";
@@ -118,8 +120,16 @@ fn write(conn: &Connection, op: &NoteOp, dirty: bool) -> Result<()> {
            pinned = excluded.pinned, created_at = excluded.created_at, updated_at = excluded.updated_at,
            deleted_at = excluded.deleted_at, conflict_of = excluded.conflict_of, dirty = excluded.dirty",
         params![
-            op.id, op.hlc, op.base_hlc, op.body, op.pinned, op.created_at, op.updated_at, op.deleted_at,
-            op.conflict_of, dirty
+            op.id,
+            op.hlc,
+            op.base_hlc,
+            op.body,
+            op.pinned,
+            op.created_at,
+            op.updated_at,
+            op.deleted_at,
+            op.conflict_of,
+            dirty
         ],
     )?;
     Ok(())

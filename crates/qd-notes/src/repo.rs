@@ -19,10 +19,7 @@ pub(crate) fn note_from_row(r: &Row<'_>) -> rusqlite::Result<Note> {
 }
 
 pub(crate) fn now_ms() -> i64 {
-    std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|d| d.as_millis() as i64)
-        .unwrap_or(0)
+    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0)
 }
 
 fn normalize(body: &str) -> Result<String> {
@@ -46,13 +43,9 @@ pub fn create(conn: &Connection, clock: &Clock, body: &str) -> Result<Note> {
 
 /// Returns a live (not deleted) note.
 pub fn get(conn: &Connection, id: &str) -> Result<Note> {
-    conn.query_row(
-        &format!("SELECT {NOTE_COLS} FROM notes WHERE id = ?1 AND deleted_at IS NULL"),
-        [id],
-        note_from_row,
-    )
-    .optional()?
-    .ok_or_else(|| Error::NotFound(id.to_owned()))
+    conn.query_row(&format!("SELECT {NOTE_COLS} FROM notes WHERE id = ?1 AND deleted_at IS NULL"), [id], note_from_row)
+        .optional()?
+        .ok_or_else(|| Error::NotFound(id.to_owned()))
 }
 
 /// Applies a local change. `base_hlc` records the synced version the edit

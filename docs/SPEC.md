@@ -91,7 +91,7 @@ quickdesk/
 │   ├── windows/               # NotePopup, ClipPopup, Main (route theo window label)
 │   ├── modules/{notes,clipboard,ports}/   # api.ts, components/, hooks/
 │   ├── shared/                # UI kit, hooks dùng chung
-│   └── bindings.ts            # sinh tự động bởi tauri-specta
+│   └── shared/ipc.ts          # binding IPC viết tay (xem §9)
 ├── spikes/
 └── docs/
 ```
@@ -122,7 +122,7 @@ pub trait Module: Send + Sync {
 | Shell | Tauri 2 | Nhẹ, đa nền tảng |
 | DB | `rusqlite` (feature `bundled`) + WAL | FTS5 và trigram có sẵn, cùng một phiên bản SQLite trên mọi OS |
 | Migrations | Runner tự viết trong `qd-core`, bảng `schema_migrations(module, version)` | Mỗi module tự quản lý schema của mình |
-| IPC types | `tauri-specta` → `src/bindings.ts` | Type-safe giữa Rust và TS |
+| IPC types | Viết tay trong `src/shared/ipc.ts` | `tauri-specta` vẫn đang ở RC; hoãn lại (xem §9) |
 | Clipboard write | `tauri-plugin-clipboard-manager` | |
 | X11 watcher | `x11rb` (XFixes) | Pure Rust, không cần header X11 |
 | Ports | Linux: tự parse `/proc/net/tcp{,6}`; Win/mac: crate `listeners`; `sysinfo` để lấy cmdline/kill | Xem §5.3 |
@@ -351,7 +351,7 @@ s3://<bucket>/quickdesk/v1/
 - `keyring.json` chứa `{salt, params, wrapped_dek_by_passphrase, wrapped_dek_by_recovery_key}`.
 - **Recovery key:** 32 byte ngẫu nhiên, chỉ hiển thị **một lần** khi setup (dạng base32, chia nhóm). Quên passphrase thì dùng recovery key để khôi phục.
 - **Mỗi object:** `XChaCha20-Poly1305(DEK, nonce=random 24B, AAD=object key)`. Đưa object key vào AAD để chống tráo blob giữa các path.
-- **Format object:** `magic "QD1" | version u8 | nonce 24B | ciphertext`. Plaintext là JSON nén zstd.
+- **Format object:** `magic "QD1" | version u8 | nonce 24B | ciphertext`. Plaintext là JSON, **không nén** vì note nhỏ; byte version để dành cho việc thêm nén về sau.
 - DEK sau khi mở khoá được cache trong OS keyring, nên không phải nhập passphrase mỗi lần khởi động. S3 credentials cũng lưu trong keyring, không bao giờ nằm trong SQLite.
 
 ### 6.3 Push / Pull
@@ -382,26 +382,34 @@ Mỗi op là toàn bộ record (full-state upsert, không phải diff).
 
 ### 6.4 Conflict
 
-**Quy ước cho `base_hlc`:**
-- Khi sửa một note đang sạch (`dirty=0`): `base_hlc ← hlc` cũ, `hlc ←` HLC mới, `dirty ← 1`.
-- Khi sửa tiếp một note đang dirty: giữ nguyên `base_hlc`.
+> **Đã sửa khi triển khai (M2):** bản trước dựa vào cờ `dirty` để phát hiện sửa đồng thời. Cách đó **mất dữ liệu** khi hai máy cùng sửa rồi cùng push trước khi pull: cả hai bản đều đã sạch, nên bản sau fast-forward đè lên bản trước mà không tạo bản conflict. Luật mới dựa trên **dòng phiên bản**.
 
-Khi nhận op `remote` cho note `id`, và `local` là bản hiện tại:
+**Quy ước cho `base_hlc`** (phiên bản đã publish mà một bản được dẫn xuất từ đó):
+- Sửa một note đang sạch: `base_hlc ← hlc` cũ, `hlc ←` HLC mới, `dirty ← 1`.
+- Sửa tiếp một note đang dirty: giữ nguyên `base_hlc`.
+- Nhận bản remote: lưu nguyên `base_hlc` của remote.
+
+Bản B **kế thừa** bản A khi `B.base_hlc >= A.hlc`, nghĩa là B được tạo ra sau khi đã thấy A. Khi nhận `remote` cho note `id`, và `local` là bản hiện tại:
 
 | Trường hợp | Xử lý |
 |---|---|
 | Chưa có local | Insert |
-| Local sạch, `remote.hlc > local.hlc` | Fast-forward bằng remote |
-| Local sạch, `remote.hlc <= local.hlc` | Bỏ qua (đã có hoặc cũ hơn) |
-| Local dirty, `remote.hlc <= local.base_hlc` | Bỏ qua (local đã thấy bản này trước khi sửa) |
-| Local dirty, `remote.hlc > local.base_hlc` | **Sửa đồng thời** → xem các dòng dưới |
-| — `body` giống nhau | Merge im lặng: `hlc = max`, `pinned` theo LWW |
-| — `body` khác nhau | **Giữ cả hai:** bản HLC lớn hơn thắng và giữ `id`; bản thua thành note mới với `id = UUIDv5(id ‖ loser.hlc)`, `conflict_of = id`, UI đánh dấu "⚠ conflict" |
-| — Một bên xoá, một bên sửa | **Bản sửa thắng** (resurrect). Mất dữ liệu note tệ hơn một note thừa |
+| `remote.hlc == local.hlc` | Bỏ qua |
+| `remote.hlc > local.hlc` và remote kế thừa local | Fast-forward |
+| `remote.hlc < local.hlc` và local kế thừa remote | Bỏ qua |
+| Còn lại | **Đồng thời** → xem các dòng dưới |
+| — Nội dung giống nhau | Merge im lặng: lấy bản HLC lớn hơn |
+| — Một bên xoá, một bên sửa | **Bản sửa thắng.** Nếu bản sửa có HLC nhỏ hơn thì được publish lại với HLC mới lớn hơn cả hai bản, để mọi máy fast-forward theo |
+| — Cả hai đều xoá | Lấy bản HLC lớn hơn |
+| — Chỉ khác `pinned` | Lấy bản HLC lớn hơn |
+| — `body` khác nhau | **Giữ cả hai:** bản HLC lớn hơn giữ `id`; bản thua thành note `id = UUIDv5(id ‖ loser.hlc)`, `hlc = loser.hlc`, `conflict_of = id` |
 
-Id của bản conflict là **tất định** (UUIDv5). Nhờ vậy cả hai device đều sinh ra đúng một bản conflict giống nhau, và bản đó hội tụ thay vì nhân đôi. Note sau khi merge được set `dirty=1` để push kết quả.
+Bản conflict có id **và** hlc tất định, nên mọi máy đều tạo ra đúng một bản conflict giống hệt nhau. Khi máy giữ bản thắng là local, nó cập nhật `base_hlc = remote.hlc` và push lại để các máy khác biết bản đó đã "thấy" remote.
 
-Engine được test bằng **mô phỏng nhiều device với blob store in-memory**: thao tác ngẫu nhiên, lệch đồng hồ, mất mạng, rồi kiểm tra mọi device hội tụ về cùng một state và không mất `body` nào.
+**Test:**
+- `qd-notes/src/sync.rs`: các kịch bản cố định, cộng **300 lịch sử ngẫu nhiên** trên 3 máy (tạo/sửa/xoá/khôi phục/pin, giao op từng phần theo thứ tự ngẫu nhiên). Mọi máy đều hội tụ về cùng trạng thái hiển thị, kể cả `pinned`.
+- `qd-sync/tests/engine.rs`: engine chạy đầu-cuối qua store in-memory (offline, sai key, khôi phục DB, reset seq, compaction, máy mới tham gia sau compaction).
+- `qd-sync/tests/s3_live.rs`: chạy với S3 thật (đã kiểm với RustFS ở local).
 
 ### 6.5 Compaction
 
@@ -454,3 +462,22 @@ trait BlobTransport {
 | Ghi vào settings GNOME của user | Thấp | Chỉ ghi các path `quickdesk-*`, merge thay vì ghi đè, có nút gỡ trong Settings |
 | Metadata trên bucket (số device, số batch, thời điểm ghi) bị lộ | Thấp | Chấp nhận với tool cá nhân; ghi rõ trong tài liệu |
 | Quên passphrase và mất recovery key | — | Không khôi phục được dữ liệu sync. Local DB vẫn còn nguyên, có thể re-init sync |
+
+## 9. Trạng thái triển khai (2026-10-08)
+
+M1 → M5 đã xong. Những chỗ khác so với spec ban đầu:
+
+| Mục | Spec | Thực tế | Lý do |
+|---|---|---|---|
+| Luật conflict | Dựa vào `dirty` | Dựa vào dòng phiên bản (§6.4) | Bản cũ mất dữ liệu khi cả hai máy push trước khi pull |
+| Nén object | zstd | Không nén | Note nhỏ; tránh thêm dependency C |
+| Binding IPC | `tauri-specta` | Viết tay | tauri-specta còn RC |
+| Frontend | Vite mới nhất | Vite 5 | Máy dev đang dùng Node 18 |
+| DB | 1 writer + pool đọc | 1 connection + Mutex | Đủ nhanh với WAL; thêm pool khi cần |
+| Port Manager | Docker là stretch | **Đã có:** map port → container qua `/var/run/docker.sock`, kèm nút Stop container | Trên máy dev, phần lớn port là của Docker |
+| Clipboard Windows/macOS | Listener native | Fallback poll 500ms qua `arboard`, **chưa lọc được nội dung sensitive** | Chưa có máy Windows/macOS để kiểm thử |
+| Bucket layout | `quickdesk/v1/…` | `<prefix>/v1/…`, prefix cấu hình được (mặc định `quickdesk`) | Cho phép nhiều app dùng chung một bucket |
+| Pull | Chỉ đọc log của máy khác | Đọc cả log của chính mình (từ cursor) | Khôi phục được thay đổi của mình khi DB local bị restore từ bản cũ |
+| Build Linux | — | Cần thêm `libdbus-1-dev` | Dùng cho Secret Service (OS keyring) |
+
+Chưa làm: packaging, autostart, `PortalBackend` (GNOME ≥ 48 / KDE), Worker relay (§6.7), clipboard image/file, đổi passphrase từ UI (API đã có: `Keyring::change_passphrase`).

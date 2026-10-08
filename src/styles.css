@@ -128,3 +128,26 @@ button.icon:hover { background: var(--bg-subtle); color: var(--fg); }
 .clip-history li:hover .delete { visibility: visible; }
 .clip-main { flex: 1; min-width: 0; cursor: pointer; }
 .clip-content { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 7.5em; overflow: hidden; font-family: ui-monospace, monospace; font-size: 12.5px; }
+
+/* Sync */
+.sync-footer { display: flex; gap: 6px; align-items: center; padding: 4px 12px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sync-footer .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+.sync-footer.idle .dot { background: #16a34a; }
+.sync-footer.syncing .dot { background: var(--accent); }
+.sync-footer.offline .dot, .sync-footer.locked .dot { background: #f59e0b; }
+.sync-footer.error .dot { background: var(--danger); }
+.sync-form { display: flex; flex-direction: column; gap: 10px; max-width: 520px; }
+.sync-form h3 { margin: 0; font-size: 15px; }
+.sync-form p { margin: 0; }
+.field { display: flex; flex-direction: column; gap: 3px; }
+.field > span { font-size: 12px; color: var(--muted); }
+.field input { padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-subtle); color: var(--fg); font: inherit; outline: none; }
+.field input:focus { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: white; align-self: flex-start; padding: 6px 14px; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+.small { font-size: 12px; }
+.error-text { color: var(--danger); }
+.recovery-key { padding: 12px; border: 1px dashed var(--border); border-radius: 6px; background: var(--bg-subtle); font-size: 14px; white-space: pre-wrap; word-break: break-all; margin: 0; user-select: all; }
+.sync-state { text-transform: capitalize; font-weight: 600; }
+.sync-panel dl { display: grid; grid-template-columns: 120px 1fr; gap: 6px 12px; }

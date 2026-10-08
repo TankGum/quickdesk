@@ -88,6 +88,29 @@ export interface ClipStatus {
   paused: boolean;
 }
 
+export interface S3Config {
+  endpoint: string;
+  bucket: string;
+  region: string;
+  accessKeyId: string;
+  prefix: string;
+}
+
+export interface SyncReport {
+  pulled: number;
+  pushed: number;
+  conflicts: number;
+  compacted: boolean;
+}
+
+export interface SyncStatus {
+  state: "disabled" | "locked" | "idle" | "syncing" | "offline" | "error";
+  lastSyncAt: number | null;
+  lastError: string | null;
+  lastReport: SyncReport | null;
+  config: S3Config | null;
+}
+
 /** Shape of every rejected command (see `CmdError` in Rust). */
 export interface CmdError {
   code: string;
@@ -122,6 +145,12 @@ export const api = {
   clipClear: (keepPinned: boolean) => invoke<number>("clip_clear", { keepPinned }),
   clipStatus: () => invoke<ClipStatus>("clip_status"),
   clipSetPaused: (paused: boolean) => invoke<void>("clip_set_paused", { paused }),
+  syncStatus: () => invoke<SyncStatus>("sync_status"),
+  syncConnect: (config: S3Config, secret: string) => invoke<{ initialized: boolean }>("sync_connect", { config, secret }),
+  syncCreate: (passphrase: string) => invoke<string>("sync_create", { passphrase }),
+  syncUnlock: (secret: string) => invoke<void>("sync_unlock", { secret }),
+  syncNow: () => invoke<void>("sync_now"),
+  syncDisconnect: () => invoke<void>("sync_disconnect"),
   focusReport: (report: FocusReport) => invoke<void>("diag_focus_report", { report }),
   focusStats: () => invoke<FocusStats>("diag_focus_stats"),
   quit: () => invoke<void>("app_quit"),

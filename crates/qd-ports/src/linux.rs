@@ -116,7 +116,8 @@ pub(crate) fn listening_sockets() -> Result<Vec<Socket>> {
         .into_iter()
         .map(|r| {
             let pid = owners.get(&r.inode).copied();
-            let (process, cmdline) = pid.map(|p| info_cache.entry(p).or_insert_with(|| process_info(p)).clone()).unwrap_or_default();
+            let (process, cmdline) =
+                pid.map(|p| info_cache.entry(p).or_insert_with(|| process_info(p)).clone()).unwrap_or_default();
             Socket {
                 addr: r.addr,
                 port: r.port,

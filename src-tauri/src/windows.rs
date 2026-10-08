@@ -39,6 +39,12 @@ pub fn show<R: Runtime>(app: &AppHandle<R>, target: Target, sent_at_ms: u64) {
     if let Err(e) = w.show().and_then(|_| w.unminimize()).and_then(|_| w.set_focus()) {
         tracing::warn!(label, error = %e, "failed to show window");
     }
+    // Opening notes is a good moment to pick up changes from other devices.
+    if matches!(target, Target::Notes | Target::Main) {
+        if let Some(state) = app.try_state::<crate::state::AppState>() {
+            state.sync.trigger(crate::sync::Trigger::WindowShown);
+        }
+    }
     let shown = Shown { sent_at_ms, shown_at_ms: now_ms(), tab };
     if let Err(e) = app.emit_to(label, "window://shown", shown) {
         tracing::warn!(label, error = %e, "failed to emit shown");

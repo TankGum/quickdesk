@@ -4,6 +4,7 @@ pub mod app;
 pub mod clipboard;
 pub mod notes;
 pub mod ports;
+pub mod sync;
 
 use serde::Serialize;
 
@@ -60,6 +61,22 @@ impl From<qd_clipboard::Error> for CmdError {
     fn from(e: qd_clipboard::Error) -> Self {
         let code = match e {
             qd_clipboard::Error::NotFound(_) => "not_found",
+            _ => "internal",
+        };
+        CmdError::new(code, e.to_string())
+    }
+}
+
+impl From<qd_sync::Error> for CmdError {
+    fn from(e: qd_sync::Error) -> Self {
+        use qd_sync::Error as E;
+        let code = match e {
+            E::WrongSecret => "wrong_secret",
+            E::AlreadyInitialized => "already_initialized",
+            E::NotInitialized => "not_initialized",
+            E::Auth(_) => "auth",
+            E::Network(_) => "network",
+            E::InvalidInput(_) => "invalid",
             _ => "internal",
         };
         CmdError::new(code, e.to_string())

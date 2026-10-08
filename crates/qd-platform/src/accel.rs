@@ -59,7 +59,9 @@ impl Accelerator {
     /// GTK/GNOME accelerator syntax, e.g. `<Super><Shift>n`.
     pub fn to_gtk(&self) -> String {
         let mut out = String::new();
-        for (on, name) in [(self.ctrl, "<Control>"), (self.alt, "<Alt>"), (self.shift, "<Shift>"), (self.sup, "<Super>")] {
+        for (on, name) in
+            [(self.ctrl, "<Control>"), (self.alt, "<Alt>"), (self.shift, "<Shift>"), (self.sup, "<Super>")]
+        {
             if on {
                 out.push_str(name);
             }

@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 import { ClipboardTab } from "../modules/clipboard/ClipboardTab";
 import { NotesTab } from "../modules/notes/NotesTab";
 import { PortsTab } from "../modules/ports/PortsTab";
+import { SyncFooter } from "../modules/sync/SyncFooter";
+import { SyncSettings } from "../modules/sync/SyncSettings";
 import { api, AppInfo, FocusStats, useShown } from "../shared/ipc";
 
 const TABS = ["notes", "clipboard", "ports", "settings"] as const;
@@ -33,6 +35,7 @@ export function Main() {
         {tab === "ports" && <PortsTab focusSignal={shownAt} />}
         {tab === "clipboard" && <ClipboardTab focusSignal={shownAt} />}
       </section>
+      <SyncFooter onOpenSettings={() => setTab("settings")} />
     </div>
   );
 }
@@ -55,6 +58,9 @@ function Settings() {
   if (!info) return null;
   return (
     <div className="settings">
+      <h2>Sync</h2>
+      <SyncSettings />
+
       <h2>Hotkeys</h2>
       <dl>
         <dt>Quick note</dt>

@@ -7,6 +7,7 @@ use qd_platform::{HotkeyStrategy, Session};
 use crate::clipboard::ClipboardService;
 use crate::commands::app::FocusReport;
 use crate::hotkeys::HotkeyConfig;
+use crate::sync::{SyncService, Trigger};
 
 pub struct AppState {
     pub db: Db,
@@ -18,9 +19,12 @@ pub struct AppState {
     pub hotkeys: HotkeyConfig,
     pub focus_reports: Mutex<Vec<FocusReport>>,
     pub clipboard: ClipboardService,
+    pub sync: SyncService,
 }
 
 impl AppState {
-    /// Hook for the sync worker (M5); no-op until sync is configured.
-    pub fn on_notes_changed(&self) {}
+    /// A local note changed: schedule a (debounced) push.
+    pub fn on_notes_changed(&self) {
+        self.sync.trigger(Trigger::LocalChange);
+    }
 }
