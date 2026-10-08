@@ -1,6 +1,8 @@
 //! Secrets in the OS keyring (GNOME Keyring / KWallet via Secret Service,
 //! Windows Credential Manager, macOS Keychain). Never stored in SQLite.
 
+/// Keyring service name. Kept from the original identifier on purpose:
+/// changing it would orphan secrets users already stored.
 const SERVICE: &str = "dev.quickdesk.app";
 
 pub const S3_SECRET: &str = "sync-s3-secret";

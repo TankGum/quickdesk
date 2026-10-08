@@ -26,6 +26,19 @@ input methods (IBus Unikey/Bamboo) swallow Super+Shift+letter while a text field
 On GNOME Wayland the hotkeys are registered as GNOME custom shortcuts running
 `quickdesk toggle <notes|quick-note|clipboard|ports>` and are removed again on quit.
 
+## Install (Linux)
+
+Download from the QuickDesk download page:
+
+| Distribution | File | Install |
+|---|---|---|
+| Ubuntu / Debian | `.deb` | `sudo apt install ./QuickDesk_<version>_amd64.deb` |
+| Fedora / openSUSE | `.rpm` | `sudo dnf install ./QuickDesk-<version>-1.x86_64.rpm` |
+| Any other | `.AppImage` | `chmod +x QuickDesk_<version>_amd64.AppImage && ./QuickDesk_<version>_amd64.AppImage` |
+
+Data lives in `~/.local/share/io.github.tankgum.quickdesk/` (logs in `logs/` there).
+Releasing: see [`docs/RELEASING.md`](docs/RELEASING.md).
+
 ## Develop
 
 Ubuntu/Debian packages:

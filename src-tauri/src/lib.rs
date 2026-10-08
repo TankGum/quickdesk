@@ -104,8 +104,10 @@ pub fn run(args: Vec<String>) {
         ])
         .on_window_event(windows::on_window_event)
         .setup(move |app| {
-            init_logging(app.path().app_log_dir()?);
             let data_dir = app.path().app_data_dir()?;
+            // Before logging: the log directory lives inside the data directory.
+            migrate_legacy_data_dir(&data_dir);
+            init_logging(app.path().app_log_dir()?);
             std::fs::create_dir_all(&data_dir)?;
             let db =
                 Db::open(&data_dir.join("quickdesk.db"), &[&qd_notes::NotesModule, &qd_clipboard::ClipboardModule])?;
@@ -167,6 +169,22 @@ pub fn run(args: Vec<String>) {
     });
 }
 
+/// Identifier of builds up to 0.1.x; their data moves to the new location.
+const LEGACY_IDENTIFIER: &str = "dev.quickdesk.app";
+
+/// Move `<data>/dev.quickdesk.app` to the current data directory once, so
+/// notes, history and settings survive the identifier change.
+fn migrate_legacy_data_dir(data_dir: &std::path::Path) {
+    let Some(old) = data_dir.parent().map(|p| p.join(LEGACY_IDENTIFIER)) else { return };
+    if old == data_dir || !old.is_dir() || data_dir.exists() {
+        return;
+    }
+    match std::fs::rename(&old, data_dir) {
+        Ok(()) => eprintln!("quickdesk: moved data from {} to {}", old.display(), data_dir.display()),
+        Err(e) => eprintln!("quickdesk: could not move {} ({e}); starting with a new data directory", old.display()),
+    }
+}
+
 fn init_logging(dir: std::path::PathBuf) {
     let file = tracing_appender::rolling::daily(dir, "quickdesk.log");
     let (writer, guard) = tracing_appender::non_blocking(file);
@@ -204,4 +222,28 @@ fn shutdown<R: Runtime>(app: &AppHandle<R>) {
     }
     ipc::cleanup();
     tracing::info!("stopped");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn legacy_data_dir_moves_once_and_never_overwrites() {
+        let root = std::env::temp_dir().join(format!("qd-migrate-{}", qd_core::ids::new_id()));
+        let (old, new) = (root.join(LEGACY_IDENTIFIER), root.join("io.github.tankgum.quickdesk"));
+        std::fs::create_dir_all(&old).unwrap();
+        std::fs::write(old.join("quickdesk.db"), b"notes").unwrap();
+
+        migrate_legacy_data_dir(&new);
+        assert_eq!(std::fs::read(new.join("quickdesk.db")).unwrap(), b"notes");
+        assert!(!old.exists());
+
+        // A stale old directory never replaces existing data.
+        std::fs::create_dir_all(&old).unwrap();
+        std::fs::write(old.join("quickdesk.db"), b"older").unwrap();
+        migrate_legacy_data_dir(&new);
+        assert_eq!(std::fs::read(new.join("quickdesk.db")).unwrap(), b"notes");
+        std::fs::remove_dir_all(root).unwrap();
+    }
 }
