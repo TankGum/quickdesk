@@ -13,8 +13,13 @@ fn changed(app: &AppHandle, state: &AppState) {
 }
 
 #[tauri::command]
-pub fn notes_create(app: AppHandle, state: State<'_, AppState>, body: String) -> CmdResult<Note> {
-    let note = repo::create(&*state.db.conn()?, &state.clock, &body)?;
+pub fn notes_create(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    title: Option<String>,
+    body: String,
+) -> CmdResult<Note> {
+    let note = repo::create_note(&*state.db.conn()?, &state.clock, title.as_deref().unwrap_or(""), &body)?;
     changed(&app, &state);
     Ok(note)
 }
@@ -24,10 +29,12 @@ pub fn notes_update(
     app: AppHandle,
     state: State<'_, AppState>,
     id: String,
+    title: Option<String>,
     body: Option<String>,
     pinned: Option<bool>,
 ) -> CmdResult<Note> {
-    let note = repo::update(&*state.db.conn()?, &state.clock, &id, body.as_deref(), pinned)?;
+    let patch = repo::NotePatch { title: title.as_deref(), body: body.as_deref(), pinned };
+    let note = repo::update_note(&*state.db.conn()?, &state.clock, &id, &patch)?;
     changed(&app, &state);
     Ok(note)
 }

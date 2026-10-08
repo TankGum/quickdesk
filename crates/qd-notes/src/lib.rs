@@ -18,7 +18,7 @@ pub enum Error {
     Db(#[from] rusqlite::Error),
     #[error("note {0} not found")]
     NotFound(String),
-    #[error("note body is empty")]
+    #[error("note is empty")]
     EmptyBody,
 }
 
@@ -29,6 +29,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[serde(rename_all = "camelCase")]
 pub struct Note {
     pub id: String,
+    /// May be empty; the UI then shows the first line of the body.
+    pub title: String,
     pub body: String,
     pub pinned: bool,
     pub created_at: i64,
@@ -45,6 +47,9 @@ impl Module for NotesModule {
     }
 
     fn migrations(&self) -> &'static [Migration] {
-        &[Migration { version: 1, sql: include_str!("migrations/001_notes.sql") }]
+        &[
+            Migration { version: 1, sql: include_str!("migrations/001_notes.sql") },
+            Migration { version: 2, sql: include_str!("migrations/002_title.sql") },
+        ]
     }
 }

@@ -6,9 +6,9 @@
 //! other are concurrent and get resolved deterministically, so every device
 //! converges to the same state no matter the order it sees operations in:
 //!
-//! * same body            → merge silently (newest `pinned`/`deleted` wins)
+//! * same title and body  → merge silently (newest `pinned`/`deleted` wins)
 //! * edit vs delete       → the edit wins (resurrect)
-//! * different bodies     → newest HLC keeps the id; the other body is saved
+//! * different text       → newest HLC keeps the id; the other version is saved
 //!   as a conflict copy whose id is derived from `(note id, loser hlc)`, so
 //!   all devices create the *same* copy instead of duplicating it
 
@@ -25,6 +25,9 @@ pub struct NoteOp {
     pub id: String,
     pub hlc: String,
     pub base_hlc: Option<String>,
+    /// Absent in batches written before titles existed.
+    #[serde(default)]
+    pub title: String,
     pub body: String,
     pub pinned: bool,
     pub created_at: i64,
@@ -43,8 +46,13 @@ impl NoteOp {
         self.base() >= hlc
     }
 
+    /// Title and body: what a person wrote.
+    fn same_text(&self, other: &NoteOp) -> bool {
+        self.title == other.title && self.body == other.body
+    }
+
     fn same_content(&self, other: &NoteOp) -> bool {
-        self.body == other.body
+        self.same_text(other)
             && self.pinned == other.pinned
             && self.deleted_at.is_some() == other.deleted_at.is_some()
             && self.conflict_of == other.conflict_of
@@ -65,19 +73,20 @@ pub enum Applied {
     },
 }
 
-const OP_COLS: &str = "id, hlc, base_hlc, body, pinned, created_at, updated_at, deleted_at, conflict_of";
+const OP_COLS: &str = "id, hlc, base_hlc, title, body, pinned, created_at, updated_at, deleted_at, conflict_of";
 
 fn op_from_row(r: &Row<'_>) -> rusqlite::Result<NoteOp> {
     Ok(NoteOp {
         id: r.get(0)?,
         hlc: r.get(1)?,
         base_hlc: r.get(2)?,
-        body: r.get(3)?,
-        pinned: r.get(4)?,
-        created_at: r.get(5)?,
-        updated_at: r.get(6)?,
-        deleted_at: r.get(7)?,
-        conflict_of: r.get(8)?,
+        title: r.get(3)?,
+        body: r.get(4)?,
+        pinned: r.get(5)?,
+        created_at: r.get(6)?,
+        updated_at: r.get(7)?,
+        deleted_at: r.get(8)?,
+        conflict_of: r.get(9)?,
     })
 }
 
@@ -113,16 +122,17 @@ fn load(conn: &Connection, id: &str) -> Result<Option<NoteOp>> {
 /// Insert or replace the row for `op.id` with exactly `op`.
 fn write(conn: &Connection, op: &NoteOp, dirty: bool) -> Result<()> {
     conn.execute(
-        "INSERT INTO notes (id, hlc, base_hlc, body, pinned, created_at, updated_at, deleted_at, conflict_of, dirty)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+        "INSERT INTO notes (id, hlc, base_hlc, title, body, pinned, created_at, updated_at, deleted_at, conflict_of, dirty)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
          ON CONFLICT (id) DO UPDATE SET
-           hlc = excluded.hlc, base_hlc = excluded.base_hlc, body = excluded.body,
+           hlc = excluded.hlc, base_hlc = excluded.base_hlc, title = excluded.title, body = excluded.body,
            pinned = excluded.pinned, created_at = excluded.created_at, updated_at = excluded.updated_at,
            deleted_at = excluded.deleted_at, conflict_of = excluded.conflict_of, dirty = excluded.dirty",
         params![
             op.id,
             op.hlc,
             op.base_hlc,
+            op.title,
             op.body,
             op.pinned,
             op.created_at,
@@ -198,7 +208,7 @@ fn resolve_concurrent(conn: &Connection, clock: &Clock, local: NoteOp, remote: &
             keep(newer)?;
             Ok(Applied::Merged)
         }
-        (false, false) if local.body == remote.body => {
+        (false, false) if local.same_text(remote) => {
             keep(newer)?;
             Ok(Applied::Merged)
         }
@@ -209,6 +219,7 @@ fn resolve_concurrent(conn: &Connection, clock: &Clock, local: NoteOp, remote: &
                 id: copy_id.clone(),
                 hlc: older.hlc.clone(),
                 base_hlc: None,
+                title: older.title.clone(),
                 body: older.body.clone(),
                 pinned: false,
                 created_at: older.created_at,
@@ -342,6 +353,43 @@ mod tests {
 
         assert_eq!(a.visible(), b.visible());
         assert_eq!(a.visible().len(), 2);
+    }
+
+    #[test]
+    fn concurrent_title_edits_conflict_too() {
+        let (a, b) = (device("a"), device("b"));
+        let n = a.create("same body");
+        b.pull(&a.push());
+        let retitle = |d: &Device, t: &str| {
+            repo::update_note(
+                &d.db.conn().unwrap(),
+                &d.clock,
+                &n.id,
+                &repo::NotePatch { title: Some(t), ..Default::default() },
+            )
+            .unwrap();
+        };
+        retitle(&a, "Title A");
+        retitle(&b, "Title B");
+        settle(&[&a, &b]);
+        let titles = |d: &Device| -> Vec<String> {
+            let mut v: Vec<String> =
+                repo::list(&d.db.conn().unwrap(), 10).unwrap().into_iter().map(|n| n.title).collect();
+            v.sort();
+            v
+        };
+        assert_eq!(titles(&a), titles(&b));
+        assert_eq!(titles(&a), vec!["Title A", "Title B"]);
+    }
+
+    #[test]
+    fn ops_without_title_from_older_versions_still_apply() {
+        let b = device("b");
+        let json = r#"{"id":"n1","hlc":"0000000001000-000000-a","baseHlc":null,"body":"old client","pinned":false,
+                      "createdAt":1,"updatedAt":1,"deletedAt":null,"conflictOf":null}"#;
+        let op: NoteOp = serde_json::from_str(json).unwrap();
+        assert_eq!(b.pull(&[op]), vec![Applied::Inserted]);
+        assert_eq!(b.visible()[0].1, "old client");
     }
 
     #[test]

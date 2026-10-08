@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { Key, t, useI18n } from "../../shared/i18n";
 import { api, errorMessage, S3Config } from "../../shared/ipc";
 import { relativeTime } from "../../shared/time";
 import { useSyncStatus } from "./useSyncStatus";
@@ -8,6 +9,7 @@ const EMPTY: S3Config = { endpoint: "", bucket: "", region: "auto", accessKeyId:
 
 /** Connect storage → create keys (first device) or unlock (others) → syncing. */
 export function SyncSettings() {
+  useI18n();
   const status = useSyncStatus();
   const [step, setStep] = useState<"form" | "create" | "unlock" | "recovery">("form");
   const [recoveryKey, setRecoveryKey] = useState("");
@@ -74,27 +76,27 @@ export function SyncSettings() {
   return (
     <div className="sync-panel">
       <dl>
-        <dt>Status</dt>
+        <dt>{t("sync.status")}</dt>
         <dd>
-          <span className={`sync-state ${status.state}`}>{status.state}</span>
-          {status.lastSyncAt && <span className="muted"> · last sync {relativeTime(status.lastSyncAt)}</span>}
+          <span className={`sync-state ${status.state}`}>{t(`sync.state.${status.state}` as const)}</span>
+          {status.lastSyncAt && <span className="muted">{t("sync.lastSync", { time: relativeTime(status.lastSyncAt) })}</span>}
         </dd>
         {status.lastError && (
           <>
-            <dt>Last error</dt>
+            <dt>{t("sync.lastError")}</dt>
             <dd className="error-text">{status.lastError}</dd>
           </>
         )}
         {r && (
           <>
-            <dt>Last round</dt>
+            <dt>{t("sync.lastRound")}</dt>
             <dd>
               ↓ {r.pulled} · ↑ {r.pushed}
-              {r.conflicts > 0 && ` · ${r.conflicts} conflict(s) kept as copies`}
+              {r.conflicts > 0 && t("sync.conflicts", { n: r.conflicts })}
             </dd>
           </>
         )}
-        <dt>Storage</dt>
+        <dt>{t("sync.storage")}</dt>
         <dd>
           <code>{status.config?.endpoint}</code> / <code>{status.config?.bucket}</code>
           {status.config?.prefix && <> / <code>{status.config.prefix}</code></>}
@@ -103,13 +105,11 @@ export function SyncSettings() {
       {error && <div className="banner error">{error}</div>}
       <div className="row">
         <button className="btn" disabled={busy} onClick={() => void api.syncNow()}>
-          Sync now
+          {t("sync.now")}
         </button>
         <DisconnectButton onConfirm={() => act(api.syncDisconnect)} busy={busy} />
       </div>
-      <p className="muted small">
-        Notes are encrypted on this device before upload; the storage provider only sees ciphertext. Clipboard history never syncs.
-      </p>
+      <p className="muted small">{t("sync.e2e")}</p>
     </div>
   );
 }
@@ -117,11 +117,11 @@ export function SyncSettings() {
 function ConnectForm({ busy, error, onConnect }: { busy: boolean; error: string | null; onConnect: (c: S3Config, secret: string) => void }) {
   const [cfg, setCfg] = useState<S3Config>(EMPTY);
   const [secret, setSecret] = useState("");
-  const field = (key: keyof S3Config, label: string, placeholder: string, hint?: string) => (
+  const field = (key: keyof S3Config, label: Key, placeholder: string, hint?: Key) => (
     <label className="field">
-      <span>{label}</span>
+      <span>{t(label)}</span>
       <input value={cfg[key]} placeholder={placeholder} onChange={(e) => setCfg({ ...cfg, [key]: e.target.value })} spellCheck={false} />
-      {hint && <small className="muted">{hint}</small>}
+      {hint && <small className="muted">{t(hint)}</small>}
     </label>
   );
   return (
@@ -132,23 +132,20 @@ function ConnectForm({ busy, error, onConnect }: { busy: boolean; error: string 
         onConnect(cfg, secret);
       }}
     >
-      <p className="muted">
-        Sync Quick Notes through any S3-compatible bucket you own: Cloudflare R2 (recommended, no egress fees), AWS S3 or MinIO.
-        Use an API token limited to this one bucket.
-      </p>
-      {field("endpoint", "Endpoint", "https://<account-id>.r2.cloudflarestorage.com", "R2: Dashboard → R2 → S3 API. AWS: https://s3.<region>.amazonaws.com")}
-      {field("bucket", "Bucket", "my-quickdesk")}
-      {field("region", "Region", "auto", "Use “auto” for R2")}
-      {field("accessKeyId", "Access key ID", "")}
+      <p className="muted">{t("sync.intro")}</p>
+      {field("endpoint", "sync.endpoint", "https://<account-id>.r2.cloudflarestorage.com", "sync.endpointHint")}
+      {field("bucket", "sync.bucket", "my-quickdesk")}
+      {field("region", "sync.region", "auto", "sync.regionHint")}
+      {field("accessKeyId", "sync.accessKey", "")}
       <label className="field">
-        <span>Secret access key</span>
+        <span>{t("sync.secret")}</span>
         <input type="password" value={secret} onChange={(e) => setSecret(e.target.value)} autoComplete="off" />
-        <small className="muted">Stored in the OS keyring, not in the app database.</small>
+        <small className="muted">{t("sync.secretHint")}</small>
       </label>
-      {field("prefix", "Folder prefix", "quickdesk", "Optional: lets several apps share a bucket")}
+      {field("prefix", "sync.prefix", "quickdesk", "sync.prefixHint")}
       {error && <div className="banner error">{error}</div>}
       <button className="btn primary" type="submit" disabled={busy}>
-        {busy ? "Connecting…" : "Connect"}
+        {busy ? t("sync.connecting") : t("sync.connect")}
       </button>
     </form>
   );
@@ -166,27 +163,24 @@ function CreateKeys({ busy, error, onCreate, onCancel }: { busy: boolean; error:
         if (!mismatch) onCreate(p1);
       }}
     >
-      <h3>Set an encryption passphrase</h3>
-      <p className="muted">
-        This is the first device on this bucket. Choose a passphrase you will type on your other devices. It never leaves this
-        machine; without it (or the recovery key shown next) synced notes cannot be decrypted.
-      </p>
+      <h3>{t("sync.create.title")}</h3>
+      <p className="muted">{t("sync.create.intro")}</p>
       <label className="field">
-        <span>Passphrase (8+ characters)</span>
+        <span>{t("sync.create.pass")}</span>
         <input type="password" value={p1} onChange={(e) => setP1(e.target.value)} autoFocus />
       </label>
       <label className="field">
-        <span>Repeat passphrase</span>
+        <span>{t("sync.create.repeat")}</span>
         <input type="password" value={p2} onChange={(e) => setP2(e.target.value)} />
-        {mismatch && <small className="error-text">Passphrases do not match</small>}
+        {mismatch && <small className="error-text">{t("sync.create.mismatch")}</small>}
       </label>
       {error && <div className="banner error">{error}</div>}
       <div className="row">
         <button className="btn primary" type="submit" disabled={busy || p1.length < 8 || p1 !== p2}>
-          {busy ? "Creating keys…" : "Create keys"}
+          {busy ? t("sync.create.busy") : t("sync.create.button")}
         </button>
         <button className="btn" type="button" onClick={onCancel}>
-          Back
+          {t("sync.back")}
         </button>
       </div>
     </form>
@@ -203,15 +197,15 @@ function Unlock({ busy, error, onUnlock }: { busy: boolean; error: string | null
         onUnlock(secret);
       }}
     >
-      <h3>Unlock sync</h3>
-      <p className="muted">This bucket already holds QuickDesk data. Enter the passphrase you set on your first device, or your recovery key.</p>
+      <h3>{t("sync.unlock.title")}</h3>
+      <p className="muted">{t("sync.unlock.intro")}</p>
       <label className="field">
-        <span>Passphrase or recovery key</span>
+        <span>{t("sync.unlock.label")}</span>
         <input type="password" value={secret} onChange={(e) => setSecret(e.target.value)} autoFocus />
       </label>
       {error && <div className="banner error">{error}</div>}
       <button className="btn primary" type="submit" disabled={busy || !secret}>
-        {busy ? "Unlocking…" : "Unlock"}
+        {busy ? t("sync.unlock.busy") : t("sync.unlock.button")}
       </button>
     </form>
   );
@@ -222,22 +216,19 @@ function RecoveryKeyNotice({ recoveryKey, onDone }: { recoveryKey: string; onDon
   const [copied, setCopied] = useState(false);
   return (
     <div className="sync-form">
-      <h3>Save your recovery key</h3>
-      <p>
-        If you forget your passphrase, this key is the <b>only</b> way to decrypt your synced notes. It is shown once. Store it in
-        a password manager.
-      </p>
+      <h3>{t("sync.recovery.title")}</h3>
+      <p>{t("sync.recovery.intro")}</p>
       <pre className="recovery-key">{recoveryKey}</pre>
       <div className="row">
         <button className="btn" onClick={() => void api.clipboardWrite(recoveryKey).then(() => setCopied(true))}>
-          {copied ? "Copied ✓" : "Copy"}
+          {copied ? t("common.copied") : t("common.copy")}
         </button>
       </div>
       <label className="switch">
-        <input type="checkbox" checked={saved} onChange={(e) => setSaved(e.target.checked)} /> I have saved my recovery key
+        <input type="checkbox" checked={saved} onChange={(e) => setSaved(e.target.checked)} /> {t("sync.recovery.saved")}
       </label>
       <button className="btn primary" disabled={!saved} onClick={onDone}>
-        Done
+        {t("sync.recovery.done")}
       </button>
     </div>
   );
@@ -247,17 +238,17 @@ function DisconnectButton({ onConfirm, busy }: { onConfirm: () => void; busy: bo
   const [confirm, setConfirm] = useState(false);
   return confirm ? (
     <>
-      <span className="muted">Stop syncing on this device? Local notes are kept.</span>
+      <span className="muted">{t("sync.disconnect.confirm")}</span>
       <button className="btn danger" disabled={busy} onClick={onConfirm}>
-        Disconnect
+        {t("sync.disconnect.button")}
       </button>
       <button className="btn" onClick={() => setConfirm(false)}>
-        Cancel
+        {t("common.cancel")}
       </button>
     </>
   ) : (
     <button className="btn" onClick={() => setConfirm(true)}>
-      Disconnect…
+      {t("sync.disconnect")}
     </button>
   );
 }

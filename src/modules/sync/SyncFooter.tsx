@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 
+import { useI18n } from "../../shared/i18n";
 import { relativeTime } from "../../shared/time";
 import { useSyncStatus } from "./useSyncStatus";
 
 /** One-line sync status for the bottom of the main window. */
 export function SyncFooter({ onOpenSettings }: { onOpenSettings: () => void }) {
+  const { t } = useI18n();
   const status = useSyncStatus();
   const [, tick] = useState(0);
   useEffect(() => {
@@ -16,21 +18,21 @@ export function SyncFooter({ onOpenSettings }: { onOpenSettings: () => void }) {
   const text = (() => {
     switch (status.state) {
       case "disabled":
-        return "Sync off";
+        return t("sync.footer.off");
       case "locked":
-        return "Sync locked: enter your passphrase";
+        return t("sync.footer.locked");
       case "syncing":
-        return "Syncing…";
+        return t("sync.footer.syncing");
       case "offline":
-        return `Offline: will retry (${status.lastError ?? ""})`;
+        return t("sync.footer.offline", { error: status.lastError ?? "" });
       case "error":
-        return `Sync error: ${status.lastError ?? "unknown"}`;
+        return t("sync.footer.error", { error: status.lastError ?? "" });
       default:
-        return status.lastSyncAt ? `Synced · ${relativeTime(status.lastSyncAt)}` : "Sync ready";
+        return status.lastSyncAt ? t("sync.footer.synced", { time: relativeTime(status.lastSyncAt) }) : t("sync.footer.ready");
     }
   })();
   return (
-    <footer className={`sync-footer ${status.state}`} onClick={onOpenSettings} title="Sync settings">
+    <footer className={`sync-footer ${status.state}`} onClick={onOpenSettings} title={t("sync.footer.title")}>
       <span className="dot" /> {text}
     </footer>
   );

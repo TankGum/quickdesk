@@ -110,15 +110,6 @@ impl ClipboardService {
 }
 
 /// Pause or resume recording; persists, updates the tray and notifies windows.
-/// Tray label that says what clicking it will do.
-pub fn tray_label(paused: bool) -> &'static str {
-    if paused {
-        "Clipboard history paused: click to resume"
-    } else {
-        "Pause clipboard history"
-    }
-}
-
 /// Pause recording (for `minutes`, or until resumed when `None`) or resume it.
 pub fn set_paused(app: &AppHandle, paused: bool, minutes: Option<u32>) -> qd_core::Result<()> {
     let state = app.state::<AppState>();
@@ -132,7 +123,7 @@ pub fn set_paused(app: &AppHandle, paused: bool, minutes: Option<u32>) -> qd_cor
     }
     if let Some(item) = state.clipboard.tray_item.lock().unwrap_or_else(|e| e.into_inner()).as_ref() {
         let _ = item.set_checked(paused);
-        let _ = item.set_text(tray_label(paused));
+        let _ = item.set_text(crate::tray::pause_label(state.lang(), paused));
     }
     let _ = app.emit("clipboard://changed", ());
     tracing::info!(paused, ?until, "clipboard history");

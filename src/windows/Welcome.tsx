@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 
+import { lang, setLanguage, useI18n } from "../shared/i18n";
 import { api, errorMessage, HotkeyConfig } from "../shared/ipc";
 
 /** First-run screen: shows the hotkeys and offers the one-time instant-paste opt-in. */
 export function Welcome({ onDone }: { onDone: () => void }) {
+  const { t, pref } = useI18n();
   const [offerUinput, setOfferUinput] = useState(false);
   const [enableUinput, setEnableUinput] = useState(true);
   const [hotkeys, setHotkeys] = useState<HotkeyConfig | null>(null);
@@ -23,7 +25,7 @@ export function Welcome({ onDone }: { onDone: () => void }) {
         await api.clipUinputEnable();
       } catch (e) {
         // Not fatal: auto-paste falls back to the desktop portal.
-        setError(`${errorMessage(e)}. You can enable it later in Settings → Auto-paste.`);
+        setError(t("welcome.instantFailed", { error: errorMessage(e) }));
         setBusy(false);
         setOfferUinput(false);
         return;
@@ -35,36 +37,50 @@ export function Welcome({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="welcome">
-      <h1>Welcome to QuickDesk</h1>
-      <p className="muted">Lives in the tray. These shortcuts work from any app:</p>
+      <div className="radio-list horizontal welcome-lang">
+        {(
+          [
+            ["vi", "Tiếng Việt"],
+            ["en", "English"],
+          ] as const
+        ).map(([value, label]) => (
+          <label key={value} className="radio">
+            <input
+              type="radio"
+              name="welcome-lang"
+              checked={pref === value || (pref === "auto" && lang() === value)}
+              onChange={() => void setLanguage(value)}
+            />
+            <span>{label}</span>
+          </label>
+        ))}
+      </div>
+      <h1>{t("welcome.title")}</h1>
+      <p className="muted">{t("welcome.intro")}</p>
       {hotkeys && (
         <dl className="welcome-keys">
           <dt><kbd>{hotkeys.notes}</kbd></dt>
-          <dd>Notes: jot something down, search everything you wrote</dd>
+          <dd>{t("welcome.notes")}</dd>
           <dt><kbd>{hotkeys.clipboard}</kbd></dt>
-          <dd>Clipboard history: pick an entry and it is pasted where you were typing</dd>
+          <dd>{t("welcome.clipboard")}</dd>
           <dt><kbd>{hotkeys.ports}</kbd></dt>
-          <dd>Ports: what is listening on 3000, 8000… and stop it</dd>
+          <dd>{t("welcome.ports")}</dd>
         </dl>
       )}
       {offerUinput && (
         <label className="welcome-option">
           <input type="checkbox" checked={enableUinput} onChange={(e) => setEnableUinput(e.target.checked)} />
           <span>
-            <b>Enable instant paste</b> (recommended)
-            <small className="muted">
-              Pastes without a permission prompt or a remote-control indicator. Asks for your administrator password once and
-              lets programs running as you create a virtual keyboard, the same permission Steam uses for controllers. You can
-              change this later in Settings.
-            </small>
+            <b>{t("welcome.instant")}</b> {t("welcome.recommended")}
+            <small className="muted">{t("welcome.instantHint")}</small>
           </span>
         </label>
       )}
       {error && <div className="banner error">{error}</div>}
       <button className="btn primary big" disabled={busy} onClick={() => void start()}>
-        {busy ? "Waiting for password…" : "Get started"}
+        {busy ? t("common.waitingPassword") : t("welcome.start")}
       </button>
-      <p className="muted small">Change shortcuts any time in Settings → Hotkeys.</p>
+      <p className="muted small">{t("welcome.footer")}</p>
     </div>
   );
 }

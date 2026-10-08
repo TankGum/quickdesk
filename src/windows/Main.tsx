@@ -7,6 +7,7 @@ import { SyncFooter } from "../modules/sync/SyncFooter";
 import { SyncSettings } from "../modules/sync/SyncSettings";
 import { HotkeySettings } from "../modules/settings/HotkeySettings";
 import { PasteSettings } from "../modules/settings/PasteSettings";
+import { LangPref, setLanguage, useI18n } from "../shared/i18n";
 import { api, AppInfo, currentWindow, FocusStats, hideWindow, useShown } from "../shared/ipc";
 import { Welcome } from "./Welcome";
 
@@ -14,6 +15,7 @@ const TABS = ["notes", "clipboard", "ports", "settings"] as const;
 type Tab = (typeof TABS)[number];
 
 export function Main() {
+  const { t } = useI18n();
   const [tab, setTab] = useState<Tab>("notes");
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
   useEffect(() => {
@@ -51,9 +53,9 @@ export function Main() {
   return (
     <div className="main">
       <nav className="tabs">
-        {TABS.map((t) => (
-          <button key={t} className={t === tab ? "active" : ""} onClick={() => setTab(t)}>
-            {t[0].toUpperCase() + t.slice(1)}
+        {TABS.map((name) => (
+          <button key={name} className={name === tab ? "active" : ""} onClick={() => setTab(name)}>
+            {t(`tab.${name}` as const)}
           </button>
         ))}
       </nav>
@@ -68,7 +70,27 @@ export function Main() {
   );
 }
 
+function LanguagePicker() {
+  const { t, pref } = useI18n();
+  const options: { value: LangPref; label: string }[] = [
+    { value: "auto", label: t("settings.language.auto") },
+    { value: "vi", label: "Tiếng Việt" },
+    { value: "en", label: "English" },
+  ];
+  return (
+    <div className="radio-list horizontal">
+      {options.map((o) => (
+        <label key={o.value} className="radio">
+          <input type="radio" name="ui-language" checked={pref === o.value} onChange={() => void setLanguage(o.value)} />
+          <span>{o.label}</span>
+        </label>
+      ))}
+    </div>
+  );
+}
+
 function Settings() {
+  const { t } = useI18n();
   const [info, setInfo] = useState<AppInfo | null>(null);
   const [stats, setStats] = useState<FocusStats | null>(null);
 
@@ -86,25 +108,37 @@ function Settings() {
   if (!info) return null;
   return (
     <div className="settings">
-      <h2>Sync</h2>
+      <h2>{t("settings.language")}</h2>
+      <LanguagePicker />
+
+      <h2>{t("settings.sync")}</h2>
       <SyncSettings />
 
-      <h2>Hotkeys</h2>
+      <h2>{t("settings.hotkeys")}</h2>
       <HotkeySettings />
 
-      <h2>Auto-paste</h2>
+      <h2>{t("settings.autoPaste")}</h2>
       <PasteSettings />
 
-      <h2>Popup focus test</h2>
+      <h2>{t("settings.focusTest")}</h2>
       {stats && stats.total > 0 ? (
         <>
           <p>
-            Focused <b>{stats.focused}/{stats.total}</b> · latency p50 {stats.latencyP50} ms · max{" "}
-            {stats.latencyMax} ms
+            {t("settings.focusTest.summary", {
+              focused: stats.focused,
+              total: stats.total,
+              p50: stats.latencyP50 ?? "-",
+              max: stats.latencyMax ?? "-",
+            })}
           </p>
           <table>
             <thead>
-              <tr><th>Window</th><th>Document</th><th>Input</th><th>Latency</th></tr>
+              <tr>
+                <th>{t("settings.focusTest.window")}</th>
+                <th>{t("settings.focusTest.document")}</th>
+                <th>{t("settings.focusTest.input")}</th>
+                <th>{t("settings.focusTest.latency")}</th>
+              </tr>
             </thead>
             <tbody>
               {stats.recent.map((r, i) => (
@@ -119,21 +153,25 @@ function Settings() {
           </table>
         </>
       ) : (
-        <p className="muted">Press a popup hotkey from another app to record a sample.</p>
+        <p className="muted">{t("settings.focusTest.empty")}</p>
       )}
 
-      <h2>About</h2>
+      <h2>{t("settings.about")}</h2>
       <dl>
-        <dt>Version</dt>
+        <dt>{t("settings.version")}</dt>
         <dd>{info.version}</dd>
-        <dt>Session</dt>
-        <dd>{info.os} · {info.wayland ? "Wayland" : "X11/native"} · {info.desktop || "unknown"}</dd>
-        <dt>Device</dt>
+        <dt>{t("settings.session")}</dt>
+        <dd>
+          {info.os} · {info.wayland ? "Wayland" : "X11/native"} · {info.desktop || t("settings.unknown")}
+        </dd>
+        <dt>{t("settings.device")}</dt>
         <dd><code>{info.deviceId}</code></dd>
-        <dt>Data</dt>
+        <dt>{t("settings.data")}</dt>
         <dd><code>{info.dataDir}</code></dd>
       </dl>
-      <button className="danger" onClick={() => void api.quit()}>Quit QuickDesk</button>
+      <button className="danger" onClick={() => void api.quit()}>
+        {t("settings.quit")}
+      </button>
     </div>
   );
 }

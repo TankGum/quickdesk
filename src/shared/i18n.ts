@@ -1,0 +1,593 @@
+// UI translations. `en` is the source of truth; `vi` must define every key
+// (the `Record<Key, string>` type makes a missing translation a compile error).
+// Placeholders use {name}.
+import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
+import { useSyncExternalStore } from "react";
+
+export type Lang = "en" | "vi";
+export type LangPref = "auto" | Lang;
+
+const en = {
+  // Tabs / shell
+  "tab.notes": "Notes",
+  "tab.clipboard": "Clipboard",
+  "tab.ports": "Ports",
+  "tab.settings": "Settings",
+  "common.cancel": "Cancel",
+  "common.copy": "Copy",
+  "common.copied": "Copied ✓",
+  "common.delete": "Delete",
+  "common.pin": "Pin",
+  "common.unpin": "Unpin",
+  "common.undo": "Undo",
+  "common.noMatches": "No matches.",
+  "common.waitingPassword": "Waiting for password…",
+
+  // Settings page
+  "settings.language": "Language",
+  "settings.language.auto": "Same as system",
+  "settings.sync": "Sync",
+  "settings.hotkeys": "Hotkeys",
+  "settings.autoPaste": "Auto-paste",
+  "settings.focusTest": "Popup focus test",
+  "settings.focusTest.summary": "Focused {focused}/{total} · latency p50 {p50} ms · max {max} ms",
+  "settings.focusTest.window": "Window",
+  "settings.focusTest.document": "Document",
+  "settings.focusTest.input": "Input",
+  "settings.focusTest.latency": "Latency",
+  "settings.focusTest.empty": "Press a popup hotkey from another app to record a sample.",
+  "settings.about": "About",
+  "settings.version": "Version",
+  "settings.session": "Session",
+  "settings.device": "Device",
+  "settings.data": "Data",
+  "settings.unknown": "unknown",
+  "settings.quit": "Quit QuickDesk",
+
+  // Welcome
+  "welcome.title": "Welcome to QuickDesk",
+  "welcome.intro": "Lives in the tray. These shortcuts work from any app:",
+  "welcome.notes": "Notes: jot something down, search everything you wrote",
+  "welcome.clipboard": "Clipboard history: pick an entry and it is pasted where you were typing",
+  "welcome.ports": "Ports: what is listening on 3000, 8000… and stop it",
+  "welcome.instant": "Enable instant paste",
+  "welcome.recommended": "(recommended)",
+  "welcome.instantHint":
+    "Pastes without a permission prompt or a remote-control indicator. Asks for your administrator password once and lets programs running as you create a virtual keyboard, the same permission Steam uses for controllers. You can change this later in Settings.",
+  "welcome.instantFailed": "{error}. You can enable it later in Settings → Auto-paste.",
+  "welcome.start": "Get started",
+  "welcome.footer": "Change shortcuts any time in Settings → Hotkeys.",
+
+  // Quick note popup
+  "notePopup.placeholder": "What do you want to remember?",
+  "notePopup.hint": "Enter ↵ save · Shift+Enter newline · Ctrl+Enter save & open · Esc close",
+  "notePopup.saved": "Saved",
+
+  // Notes tab
+  "notes.search": "Search notes… (accents optional)",
+  "notes.noMatches": "No matching notes.",
+  "notes.empty": "No notes yet. Click “New note” (Ctrl+N) to write one.",
+  "notes.deleted": "Note deleted",
+  "notes.conflict": "⚠ conflict",
+  "notes.conflictHint": "Edited on two devices at once; this is the other version",
+  "notes.new": "＋ New note",
+  "notes.newHint": "Ctrl+N",
+  "notes.untitled": "Untitled",
+  "notes.titlePlaceholder": "Title",
+  "notes.bodyPlaceholder": "Write your note…",
+  "notes.save": "Save",
+  "notes.saving": "Saving…",
+  "notes.close": "Close",
+  "notes.editorHint": "Ctrl+S save · Esc close",
+  "notes.unsaved": "You have unsaved changes.",
+  "notes.discard": "Discard",
+  "notes.keepEditing": "Keep editing",
+  "notes.updated": "Updated {time}",
+  "notes.created": "Created {time}",
+  "notes.newTitle": "New note",
+  "notes.editTitle": "Edit note",
+
+  // Clipboard (popup + tab)
+  "clip.searchPopup": "🔍 Search clipboard...",
+  "clip.searchTab": "Search clipboard history… (substring, accents optional)",
+  "clip.empty": "Nothing copied yet.",
+  "clip.emptyTab": "Nothing copied yet. Copy something anywhere and it shows up here.",
+  "clip.pasteFailed": "Copied, but auto-paste failed ({error}). Press Ctrl+V / Ctrl+Shift+V.",
+  "clip.watcher": "Clipboard watcher {state}: {detail}",
+  "clip.hint.select": "↑↓ select",
+  "clip.hint.paste": "Enter paste",
+  "clip.hint.copy": "Enter copy",
+  "clip.hint.copyOnly": "Ctrl+Enter copy only",
+  "clip.hint.rest": "Ctrl+P pin · Del delete · Esc close",
+  "clip.clear": "Clear…",
+  "clip.clearConfirm": "Clear (keep pinned)",
+  "clip.cleared": "History cleared",
+  "clip.copiedToClipboard": "Copied to clipboard",
+  "clip.clickToCopy": "Click to copy",
+  "clip.pinHint": "Pin (never removed automatically)",
+  "clip.firstCopied": "First copied {time}",
+  "clip.copiedTimes": "· copied {n}×",
+  "clip.chars": "· {n} chars",
+  "clip.pastePref": "Paste right away when I pick an entry in the popup",
+  "clip.pastePrefHint": " (off: it is only copied, then press Ctrl+V yourself)",
+  "clip.pastePrefTitle": "Uses Settings → Auto-paste",
+
+  // Recording status
+  "rec.saving": "Saving everything you copy",
+  "rec.local": " · only on this device, never synced",
+  "rec.pause": "Pause saving ▾",
+  "rec.pauseTitle": "Stop saving copies for a while, e.g. before copying a password",
+  "rec.menuHint": "Stop saving new copies, e.g. before copying a password, token or customer data. Copy and paste keep working.",
+  "rec.for15": "For 15 minutes",
+  "rec.for60": "For 1 hour",
+  "rec.untilResume": "Until I turn it back on",
+  "rec.paused": "Not saving copies right now.",
+  "rec.pausedExplain": "Copy and paste still work; new copies just aren't added to the history below.",
+  "rec.resumesAt": "Turns back on at {time} (in {left}).",
+  "rec.staysOff": "Stays off until you turn it back on.",
+  "rec.resume": "Turn back on",
+  "rec.minutes": "{n} min",
+  "rec.hours": "{n} h",
+
+  // Ports
+  "ports.filter": "Filter by port, PID, process, container…",
+  "ports.rescan": "Rescan now",
+  "ports.scanning": "Scanning…",
+  "ports.nothingOn": "Nothing is listening on “{query}”.",
+  "ports.none": "No listening TCP ports.",
+  "ports.port": "Port",
+  "ports.owner": "Owner",
+  "ports.pid": "PID",
+  "ports.open": "Open",
+  "ports.copyPid": "Copy PID",
+  "ports.copyCmd": "Copy cmd",
+  "ports.kill": "Kill",
+  "ports.stop": "Stop",
+  "ports.confirmStop": "Stop container?",
+  "ports.confirmKill": "Kill {name}?",
+  "ports.process": "process",
+  "ports.stopping": "Stopping…",
+  "ports.forceKilling": "Force killing…",
+  "ports.stoppingContainer": "Stopping container…",
+  "ports.stillRunning": "Still running",
+  "ports.forceKill": "Force kill",
+  "ports.leaveIt": "Leave it",
+  "ports.copied": "Copied {what}",
+  "ports.what.pid": "PID",
+  "ports.what.command": "command",
+  "ports.stopped": "{name} (PID {pid}) stopped",
+  "ports.containerStopped": "Container {name} stopped",
+  "ports.hidden": "Process hidden: owned by another user (needs root to inspect)",
+  "ports.unknown": "unknown",
+
+  // Sync footer
+  "sync.footer.off": "Sync off",
+  "sync.footer.locked": "Sync locked: enter your passphrase",
+  "sync.footer.syncing": "Syncing…",
+  "sync.footer.offline": "Offline: will retry ({error})",
+  "sync.footer.error": "Sync error: {error}",
+  "sync.footer.synced": "Synced · {time}",
+  "sync.footer.ready": "Sync ready",
+  "sync.footer.title": "Sync settings",
+
+  // Sync settings
+  "sync.status": "Status",
+  "sync.state.idle": "Up to date",
+  "sync.state.syncing": "Syncing",
+  "sync.state.offline": "Offline",
+  "sync.state.error": "Error",
+  "sync.state.locked": "Locked",
+  "sync.state.disabled": "Off",
+  "sync.lastSync": " · last sync {time}",
+  "sync.lastError": "Last error",
+  "sync.lastRound": "Last round",
+  "sync.conflicts": " · {n} conflict(s) kept as copies",
+  "sync.storage": "Storage",
+  "sync.now": "Sync now",
+  "sync.e2e": "Notes are encrypted on this device before upload; the storage provider only sees ciphertext. Clipboard history never syncs.",
+  "sync.intro":
+    "Sync Quick Notes through any S3-compatible bucket you own: Cloudflare R2 (recommended, no egress fees), AWS S3 or MinIO. Use an API token limited to this one bucket.",
+  "sync.endpoint": "Endpoint",
+  "sync.endpointHint": "R2: Dashboard → R2 → S3 API. AWS: https://s3.<region>.amazonaws.com",
+  "sync.bucket": "Bucket",
+  "sync.region": "Region",
+  "sync.regionHint": "Use “auto” for R2",
+  "sync.accessKey": "Access key ID",
+  "sync.secret": "Secret access key",
+  "sync.secretHint": "Stored in the OS keyring, not in the app database.",
+  "sync.prefix": "Folder prefix",
+  "sync.prefixHint": "Optional: lets several apps share a bucket",
+  "sync.connect": "Connect",
+  "sync.connecting": "Connecting…",
+  "sync.create.title": "Set an encryption passphrase",
+  "sync.create.intro":
+    "This is the first device on this bucket. Choose a passphrase you will type on your other devices. It never leaves this machine; without it (or the recovery key shown next) synced notes cannot be decrypted.",
+  "sync.create.pass": "Passphrase (8+ characters)",
+  "sync.create.repeat": "Repeat passphrase",
+  "sync.create.mismatch": "Passphrases do not match",
+  "sync.create.button": "Create keys",
+  "sync.create.busy": "Creating keys…",
+  "sync.back": "Back",
+  "sync.unlock.title": "Unlock sync",
+  "sync.unlock.intro": "This bucket already holds QuickDesk data. Enter the passphrase you set on your first device, or your recovery key.",
+  "sync.unlock.label": "Passphrase or recovery key",
+  "sync.unlock.button": "Unlock",
+  "sync.unlock.busy": "Unlocking…",
+  "sync.recovery.title": "Save your recovery key",
+  "sync.recovery.intro":
+    "If you forget your passphrase, this key is the only way to decrypt your synced notes. It is shown once. Store it in a password manager.",
+  "sync.recovery.saved": "I have saved my recovery key",
+  "sync.recovery.done": "Done",
+  "sync.disconnect": "Disconnect…",
+  "sync.disconnect.confirm": "Stop syncing on this device? Local notes are kept.",
+  "sync.disconnect.button": "Disconnect",
+
+  // Hotkeys
+  "hk.notes": "Notes",
+  "hk.notes.hint": "Open the notes manager",
+  "hk.quickNote": "Quick note",
+  "hk.quickNote.hint": "Small popup to jot one note (optional)",
+  "hk.clipboard": "Clipboard",
+  "hk.clipboard.hint": "Clipboard history popup",
+  "hk.ports": "Ports",
+  "hk.ports.hint": "Port manager",
+  "hk.notSet": "Not set",
+  "hk.change": "Change",
+  "hk.clear": "Clear",
+  "hk.saved": "Saved {accel}",
+  "hk.removed": "Hotkey removed",
+  "hk.reset": "Restore defaults",
+  "hk.restored": "Restored defaults",
+  "hk.press": "Press the new shortcut…",
+  "hk.escCancel": "(Esc to cancel)",
+  "hk.tryAnother": "{error}. Try another combination, or Esc to cancel.",
+  "hk.conflict": "Already used by {who}; it may not reach QuickDesk.",
+  "hk.imeWarning": "Without Alt/Ctrl this may not work while typing with Unikey/Bamboo.",
+  "hk.save": "Save",
+  "hk.orAnother": "or press another combination",
+  "hk.gnome": "Registered as GNOME custom shortcuts (Settings → Keyboard → Custom Shortcuts) and removed when QuickDesk quits. ",
+  "hk.manual": "This desktop has no global-shortcut API: bind `quickdesk toggle notes|quick-note|clipboard|ports` in your desktop settings. ",
+  "hk.ime": "Vietnamese input methods (Unikey, Bamboo) swallow Super+Shift+letter while you type in a text field; combinations with Alt or Ctrl keep working there.",
+
+  // Auto-paste settings
+  "paste.intro": "Choosing a clipboard entry types it into the app you were using (Shift+Insert, which also works in terminals). Currently using: ",
+  "paste.usingInstant": "instant (virtual keyboard)",
+  "paste.usingPortal": "desktop portal",
+  "paste.auto": "Automatic",
+  "paste.auto.hint": "Instant paste when enabled below, otherwise the desktop portal",
+  "paste.uinput": "Instant (virtual keyboard)",
+  "paste.uinput.hint": "No prompts, no indicator",
+  "paste.portal": "Desktop portal",
+  "paste.portal.hint": "GNOME asks once and shows a remote-control indicator while pasting",
+  "paste.enabled": "✓ Instant paste is enabled.",
+  "paste.disable": "Disable",
+  "paste.off": "Instant paste is off.",
+  "paste.offExplain":
+    " Enabling it lets programs running as you create a virtual keyboard (the same permission Steam uses for controllers). You will be asked for your administrator password once.",
+  "paste.enable": "Enable instant paste",
+  "paste.manual": "Set up manually",
+  "paste.hide": "Hide",
+  "paste.copyCommand": "Copy command",
+  "paste.checkAgain": "Check again",
+
+  // Relative time
+  "time.justNow": "just now",
+} as const;
+
+export type Key = keyof typeof en;
+
+const vi: Record<Key, string> = {
+  "tab.notes": "Ghi chú",
+  "tab.clipboard": "Clipboard",
+  "tab.ports": "Cổng",
+  "tab.settings": "Cài đặt",
+  "common.cancel": "Huỷ",
+  "common.copy": "Sao chép",
+  "common.copied": "Đã sao chép ✓",
+  "common.delete": "Xoá",
+  "common.pin": "Ghim",
+  "common.unpin": "Bỏ ghim",
+  "common.undo": "Hoàn tác",
+  "common.noMatches": "Không tìm thấy.",
+  "common.waitingPassword": "Đang chờ nhập mật khẩu…",
+
+  "settings.language": "Ngôn ngữ",
+  "settings.language.auto": "Theo hệ thống",
+  "settings.sync": "Đồng bộ",
+  "settings.hotkeys": "Phím tắt",
+  "settings.autoPaste": "Tự động dán",
+  "settings.focusTest": "Kiểm tra focus của popup",
+  "settings.focusTest.summary": "Nhận focus {focused}/{total} · độ trễ p50 {p50} ms · tối đa {max} ms",
+  "settings.focusTest.window": "Cửa sổ",
+  "settings.focusTest.document": "Cửa sổ có focus",
+  "settings.focusTest.input": "Ô nhập có focus",
+  "settings.focusTest.latency": "Độ trễ",
+  "settings.focusTest.empty": "Bấm phím tắt mở popup từ một app khác để ghi lại một lần đo.",
+  "settings.about": "Thông tin",
+  "settings.version": "Phiên bản",
+  "settings.session": "Phiên làm việc",
+  "settings.device": "Thiết bị",
+  "settings.data": "Dữ liệu",
+  "settings.unknown": "không rõ",
+  "settings.quit": "Thoát QuickDesk",
+
+  "welcome.title": "Chào mừng đến với QuickDesk",
+  "welcome.intro": "QuickDesk chạy nền trên khay hệ thống. Các phím tắt dưới đây dùng được ở mọi ứng dụng:",
+  "welcome.notes": "Ghi chú: ghi nhanh một điều, tìm lại mọi thứ đã viết",
+  "welcome.clipboard": "Lịch sử clipboard: chọn một mục là nó được dán ngay vào chỗ bạn đang gõ",
+  "welcome.ports": "Cổng: xem cái gì đang chạy ở 3000, 8000… và dừng nó",
+  "welcome.instant": "Bật dán tức thì",
+  "welcome.recommended": "(khuyên dùng)",
+  "welcome.instantHint":
+    "Dán ngay mà không có hộp hỏi quyền hay biểu tượng điều khiển từ xa. Cần nhập mật khẩu quản trị một lần, và cho phép các chương trình chạy dưới tài khoản của bạn tạo bàn phím ảo (cùng quyền mà Steam dùng cho tay cầm). Có thể đổi lại trong Cài đặt.",
+  "welcome.instantFailed": "{error}. Bạn có thể bật sau trong Cài đặt → Tự động dán.",
+  "welcome.start": "Bắt đầu",
+  "welcome.footer": "Đổi phím tắt bất cứ lúc nào trong Cài đặt → Phím tắt.",
+
+  "notePopup.placeholder": "Bạn muốn ghi nhớ điều gì?",
+  "notePopup.hint": "Enter ↵ lưu · Shift+Enter xuống dòng · Ctrl+Enter lưu và mở · Esc đóng",
+  "notePopup.saved": "Đã lưu",
+
+  "notes.search": "Tìm ghi chú… (gõ có dấu hay không đều được)",
+  "notes.noMatches": "Không có ghi chú nào khớp.",
+  "notes.empty": "Chưa có ghi chú nào. Bấm “Ghi chú mới” (Ctrl+N) để viết.",
+  "notes.deleted": "Đã xoá ghi chú",
+  "notes.conflict": "⚠ xung đột",
+  "notes.conflictHint": "Được sửa trên hai thiết bị cùng lúc; đây là phiên bản còn lại",
+  "notes.new": "＋ Ghi chú mới",
+  "notes.newHint": "Ctrl+N",
+  "notes.untitled": "Không có tiêu đề",
+  "notes.titlePlaceholder": "Tiêu đề",
+  "notes.bodyPlaceholder": "Viết ghi chú…",
+  "notes.save": "Lưu",
+  "notes.saving": "Đang lưu…",
+  "notes.close": "Đóng",
+  "notes.editorHint": "Ctrl+S lưu · Esc đóng",
+  "notes.unsaved": "Bạn có thay đổi chưa lưu.",
+  "notes.discard": "Bỏ thay đổi",
+  "notes.keepEditing": "Tiếp tục sửa",
+  "notes.updated": "Sửa lúc {time}",
+  "notes.created": "Tạo lúc {time}",
+  "notes.newTitle": "Ghi chú mới",
+  "notes.editTitle": "Sửa ghi chú",
+
+  "clip.searchPopup": "🔍 Tìm trong clipboard...",
+  "clip.searchTab": "Tìm trong lịch sử clipboard… (tìm theo đoạn chữ, có dấu hay không đều được)",
+  "clip.empty": "Chưa copy gì.",
+  "clip.emptyTab": "Chưa copy gì. Copy ở bất kỳ đâu, nội dung sẽ hiện ở đây.",
+  "clip.pasteFailed": "Đã copy nhưng không tự dán được ({error}). Hãy bấm Ctrl+V / Ctrl+Shift+V.",
+  "clip.watcher": "Bộ theo dõi clipboard {state}: {detail}",
+  "clip.hint.select": "↑↓ chọn",
+  "clip.hint.paste": "Enter dán",
+  "clip.hint.copy": "Enter copy",
+  "clip.hint.copyOnly": "Ctrl+Enter chỉ copy",
+  "clip.hint.rest": "Ctrl+P ghim · Del xoá · Esc đóng",
+  "clip.clear": "Xoá lịch sử…",
+  "clip.clearConfirm": "Xoá (giữ mục đã ghim)",
+  "clip.cleared": "Đã xoá lịch sử",
+  "clip.copiedToClipboard": "Đã copy vào clipboard",
+  "clip.clickToCopy": "Bấm để copy",
+  "clip.pinHint": "Ghim (không bao giờ bị tự xoá)",
+  "clip.firstCopied": "Copy lần đầu {time}",
+  "clip.copiedTimes": "· đã copy {n} lần",
+  "clip.chars": "· {n} ký tự",
+  "clip.pastePref": "Dán ngay khi tôi chọn một mục trong popup",
+  "clip.pastePrefHint": " (tắt: chỉ copy, bạn tự bấm Ctrl+V)",
+  "clip.pastePrefTitle": "Dùng cách dán trong Cài đặt → Tự động dán",
+
+  "rec.saving": "Đang lưu mọi thứ bạn copy",
+  "rec.local": " · chỉ trên máy này, không bao giờ đồng bộ",
+  "rec.pause": "Tạm dừng lưu ▾",
+  "rec.pauseTitle": "Ngừng lưu các lần copy một lúc, ví dụ trước khi copy mật khẩu",
+  "rec.menuHint": "Ngừng lưu các lần copy mới, ví dụ trước khi copy mật khẩu, token hay dữ liệu khách hàng. Copy và dán vẫn hoạt động bình thường.",
+  "rec.for15": "Trong 15 phút",
+  "rec.for60": "Trong 1 giờ",
+  "rec.untilResume": "Đến khi tôi bật lại",
+  "rec.paused": "Đang không lưu các lần copy.",
+  "rec.pausedExplain": "Copy và dán vẫn bình thường, chỉ là nội dung mới không được thêm vào lịch sử bên dưới.",
+  "rec.resumesAt": "Sẽ tự bật lại lúc {time} (còn {left}).",
+  "rec.staysOff": "Sẽ tắt cho đến khi bạn bật lại.",
+  "rec.resume": "Bật lại",
+  "rec.minutes": "{n} phút",
+  "rec.hours": "{n} giờ",
+
+  "ports.filter": "Lọc theo cổng, PID, tiến trình, container…",
+  "ports.rescan": "Quét lại",
+  "ports.scanning": "Đang quét…",
+  "ports.nothingOn": "Không có gì đang lắng nghe ở “{query}”.",
+  "ports.none": "Không có cổng TCP nào đang lắng nghe.",
+  "ports.port": "Cổng",
+  "ports.owner": "Chủ sở hữu",
+  "ports.pid": "PID",
+  "ports.open": "Mở",
+  "ports.copyPid": "Copy PID",
+  "ports.copyCmd": "Copy lệnh",
+  "ports.kill": "Dừng",
+  "ports.stop": "Dừng",
+  "ports.confirmStop": "Dừng container?",
+  "ports.confirmKill": "Dừng {name}?",
+  "ports.process": "tiến trình",
+  "ports.stopping": "Đang dừng…",
+  "ports.forceKilling": "Đang buộc dừng…",
+  "ports.stoppingContainer": "Đang dừng container…",
+  "ports.stillRunning": "Vẫn đang chạy",
+  "ports.forceKill": "Buộc dừng",
+  "ports.leaveIt": "Để nguyên",
+  "ports.copied": "Đã copy {what}",
+  "ports.what.pid": "PID",
+  "ports.what.command": "lệnh",
+  "ports.stopped": "Đã dừng {name} (PID {pid})",
+  "ports.containerStopped": "Đã dừng container {name}",
+  "ports.hidden": "Không xem được tiến trình: thuộc người dùng khác (cần quyền root)",
+  "ports.unknown": "không rõ",
+
+  "sync.footer.off": "Đồng bộ: tắt",
+  "sync.footer.locked": "Đồng bộ đang khoá: nhập passphrase",
+  "sync.footer.syncing": "Đang đồng bộ…",
+  "sync.footer.offline": "Mất kết nối: sẽ thử lại ({error})",
+  "sync.footer.error": "Lỗi đồng bộ: {error}",
+  "sync.footer.synced": "Đã đồng bộ · {time}",
+  "sync.footer.ready": "Sẵn sàng đồng bộ",
+  "sync.footer.title": "Cài đặt đồng bộ",
+
+  "sync.status": "Trạng thái",
+  "sync.state.idle": "Đã cập nhật",
+  "sync.state.syncing": "Đang đồng bộ",
+  "sync.state.offline": "Mất kết nối",
+  "sync.state.error": "Lỗi",
+  "sync.state.locked": "Đang khoá",
+  "sync.state.disabled": "Tắt",
+  "sync.lastSync": " · lần cuối {time}",
+  "sync.lastError": "Lỗi gần nhất",
+  "sync.lastRound": "Lần gần nhất",
+  "sync.conflicts": " · {n} xung đột, đã giữ bản sao",
+  "sync.storage": "Nơi lưu trữ",
+  "sync.now": "Đồng bộ ngay",
+  "sync.e2e": "Ghi chú được mã hoá ngay trên máy trước khi tải lên; nhà cung cấp lưu trữ chỉ thấy dữ liệu đã mã hoá. Lịch sử clipboard không bao giờ được đồng bộ.",
+  "sync.intro":
+    "Đồng bộ Ghi chú qua một bucket tương thích S3 của riêng bạn: Cloudflare R2 (khuyên dùng, không tính phí tải xuống), AWS S3 hoặc MinIO. Nên dùng API token chỉ có quyền trên đúng bucket này.",
+  "sync.endpoint": "Endpoint",
+  "sync.endpointHint": "R2: Dashboard → R2 → S3 API. AWS: https://s3.<region>.amazonaws.com",
+  "sync.bucket": "Bucket",
+  "sync.region": "Region",
+  "sync.regionHint": "Dùng “auto” với R2",
+  "sync.accessKey": "Access key ID",
+  "sync.secret": "Secret access key",
+  "sync.secretHint": "Được lưu trong keyring của hệ điều hành, không nằm trong database của app.",
+  "sync.prefix": "Thư mục (prefix)",
+  "sync.prefixHint": "Không bắt buộc: giúp nhiều app dùng chung một bucket",
+  "sync.connect": "Kết nối",
+  "sync.connecting": "Đang kết nối…",
+  "sync.create.title": "Đặt passphrase mã hoá",
+  "sync.create.intro":
+    "Đây là thiết bị đầu tiên dùng bucket này. Hãy chọn một passphrase mà bạn sẽ nhập trên các thiết bị khác. Passphrase không bao giờ rời khỏi máy này; nếu không có nó (hoặc recovery key hiện ở bước sau) thì không thể giải mã ghi chú đã đồng bộ.",
+  "sync.create.pass": "Passphrase (từ 8 ký tự)",
+  "sync.create.repeat": "Nhập lại passphrase",
+  "sync.create.mismatch": "Hai passphrase không khớp",
+  "sync.create.button": "Tạo khoá",
+  "sync.create.busy": "Đang tạo khoá…",
+  "sync.back": "Quay lại",
+  "sync.unlock.title": "Mở khoá đồng bộ",
+  "sync.unlock.intro": "Bucket này đã có dữ liệu QuickDesk. Nhập passphrase bạn đã đặt trên thiết bị đầu tiên, hoặc recovery key.",
+  "sync.unlock.label": "Passphrase hoặc recovery key",
+  "sync.unlock.button": "Mở khoá",
+  "sync.unlock.busy": "Đang mở khoá…",
+  "sync.recovery.title": "Lưu lại recovery key",
+  "sync.recovery.intro":
+    "Nếu quên passphrase, đây là cách duy nhất để giải mã ghi chú đã đồng bộ. Khoá này chỉ hiện một lần, hãy lưu vào trình quản lý mật khẩu.",
+  "sync.recovery.saved": "Tôi đã lưu recovery key",
+  "sync.recovery.done": "Xong",
+  "sync.disconnect": "Ngắt kết nối…",
+  "sync.disconnect.confirm": "Ngừng đồng bộ trên thiết bị này? Ghi chú trên máy vẫn được giữ nguyên.",
+  "sync.disconnect.button": "Ngắt kết nối",
+
+  "hk.notes": "Ghi chú",
+  "hk.notes.hint": "Mở màn quản lý ghi chú",
+  "hk.quickNote": "Ghi nhanh",
+  "hk.quickNote.hint": "Popup nhỏ để ghi nhanh một ghi chú (không bắt buộc)",
+  "hk.clipboard": "Clipboard",
+  "hk.clipboard.hint": "Popup lịch sử clipboard",
+  "hk.ports": "Cổng",
+  "hk.ports.hint": "Quản lý cổng",
+  "hk.notSet": "Chưa đặt",
+  "hk.change": "Đổi",
+  "hk.clear": "Bỏ",
+  "hk.saved": "Đã lưu {accel}",
+  "hk.removed": "Đã bỏ phím tắt",
+  "hk.reset": "Khôi phục mặc định",
+  "hk.restored": "Đã khôi phục mặc định",
+  "hk.press": "Bấm tổ hợp phím mới…",
+  "hk.escCancel": "(Esc để huỷ)",
+  "hk.tryAnother": "{error}. Hãy thử tổ hợp khác, hoặc Esc để huỷ.",
+  "hk.conflict": "Đã được dùng bởi {who}; có thể không đến được QuickDesk.",
+  "hk.imeWarning": "Không có Alt/Ctrl thì phím này có thể không chạy khi đang gõ bằng Unikey/Bamboo.",
+  "hk.save": "Lưu",
+  "hk.orAnother": "hoặc bấm tổ hợp khác",
+  "hk.gnome": "Được đăng ký thành phím tắt tuỳ chỉnh của GNOME (Settings → Keyboard → Custom Shortcuts) và được gỡ khi thoát QuickDesk. ",
+  "hk.manual": "Môi trường desktop này không hỗ trợ phím tắt toàn cục: hãy tự gán `quickdesk toggle notes|quick-note|clipboard|ports` trong cài đặt của desktop. ",
+  "hk.ime": "Bộ gõ tiếng Việt (Unikey, Bamboo) nuốt tổ hợp Super+Shift+chữ khi bạn đang gõ trong ô nhập liệu; tổ hợp có Alt hoặc Ctrl thì vẫn chạy bình thường.",
+
+  "paste.intro": "Khi chọn một mục clipboard, nội dung được gõ vào ứng dụng bạn đang dùng (bằng Shift+Insert, dùng được cả trong terminal). Đang dùng: ",
+  "paste.usingInstant": "dán tức thì (bàn phím ảo)",
+  "paste.usingPortal": "desktop portal",
+  "paste.auto": "Tự động",
+  "paste.auto.hint": "Dán tức thì nếu đã bật bên dưới, nếu không thì dùng desktop portal",
+  "paste.uinput": "Dán tức thì (bàn phím ảo)",
+  "paste.uinput.hint": "Không hỏi quyền, không hiện biểu tượng",
+  "paste.portal": "Desktop portal",
+  "paste.portal.hint": "GNOME hỏi quyền một lần và hiện biểu tượng điều khiển từ xa trong lúc dán",
+  "paste.enabled": "✓ Đã bật dán tức thì.",
+  "paste.disable": "Tắt",
+  "paste.off": "Dán tức thì đang tắt.",
+  "paste.offExplain":
+    " Khi bật, các chương trình chạy dưới tài khoản của bạn có thể tạo bàn phím ảo (cùng quyền mà Steam dùng cho tay cầm). Bạn sẽ được hỏi mật khẩu quản trị một lần.",
+  "paste.enable": "Bật dán tức thì",
+  "paste.manual": "Cài thủ công",
+  "paste.hide": "Ẩn",
+  "paste.copyCommand": "Copy lệnh",
+  "paste.checkAgain": "Kiểm tra lại",
+
+  "time.justNow": "vừa xong",
+};
+
+const DICTS: Record<Lang, Record<Key, string>> = { en, vi };
+
+let current: Lang = navigator.language.toLowerCase().startsWith("vi") ? "vi" : "en";
+let pref: LangPref = "auto";
+const listeners = new Set<() => void>();
+
+function setCurrent(lang: Lang, p: LangPref) {
+  current = lang;
+  pref = p;
+  document.documentElement.lang = lang;
+  listeners.forEach((l) => l());
+}
+
+export function t(key: Key, params?: Record<string, string | number>): string {
+  let s = DICTS[current][key] ?? en[key];
+  if (params) for (const [k, v] of Object.entries(params)) s = s.split(`{${k}}`).join(String(v));
+  return s;
+}
+
+export function lang(): Lang {
+  return current;
+}
+
+/** BCP-47 locale for Intl formatting. */
+export function locale(): string {
+  return current === "vi" ? "vi-VN" : "en-US";
+}
+
+interface LanguageState {
+  pref: LangPref;
+  resolved: Lang;
+}
+
+/** Load the language chosen in Settings and follow changes from any window. */
+export async function initI18n() {
+  try {
+    const s = await invoke<LanguageState>("app_get_language");
+    setCurrent(s.resolved, s.pref);
+  } catch {
+    // Keep the browser-detected default.
+  }
+  void listen<LanguageState>("ui://language", (e) => setCurrent(e.payload.resolved, e.payload.pref));
+}
+
+export async function setLanguage(p: LangPref) {
+  const s = await invoke<LanguageState>("app_set_language", { language: p });
+  setCurrent(s.resolved, s.pref);
+}
+
+const subscribe = (l: () => void) => {
+  listeners.add(l);
+  return () => listeners.delete(l);
+};
+
+/** Re-renders the component when the language changes. */
+export function useI18n() {
+  const l = useSyncExternalStore(subscribe, () => current);
+  const p = useSyncExternalStore(subscribe, () => pref);
+  return { t, lang: l, pref: p };
+}

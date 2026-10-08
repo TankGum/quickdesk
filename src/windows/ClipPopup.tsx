@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from "react";
 
 import { RecordingStatus } from "../modules/clipboard/RecordingStatus";
 import { oneLine, useClipboard } from "../modules/clipboard/useClipboard";
+import { useI18n } from "../shared/i18n";
 import { api, errorMessage, hideWindow, useShown } from "../shared/ipc";
 import { relativeTime } from "../shared/time";
 
 const POPUP_LIMIT = 50;
 
 export function ClipPopup() {
+  const { t } = useI18n();
   const input = useRef<HTMLInputElement>(null);
   const list = useRef<HTMLUListElement>(null);
   const [query, setQuery] = useState("");
@@ -45,7 +47,7 @@ export function ClipPopup() {
     } catch (e) {
       const pasteFailed = typeof e === "object" && e !== null && (e as { code?: string }).code === "paste_failed";
       setError(
-        pasteFailed ? `Copied, but auto-paste failed (${errorMessage(e)}). Press Ctrl+V / Ctrl+Shift+V.` : errorMessage(e),
+        pasteFailed ? t("clip.pasteFailed", { error: errorMessage(e) }) : errorMessage(e),
       );
       if (pasteFailed) void api.show("clipboard");
     }
@@ -88,7 +90,7 @@ export function ClipPopup() {
   const banner =
     error ??
     (status && status.state !== "running" && status.state !== "starting"
-      ? `Clipboard watcher ${status.state}: ${status.detail ?? ""}`
+      ? t("clip.watcher", { state: status.state, detail: status.detail ?? "" })
       : null);
 
   return (
@@ -96,7 +98,7 @@ export function ClipPopup() {
       <input
         ref={input}
         className="popup-search"
-        placeholder="🔍 Search clipboard..."
+        placeholder={t("clip.searchPopup")}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         autoFocus
@@ -104,7 +106,7 @@ export function ClipPopup() {
       {status?.paused && <RecordingStatus status={status} compact onError={setError} />}
       {banner && <div className="clip-banner">{banner}</div>}
       {entries.length === 0 ? (
-        <div className="empty">{query ? "No matches." : "Nothing copied yet."}</div>
+        <div className="empty">{query ? t("common.noMatches") : t("clip.empty")}</div>
       ) : (
         <ul ref={list} className="clip-list">
           {entries.map((c, i) => (
@@ -124,8 +126,14 @@ export function ClipPopup() {
         </ul>
       )}
       <div className="popup-hint">
-        ↑↓ select · Enter {status?.autoPaste ? "paste" : "copy"}
-        {status?.autoPaste && " · Ctrl+Enter copy only"} · Ctrl+P pin · Del delete · Esc close
+        {[
+          t("clip.hint.select"),
+          status?.autoPaste ? t("clip.hint.paste") : t("clip.hint.copy"),
+          status?.autoPaste ? t("clip.hint.copyOnly") : null,
+          t("clip.hint.rest"),
+        ]
+          .filter(Boolean)
+          .join(" · ")}
       </div>
     </div>
   );

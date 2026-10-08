@@ -2,6 +2,7 @@ mod cli;
 mod clipboard;
 mod commands;
 mod hotkeys;
+mod i18n;
 pub mod ipc;
 mod secrets;
 mod state;
@@ -67,6 +68,8 @@ pub fn run(args: Vec<String>) {
             commands::clipboard::clip_uinput_enable,
             commands::clipboard::clip_uinput_disable,
             commands::app::app_onboarding,
+            commands::app::app_get_language,
+            commands::app::app_set_language,
             commands::app::app_onboarding_finish,
             commands::ports::ports_scan,
             commands::ports::ports_kill,
@@ -93,9 +96,14 @@ pub fn run(args: Vec<String>) {
             std::fs::create_dir_all(&data_dir)?;
             let db =
                 Db::open(&data_dir.join("quickdesk.db"), &[&qd_notes::NotesModule, &qd_clipboard::ClipboardModule])?;
-            let (device_id, hotkeys, clip) = {
+            let (device_id, hotkeys, clip, lang_pref) = {
                 let conn = db.conn()?;
-                (settings::device_id(&conn)?, HotkeyConfig::load(&conn)?, clipboard::ClipboardService::new(&conn))
+                (
+                    settings::device_id(&conn)?,
+                    HotkeyConfig::load(&conn)?,
+                    clipboard::ClipboardService::new(&conn),
+                    settings::get::<i18n::LangPref>(&conn, i18n::SETTINGS_KEY)?.unwrap_or_default(),
+                )
             };
             let clip_paused = clip.is_paused();
             let session = Session::detect();
@@ -120,6 +128,7 @@ pub fn run(args: Vec<String>) {
                 focus_reports: Mutex::new(Vec::new()),
                 clipboard: clip,
                 sync: sync::SyncService::new(),
+                lang_pref: Mutex::new(lang_pref),
             });
 
             tray::build(app, clip_paused)?;

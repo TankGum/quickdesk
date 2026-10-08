@@ -127,3 +127,34 @@ pub fn app_onboarding(state: State<'_, AppState>) -> super::CmdResult<Onboarding
 pub fn app_onboarding_finish(state: State<'_, AppState>) -> super::CmdResult<()> {
     Ok(qd_core::settings::set(&*state.db.conn()?, ONBOARDING_KEY, &true)?)
 }
+
+#[derive(Serialize, Clone)]
+pub struct LanguageState {
+    pref: crate::i18n::LangPref,
+    resolved: crate::i18n::Lang,
+}
+
+fn language_state(state: &AppState) -> LanguageState {
+    let pref = *state.lang_pref.lock().unwrap_or_else(|e| e.into_inner());
+    LanguageState { pref, resolved: pref.resolve() }
+}
+
+#[tauri::command]
+pub fn app_get_language(state: State<'_, AppState>) -> LanguageState {
+    language_state(&state)
+}
+
+/// Change the UI language for every window and the tray.
+#[tauri::command]
+pub fn app_set_language(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    language: crate::i18n::LangPref,
+) -> super::CmdResult<LanguageState> {
+    qd_core::settings::set(&*state.db.conn()?, crate::i18n::SETTINGS_KEY, &language)?;
+    *state.lang_pref.lock().unwrap_or_else(|e| e.into_inner()) = language;
+    let s = language_state(&state);
+    let _ = tauri::Emitter::emit(&app, "ui://language", s.clone());
+    crate::tray::relabel(&app);
+    Ok(s)
+}

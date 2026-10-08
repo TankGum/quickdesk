@@ -5,16 +5,17 @@ use rusqlite::{params, Connection, OptionalExtension, Row};
 
 use crate::{fts, Error, Note, Result};
 
-const NOTE_COLS: &str = "id, body, pinned, created_at, updated_at, conflict_of";
+const NOTE_COLS: &str = "id, title, body, pinned, created_at, updated_at, conflict_of";
 
 pub(crate) fn note_from_row(r: &Row<'_>) -> rusqlite::Result<Note> {
     Ok(Note {
         id: r.get(0)?,
-        body: r.get(1)?,
-        pinned: r.get(2)?,
-        created_at: r.get(3)?,
-        updated_at: r.get(4)?,
-        conflict_of: r.get(5)?,
+        title: r.get(1)?,
+        body: r.get(2)?,
+        pinned: r.get(3)?,
+        created_at: r.get(4)?,
+        updated_at: r.get(5)?,
+        conflict_of: r.get(6)?,
     })
 }
 
@@ -22,21 +23,34 @@ pub(crate) fn now_ms() -> i64 {
     std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0)
 }
 
-fn normalize(body: &str) -> Result<String> {
-    let body = body.trim();
-    if body.is_empty() {
+/// Trimmed (title, body); a note needs at least one of them.
+fn normalize(title: &str, body: &str) -> Result<(String, String)> {
+    let (title, body) = (title.trim(), body.trim());
+    if title.is_empty() && body.is_empty() {
         return Err(Error::EmptyBody);
     }
-    Ok(body.to_owned())
+    Ok((title.replace('\n', " "), body.to_owned()))
+}
+
+/// Fields to change; `None` keeps the current value.
+#[derive(Debug, Default, Clone)]
+pub struct NotePatch<'a> {
+    pub title: Option<&'a str>,
+    pub body: Option<&'a str>,
+    pub pinned: Option<bool>,
 }
 
 pub fn create(conn: &Connection, clock: &Clock, body: &str) -> Result<Note> {
-    let body = normalize(body)?;
+    create_note(conn, clock, "", body)
+}
+
+pub fn create_note(conn: &Connection, clock: &Clock, title: &str, body: &str) -> Result<Note> {
+    let (title, body) = normalize(title, body)?;
     let id = ids::new_id();
     let now = now_ms();
     conn.execute(
-        "INSERT INTO notes (id, body, created_at, updated_at, hlc, dirty) VALUES (?1, ?2, ?3, ?3, ?4, 1)",
-        params![id, body, now, clock.now().to_string()],
+        "INSERT INTO notes (id, title, body, created_at, updated_at, hlc, dirty) VALUES (?1, ?2, ?3, ?4, ?4, ?5, 1)",
+        params![id, title, body, now, clock.now().to_string()],
     )?;
     get(conn, &id)
 }
@@ -71,13 +85,17 @@ fn touch(conn: &Connection, clock: &Clock, id: &str, set_sql: &str, values: &[&d
 }
 
 pub fn update(conn: &Connection, clock: &Clock, id: &str, body: Option<&str>, pinned: Option<bool>) -> Result<Note> {
+    update_note(conn, clock, id, &NotePatch { title: None, body, pinned })
+}
+
+pub fn update_note(conn: &Connection, clock: &Clock, id: &str, patch: &NotePatch<'_>) -> Result<Note> {
     let current = get(conn, id)?;
-    let body = body.map(normalize).transpose()?.unwrap_or(current.body.clone());
-    let pinned = pinned.unwrap_or(current.pinned);
-    if body == current.body && pinned == current.pinned {
+    let (title, body) = normalize(patch.title.unwrap_or(&current.title), patch.body.unwrap_or(&current.body))?;
+    let pinned = patch.pinned.unwrap_or(current.pinned);
+    if title == current.title && body == current.body && pinned == current.pinned {
         return Ok(current);
     }
-    touch(conn, clock, id, "body = ?1, pinned = ?2", &[&body, &pinned])?;
+    touch(conn, clock, id, "title = ?1, body = ?2, pinned = ?3", &[&title, &body, &pinned])?;
     get(conn, id)
 }
 
@@ -110,7 +128,7 @@ pub fn search(conn: &Connection, query: &str, limit: u32) -> Result<Vec<Note>> {
     let mut stmt = conn.prepare_cached(&format!(
         "SELECT {cols} FROM notes_fts f JOIN notes n ON n.seq = f.rowid
          WHERE notes_fts MATCH ?1 AND n.deleted_at IS NULL
-         ORDER BY n.pinned DESC, bm25(notes_fts), n.updated_at DESC LIMIT ?2",
+         ORDER BY n.pinned DESC, bm25(notes_fts, 3.0, 1.0), n.updated_at DESC LIMIT ?2",
         cols = NOTE_COLS.split(", ").map(|c| format!("n.{c}")).collect::<Vec<_>>().join(", ")
     ))?;
     let notes = stmt.query_map(params![q, limit], note_from_row)?.collect::<rusqlite::Result<_>>()?;
@@ -222,6 +240,32 @@ pub(crate) mod tests {
         assert_eq!(bodies("pub/sub"), vec!["Ghi chú: check Pub/Sub retry after deploy"]);
         assert!(bodies("nothing").is_empty());
         assert_eq!(bodies("  ").len(), 3, "blank query lists everything");
+    }
+
+    #[test]
+    fn titles_are_optional_searchable_and_rank_first() {
+        let (db, clock) = setup();
+        let conn = db.conn().unwrap();
+        let titled = create_note(&conn, &clock, "  Deploy checklist \n", "  run migrations  ").unwrap();
+        assert_eq!((titled.title.as_str(), titled.body.as_str()), ("Deploy checklist", "run migrations"));
+        let only_title = create_note(&conn, &clock, "Call the bank", "").unwrap();
+        assert_eq!(only_title.body, "");
+        assert!(matches!(create_note(&conn, &clock, " ", " "), Err(Error::EmptyBody)));
+        create(&conn, &clock, "mentions deploy in the body only").unwrap();
+
+        let hits: Vec<String> = search(&conn, "deploy", 10).unwrap().into_iter().map(|n| n.id).collect();
+        assert_eq!(hits.len(), 2);
+        assert_eq!(hits[0], titled.id, "title match ranks above body match");
+
+        let renamed =
+            update_note(&conn, &clock, &titled.id, &NotePatch { title: Some("Release"), ..Default::default() })
+                .unwrap();
+        assert_eq!((renamed.title.as_str(), renamed.body.as_str()), ("Release", "run migrations"));
+        assert!(search(&conn, "checklist", 10).unwrap().is_empty());
+        assert!(matches!(
+            update_note(&conn, &clock, &only_title.id, &NotePatch { title: Some(""), ..Default::default() }),
+            Err(Error::EmptyBody)
+        ));
     }
 
     #[test]

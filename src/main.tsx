@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
+import { initI18n } from "./shared/i18n";
 import { currentWindow } from "./shared/ipc";
 import { ClipPopup } from "./windows/ClipPopup";
 import { Main } from "./windows/Main";
@@ -16,8 +17,11 @@ const views: Record<string, React.FC> = {
 const View = views[currentWindow.label] ?? Main;
 document.documentElement.dataset.window = currentWindow.label;
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <View />
-  </React.StrictMode>,
+// Load the chosen language first so nothing flashes in the wrong one.
+void initI18n().finally(() =>
+  ReactDOM.createRoot(document.getElementById("root")!).render(
+    <React.StrictMode>
+      <View />
+    </React.StrictMode>,
+  ),
 );

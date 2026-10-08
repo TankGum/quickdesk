@@ -20,9 +20,14 @@ pub struct AppState {
     pub focus_reports: Mutex<Vec<FocusReport>>,
     pub clipboard: ClipboardService,
     pub sync: SyncService,
+    pub lang_pref: Mutex<crate::i18n::LangPref>,
 }
 
 impl AppState {
+    pub fn lang(&self) -> crate::i18n::Lang {
+        self.lang_pref.lock().unwrap_or_else(|e| e.into_inner()).resolve()
+    }
+
     /// A local note changed: schedule a (debounced) push.
     pub fn on_notes_changed(&self) {
         self.sync.trigger(Trigger::LocalChange);

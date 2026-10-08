@@ -1,4 +1,4 @@
-const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+import { locale, t } from "./i18n";
 
 const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
   ["year", 365 * 24 * 3600e3],
@@ -9,15 +9,27 @@ const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
   ["minute", 60e3],
 ];
 
-/** "5 minutes ago", "yesterday", "just now". */
+const formatters = new Map<string, Intl.RelativeTimeFormat>();
+
+/** "5 minutes ago" / "5 phút trước", "yesterday", "just now", in the UI language. */
 export function relativeTime(ms: number, now = Date.now()): string {
+  const loc = locale();
+  let rtf = formatters.get(loc);
+  if (!rtf) {
+    rtf = new Intl.RelativeTimeFormat(loc, { numeric: "auto" });
+    formatters.set(loc, rtf);
+  }
   const diff = ms - now;
   for (const [unit, size] of UNITS) {
     if (Math.abs(diff) >= size) return rtf.format(Math.round(diff / size), unit);
   }
-  return "just now";
+  return t("time.justNow");
 }
 
 export function absoluteTime(ms: number): string {
-  return new Date(ms).toLocaleString();
+  return new Date(ms).toLocaleString(locale());
+}
+
+export function clockTime(ms: number): string {
+  return new Date(ms).toLocaleTimeString(locale(), { hour: "2-digit", minute: "2-digit" });
 }

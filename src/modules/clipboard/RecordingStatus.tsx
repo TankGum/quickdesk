@@ -1,20 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 
+import { Key, t, useI18n } from "../../shared/i18n";
 import { api, ClipStatus, errorMessage } from "../../shared/ipc";
+import { clockTime } from "../../shared/time";
 
-const PAUSE_OPTIONS: { label: string; minutes?: number }[] = [
-  { label: "For 15 minutes", minutes: 15 },
-  { label: "For 1 hour", minutes: 60 },
-  { label: "Until I turn it back on" },
+const PAUSE_OPTIONS: { label: Key; minutes?: number }[] = [
+  { label: "rec.for15", minutes: 15 },
+  { label: "rec.for60", minutes: 60 },
+  { label: "rec.untilResume" },
 ];
-
-function clock(ms: number) {
-  return new Date(ms).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
-}
 
 function remaining(ms: number) {
   const min = Math.max(1, Math.round((ms - Date.now()) / 60_000));
-  return min >= 60 ? `${Math.round(min / 60)} h` : `${min} min`;
+  return min >= 60 ? t("rec.hours", { n: Math.round(min / 60) }) : t("rec.minutes", { n: min });
 }
 
 /**
@@ -22,6 +20,7 @@ function remaining(ms: number) {
  * for a while (e.g. before copying a password) or resume.
  */
 export function RecordingStatus({ status, compact = false, onError }: { status: ClipStatus; compact?: boolean; onError: (e: string) => void }) {
+  useI18n();
   const [menu, setMenu] = useState(false);
   const [, tick] = useState(0);
   const box = useRef<HTMLDivElement>(null);
@@ -47,17 +46,17 @@ export function RecordingStatus({ status, compact = false, onError }: { status: 
 
   if (status.paused) {
     const until = status.pausedUntil
-      ? `Turns back on at ${clock(status.pausedUntil)} (in ${remaining(status.pausedUntil)}).`
-      : "Stays off until you turn it back on.";
+      ? t("rec.resumesAt", { time: clockTime(status.pausedUntil), left: remaining(status.pausedUntil) })
+      : t("rec.staysOff");
     return (
       <div className={`recording paused ${compact ? "compact" : ""}`}>
         <span className="recording-icon">⏸</span>
         <div className="recording-text">
-          <b>Not saving copies right now.</b>
-          {!compact && <> Copy and paste still work; new copies just aren't added to the history below.</>} {until}
+          <b>{t("rec.paused")}</b>
+          {!compact && <> {t("rec.pausedExplain")}</>} {until}
         </div>
         <button className="btn primary" onClick={() => set(false)}>
-          Turn back on
+          {t("rec.resume")}
         </button>
       </div>
     );
@@ -69,21 +68,19 @@ export function RecordingStatus({ status, compact = false, onError }: { status: 
     <div className="recording on" ref={box}>
       <span className="dot" />
       <div className="recording-text">
-        <b>Saving everything you copy</b>
-        <span className="muted"> · only on this device, never synced</span>
+        <b>{t("rec.saving")}</b>
+        <span className="muted">{t("rec.local")}</span>
       </div>
       <div className="menu-anchor">
-        <button className="btn" onClick={() => setMenu((m) => !m)} title="Stop saving copies for a while, e.g. before copying a password">
-          Pause saving ▾
+        <button className="btn" onClick={() => setMenu((m) => !m)} title={t("rec.pauseTitle")}>
+          {t("rec.pause")}
         </button>
         {menu && (
           <div className="menu">
-            <div className="menu-hint">
-              Stop saving new copies, e.g. before copying a password, token or customer data. Copy and paste keep working.
-            </div>
+            <div className="menu-hint">{t("rec.menuHint")}</div>
             {PAUSE_OPTIONS.map((o) => (
               <button key={o.label} className="menu-item" onClick={() => set(true, o.minutes)}>
-                {o.label}
+                {t(o.label)}
               </button>
             ))}
           </div>

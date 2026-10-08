@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { Key, t, useI18n } from "../../shared/i18n";
 import { api, errorMessage, HotkeyCheck, HotkeyConfig, HotkeyTarget } from "../../shared/ipc";
 
-const ROWS: { target: HotkeyTarget; key: keyof HotkeyConfig; label: string; hint: string }[] = [
-  { target: "notes", key: "notes", label: "Notes", hint: "Open the notes manager" },
-  { target: "quick-note", key: "quickNote", label: "Quick note", hint: "Small popup to jot one note (optional)" },
-  { target: "clipboard", key: "clipboard", label: "Clipboard", hint: "Clipboard history popup" },
-  { target: "ports", key: "ports", label: "Ports", hint: "Port manager" },
+const ROWS: { target: HotkeyTarget; key: keyof HotkeyConfig; label: Key; hint: Key }[] = [
+  { target: "notes", key: "notes", label: "hk.notes", hint: "hk.notes.hint" },
+  { target: "quick-note", key: "quickNote", label: "hk.quickNote", hint: "hk.quickNote.hint" },
+  { target: "clipboard", key: "clipboard", label: "hk.clipboard", hint: "hk.clipboard.hint" },
+  { target: "ports", key: "ports", label: "hk.ports", hint: "hk.ports.hint" },
 ];
 
 const MODIFIER_CODES = /^(Shift|Control|Alt|Meta|OS|Super)(Left|Right)?$/;
@@ -35,6 +36,7 @@ export function comboFromEvent(e: KeyboardEvent, superHeld: boolean): string | n
 type Recording = { target: HotkeyTarget; check: HotkeyCheck | null };
 
 export function HotkeySettings() {
+  useI18n();
   const [config, setConfig] = useState<HotkeyConfig | null>(null);
   const [strategy, setStrategy] = useState<string>("");
   const [recording, setRecording] = useState<Recording | null>(null);
@@ -55,7 +57,7 @@ export function HotkeySettings() {
     try {
       if (save) {
         setConfig(await api.hotkeysSet(save.target, save.accel));
-        setNotice(save.accel ? `Saved ${save.accel}` : "Hotkey removed");
+        setNotice(save.accel ? t("hk.saved", { accel: save.accel }) : t("hk.removed"));
       } else {
         await api.hotkeysResume();
       }
@@ -135,8 +137,8 @@ export function HotkeySettings() {
             return (
               <tr key={row.target} className={rec ? "recording" : ""}>
                 <td className="hk-label">
-                  <div>{row.label}</div>
-                  <small className="muted">{row.hint}</small>
+                  <div>{t(row.label)}</div>
+                  <small className="muted">{t(row.hint)}</small>
                 </td>
                 <td className="hk-value">
                   {rec ? (
@@ -144,18 +146,18 @@ export function HotkeySettings() {
                   ) : value ? (
                     <kbd>{value}</kbd>
                   ) : (
-                    <span className="muted">Not set</span>
+                    <span className="muted">{t("hk.notSet")}</span>
                   )}
                 </td>
                 <td className="hk-actions">
                   {!rec && (
                     <>
                       <button className="btn" disabled={!!recording} onClick={() => void start(row.target)}>
-                        Change
+                        {t("hk.change")}
                       </button>
                       {value && (
                         <button className="btn" disabled={!!recording} onClick={() => void stop({ target: row.target, accel: "" })}>
-                          Clear
+                          {t("hk.clear")}
                         </button>
                       )}
                     </>
@@ -176,23 +178,18 @@ export function HotkeySettings() {
             void api.hotkeysReset().then(
               (c) => {
                 setConfig(c);
-                setNotice("Restored defaults");
+                setNotice(t("hk.restored"));
               },
               (e) => setError(errorMessage(e)),
             )
           }
         >
-          Restore defaults
+          {t("hk.reset")}
         </button>
       </div>
       <p className="muted small">
-        {strategy === "GnomeKeybinding"
-          ? "Registered as GNOME custom shortcuts (Settings → Keyboard → Custom Shortcuts) and removed when QuickDesk quits. "
-          : strategy === "Manual"
-            ? "This desktop has no global-shortcut API: bind `quickdesk toggle notes|quick-note|clipboard|ports` in your desktop settings. "
-            : ""}
-        Vietnamese input methods (Unikey, Bamboo) swallow <kbd>Super</kbd>+<kbd>Shift</kbd>+letter while you type in a text field;
-        combinations with <kbd>Alt</kbd> or <kbd>Ctrl</kbd> keep working there.
+        {strategy === "GnomeKeybinding" ? t("hk.gnome") : strategy === "Manual" ? t("hk.manual") : ""}
+        {t("hk.ime")}
       </p>
     </div>
   );
@@ -203,7 +200,7 @@ function RecordingCell({ rec, onSave, onCancel }: { rec: Recording; onSave: (acc
   if (!c) {
     return (
       <span className="recording-hint">
-        Press the new shortcut… <span className="muted">(Esc to cancel)</span>
+        {t("hk.press")} <span className="muted">{t("hk.escCancel")}</span>
       </span>
     );
   }
@@ -211,23 +208,23 @@ function RecordingCell({ rec, onSave, onCancel }: { rec: Recording; onSave: (acc
     <div className="hk-check">
       <kbd>{c.normalized}</kbd>
       {c.error ? (
-        <div className="error-text small">{c.error}. Try another combination, or Esc to cancel.</div>
+        <div className="error-text small">{t("hk.tryAnother", { error: c.error })}</div>
       ) : (
         <>
           {c.conflicts.length > 0 && (
-            <div className="warn-text small">Already used by {c.conflicts.join(", ")}; it may not reach QuickDesk.</div>
+            <div className="warn-text small">{t("hk.conflict", { who: c.conflicts.join(", ") })}</div>
           )}
           {c.inputMethodWarning && (
-            <div className="warn-text small">Without Alt/Ctrl this may not work while typing with Unikey/Bamboo.</div>
+            <div className="warn-text small">{t("hk.imeWarning")}</div>
           )}
           <div className="row tight">
             <button className="btn primary" onClick={() => onSave(c.normalized)}>
-              Save
+              {t("hk.save")}
             </button>
             <button className="btn" onClick={onCancel}>
-              Cancel
+              {t("common.cancel")}
             </button>
-            <span className="muted small">or press another combination</span>
+            <span className="muted small">{t("hk.orAnother")}</span>
           </div>
         </>
       )}

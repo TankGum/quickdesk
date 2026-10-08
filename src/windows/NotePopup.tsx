@@ -1,8 +1,10 @@
 import { useRef, useState } from "react";
 
+import { useI18n } from "../shared/i18n";
 import { api, errorMessage, hideWindow, useEscapeToHide, useShown } from "../shared/ipc";
 
 export function NotePopup() {
+  const { t } = useI18n();
   const input = useRef<HTMLTextAreaElement>(null);
   // The draft survives Esc / losing focus; it is cleared only after a save.
   const [text, setText] = useState("");
@@ -19,7 +21,7 @@ export function NotePopup() {
     try {
       await api.notesCreate(body);
       setText("");
-      setStatus({ kind: "saved", text: "Saved" });
+      setStatus({ kind: "saved", text: t("notePopup.saved") });
       if (openMain) await api.show("notes");
       else await hideWindow();
     } catch (e) {
@@ -41,7 +43,7 @@ export function NotePopup() {
       <textarea
         ref={input}
         className="popup-input"
-        placeholder="What do you want to remember?"
+        placeholder={t("notePopup.placeholder")}
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={onKeyDown}
@@ -49,7 +51,7 @@ export function NotePopup() {
         autoFocus
       />
       <div className={`popup-hint ${status?.kind === "error" ? "error" : ""}`}>
-        {status ? status.text : "Enter ↵ save · Shift+Enter newline · Ctrl+Enter save & open · Esc close"}
+        {status ? status.text : t("notePopup.hint")}
       </div>
     </div>
   );

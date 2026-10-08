@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { t, useI18n } from "../../shared/i18n";
 import { api, currentWindow, errorMessage, PortEntry } from "../../shared/ipc";
 
 const REFRESH_MS = 2000;
@@ -22,6 +23,7 @@ export function matches(e: PortEntry, query: string): boolean {
 }
 
 export function PortsTab({ focusSignal }: { focusSignal: number }) {
+  const { t } = useI18n();
   const [entries, setEntries] = useState<PortEntry[] | null>(null);
   const [query, setQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -70,21 +72,21 @@ export function PortsTab({ focusSignal }: { focusSignal: number }) {
 
   const copy = (text: string, what: string) =>
     api.clipboardWrite(text).then(
-      () => setNotice(`Copied ${what}`),
+      () => setNotice(t("ports.copied", { what })),
       (e) => setError(errorMessage(e)),
     );
 
   const kill = async (e: PortEntry, force: boolean) => {
     const key = rowKey(e);
     const pid = e.pid!;
-    setRow(key, { kind: "working", text: force ? "Force killing…" : "Stopping…" });
+    setRow(key, { kind: "working", text: force ? t("ports.forceKilling") : t("ports.stopping") });
     try {
       await api.portsKill(pid, force);
       const deadline = Date.now() + (force ? 1000 : TERM_GRACE_MS);
       while (Date.now() < deadline) {
         if (!(await api.portsIsAlive(pid))) {
           setRow(key, null);
-          setNotice(`${e.process ?? "Process"} (PID ${pid}) stopped`);
+          setNotice(t("ports.stopped", { name: e.process ?? t("ports.process"), pid }));
           return void refresh();
         }
         await new Promise((r) => setTimeout(r, 250));
@@ -98,10 +100,10 @@ export function PortsTab({ focusSignal }: { focusSignal: number }) {
 
   const stopContainer = async (e: PortEntry) => {
     const key = rowKey(e);
-    setRow(key, { kind: "working", text: "Stopping container…" });
+    setRow(key, { kind: "working", text: t("ports.stoppingContainer") });
     try {
       await api.portsStopContainer(e.container!.id);
-      setNotice(`Container ${e.container!.name} stopped`);
+      setNotice(t("ports.containerStopped", { name: e.container!.name }));
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -118,27 +120,27 @@ export function PortsTab({ focusSignal }: { focusSignal: number }) {
         <input
           ref={search}
           className="search"
-          placeholder="Filter by port, PID, process, container…"
+          placeholder={t("ports.filter")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === "Escape" && setQuery("")}
         />
-        <button className="btn" onClick={() => void refresh()} title="Rescan now">
+        <button className="btn" onClick={() => void refresh()} title={t("ports.rescan")}>
           ↻
         </button>
       </div>
       {error && <div className="banner error">{error}</div>}
       {entries === null ? (
-        <div className="empty">Scanning…</div>
+        <div className="empty">{t("ports.scanning")}</div>
       ) : visible.length === 0 ? (
-        <div className="empty">{query ? `Nothing is listening on “${query}”.` : "No listening TCP ports."}</div>
+        <div className="empty">{query ? t("ports.nothingOn", { query }) : t("ports.none")}</div>
       ) : (
         <table className="port-table">
           <thead>
             <tr>
-              <th>Port</th>
-              <th>Owner</th>
-              <th>PID</th>
+              <th>{t("ports.port")}</th>
+              <th>{t("ports.owner")}</th>
+              <th>{t("ports.pid")}</th>
               <th />
             </tr>
           </thead>
@@ -159,47 +161,47 @@ export function PortsTab({ focusSignal }: { focusSignal: number }) {
                   <td className="actions">
                     {state?.kind === "confirm" ? (
                       <>
-                        <span className="muted">{e.container ? "Stop container?" : `Kill ${e.process ?? "process"}?`}</span>
+                        <span className="muted">{e.container ? t("ports.confirmStop") : t("ports.confirmKill", { name: e.process ?? t("ports.process") })}</span>
                         <button
                           className="btn danger"
                           onClick={() => void (e.container ? stopContainer(e) : kill(e, false))}
                         >
-                          {e.container ? "Stop" : "Kill"}
+                          {e.container ? t("ports.stop") : t("ports.kill")}
                         </button>
                         <button className="btn" onClick={() => setRow(key, null)}>
-                          Cancel
+                          {t("common.cancel")}
                         </button>
                       </>
                     ) : state?.kind === "working" ? (
                       <span className="muted">{state.text}</span>
                     ) : state?.kind === "stubborn" ? (
                       <>
-                        <span className="muted">Still running</span>
+                        <span className="muted">{t("ports.stillRunning")}</span>
                         <button className="btn danger" onClick={() => void kill(e, true)}>
-                          Force kill
+                          {t("ports.forceKill")}
                         </button>
                         <button className="btn" onClick={() => setRow(key, null)}>
-                          Leave it
+                          {t("ports.leaveIt")}
                         </button>
                       </>
                     ) : (
                       <>
                         <button className="btn" onClick={() => void api.portsOpen(e.port).catch((x) => setError(errorMessage(x)))}>
-                          Open
+                          {t("ports.open")}
                         </button>
                         {e.pid !== null && (
-                          <button className="btn" onClick={() => void copy(String(e.pid), "PID")}>
-                            Copy PID
+                          <button className="btn" onClick={() => void copy(String(e.pid), t("ports.what.pid"))}>
+                            {t("ports.copyPid")}
                           </button>
                         )}
                         {e.cmdline && (
-                          <button className="btn" onClick={() => void copy(e.cmdline!, "command")}>
-                            Copy cmd
+                          <button className="btn" onClick={() => void copy(e.cmdline!, t("ports.what.command"))}>
+                            {t("ports.copyCmd")}
                           </button>
                         )}
                         {(e.pid !== null || e.container) && (
                           <button className="btn danger" onClick={() => setRow(key, { kind: "confirm" })}>
-                            {e.container ? "Stop" : "Kill"}
+                            {e.container ? t("ports.stop") : t("ports.kill")}
                           </button>
                         )}
                       </>
@@ -232,8 +234,8 @@ function Owner({ e }: { e: PortEntry }) {
   if (e.pid === null) {
     return (
       <>
-        <div>{e.user ?? "unknown"}</div>
-        <div className="cmd">Process hidden: owned by another user (needs root to inspect)</div>
+        <div>{e.user ?? t("ports.unknown")}</div>
+        <div className="cmd">{t("ports.hidden")}</div>
       </>
     );
   }

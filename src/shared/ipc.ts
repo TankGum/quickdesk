@@ -57,6 +57,8 @@ export interface Shown {
 
 export interface Note {
   id: string;
+  /** May be empty: the UI then shows the first line of the body. */
+  title: string;
   body: string;
   pinned: boolean;
   createdAt: number;
@@ -149,8 +151,8 @@ export function errorMessage(e: unknown): string {
 
 export const api = {
   appInfo: () => invoke<AppInfo>("app_info"),
-  notesCreate: (body: string) => invoke<Note>("notes_create", { body }),
-  notesUpdate: (id: string, patch: { body?: string; pinned?: boolean }) =>
+  notesCreate: (body: string, title?: string) => invoke<Note>("notes_create", { body, title }),
+  notesUpdate: (id: string, patch: { title?: string; body?: string; pinned?: boolean }) =>
     invoke<Note>("notes_update", { id, ...patch }),
   notesDelete: (id: string) => invoke<void>("notes_delete", { id }),
   notesRestore: (id: string) => invoke<Note>("notes_restore", { id }),
