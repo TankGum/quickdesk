@@ -20,16 +20,21 @@ pub fn color_for(percent: f64) -> Rgba {
 
 /// RGBA pixels (SIZE × SIZE). `None` draws an empty grey ring.
 pub fn render(percent: Option<f64>) -> Vec<u8> {
-    let size = SIZE as f64;
+    render_sized(percent, SIZE)
+}
+
+/// RGBA pixels of a `side × side` ring.
+pub fn render_sized(percent: Option<f64>, side: u32) -> Vec<u8> {
+    let size = side as f64;
     let center = size / 2.0;
-    let outer = size / 2.0 - 2.0;
+    let outer = size / 2.0 - (size / 32.0).max(1.0);
     let inner = outer - size * 0.2;
     let fill = percent.map(|p| p.clamp(0.0, 100.0) / 100.0);
     let color = percent.map(color_for).unwrap_or(NO_DATA);
 
-    let mut px = vec![0u8; (SIZE * SIZE * 4) as usize];
-    for y in 0..SIZE {
-        for x in 0..SIZE {
+    let mut px = vec![0u8; (side * side * 4) as usize];
+    for y in 0..side {
+        for x in 0..side {
             let (dx, dy) = (x as f64 + 0.5 - center, y as f64 + 0.5 - center);
             let r = (dx * dx + dy * dy).sqrt();
             // Coverage of the ring band with a 1px soft edge on both sides.
@@ -44,7 +49,7 @@ pub fn render(percent: Option<f64>) -> Vec<u8> {
                 Some(_) => TRACK,
                 None => NO_DATA,
             };
-            let i = ((y * SIZE + x) * 4) as usize;
+            let i = ((y * side + x) * 4) as usize;
             px[i..i + 3].copy_from_slice(&base[..3]);
             px[i + 3] = (base[3] as f64 * coverage).round() as u8;
         }

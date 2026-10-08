@@ -7,7 +7,7 @@ use std::time::Duration;
 use qd_ai_usage::{ProviderUsage, UsageWindow};
 use serde::{Deserialize, Serialize};
 use tauri::image::Image;
-use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
+use tauri::menu::{CheckMenuItem, IconMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Emitter, Manager, Wry};
 
@@ -191,7 +191,8 @@ fn update_tray(app: &AppHandle, snap: &UsageSnapshot) {
                     let _ = set_ring(app, Some(choice));
                 }
             }
-            _ => crate::windows::show(app, Target::Ai, now_ms()),
+            // Any usage line, or "Show usage": the popup with gauges.
+            _ => crate::windows::show(app, Target::UsagePopup, now_ms()),
         })
         .build(app);
     if let Err(e) = built {
@@ -199,28 +200,32 @@ fn update_tray(app: &AppHandle, snap: &UsageSnapshot) {
     }
 }
 
+/// Compact menu: one line per limit with a small ring, then actions.
+/// (On GNOME a tray click can only open a native menu; the rich view is the
+/// usage popup opened from the first item.)
 fn build_menu(app: &AppHandle, lang: Lang, snap: &UsageSnapshot) -> tauri::Result<Menu<Wry>> {
+    const ICON: u32 = 32;
     let menu = Menu::new(app)?;
-    let line = |id: String, text: String| MenuItem::with_id(app, id, text, true, None::<&str>);
-    for (i, p) in snap.providers.iter().enumerate() {
-        if i > 0 {
-            menu.append(&PredefinedMenuItem::separator(app)?)?;
-        }
-        menu.append(&line(format!("ai-p{i}"), provider_heading(lang, p))?)?;
-        if let Some(err) = &p.error {
-            menu.append(&line(format!("ai-p{i}-err"), format!("    {}", error_text(lang, err)))?)?;
-        }
-        for (j, w) in p.windows.iter().enumerate() {
-            menu.append(&line(format!("ai-p{i}-w{j}"), format!("    {}", window_text(lang, w, p.as_of)))?)?;
-        }
+    menu.append(&MenuItem::with_id(app, "ai-popup", tx(lang, "open"), true, None::<&str>)?)?;
+    menu.append(&PredefinedMenuItem::separator(app)?)?;
+    let mut any = false;
+    for (i, j, p, w) in ring_options(snap) {
+        any = true;
+        let label = match tx(lang, &w.id) {
+            "" => w.label.clone(),
+            l => l.to_owned(),
+        };
+        let pct = w.used_percent.unwrap_or(0.0);
+        let icon = Image::new_owned(crate::ring::render_sized(w.used_percent, ICON), ICON, ICON);
+        let text = format!("{} · {label}   {pct:.0}%", p.name);
+        menu.append(&IconMenuItem::with_id(app, format!("ai-p{i}-w{j}"), text, true, Some(icon), None::<&str>)?)?;
+    }
+    if !any {
+        menu.append(&MenuItem::with_id(app, "ai-none", tx(lang, "no_percent"), true, None::<&str>)?)?;
     }
     menu.append(&PredefinedMenuItem::separator(app)?)?;
     menu.append(&ring_submenu(app, lang, snap)?)?;
-    if let Some(at) = snap.updated_at {
-        menu.append(&line("ai-updated".into(), tx(lang, "updated").replace("{time}", &fmt_time(at)))?)?;
-    }
-    menu.append(&line("ai-refresh".into(), tx(lang, "refresh").into())?)?;
-    menu.append(&line("ai-open".into(), tx(lang, "open").into())?)?;
+    menu.append(&MenuItem::with_id(app, "ai-refresh", tx(lang, "refresh"), true, None::<&str>)?)?;
     Ok(menu)
 }
 
@@ -320,27 +325,6 @@ fn tx(lang: Lang, key: &str) -> &'static str {
                 "Last ran out of quota"
             }
         }
-        "resets" => {
-            if vi {
-                "đặt lại {time} (còn {left})"
-            } else {
-                "resets {time} (in {left})"
-            }
-        }
-        "as_of" => {
-            if vi {
-                "số liệu lúc {time}"
-            } else {
-                "as of {time}"
-            }
-        }
-        "updated" => {
-            if vi {
-                "Cập nhật lúc {time}"
-            } else {
-                "Updated {time}"
-            }
-        }
         "refresh" => {
             if vi {
                 "Làm mới"
@@ -350,23 +334,9 @@ fn tx(lang: Lang, key: &str) -> &'static str {
         }
         "open" => {
             if vi {
-                "Xem chi tiết…"
+                "📊 Mở bảng usage"
             } else {
-                "Show details…"
-            }
-        }
-        "login_expired" => {
-            if vi {
-                "Đăng nhập đã hết hạn: mở Claude Code để làm mới"
-            } else {
-                "Login expired: open Claude Code to refresh it"
-            }
-        }
-        "no_data" => {
-            if vi {
-                "Chưa có số liệu: dùng công cụ này một lần"
-            } else {
-                "No data yet: use this tool once"
+                "📊 Open usage panel"
             }
         }
         "no_percent" => {
@@ -390,94 +360,8 @@ fn tx(lang: Lang, key: &str) -> &'static str {
                 "Automatic (highest 5-hour limit)"
             }
         }
-        "error" => {
-            if vi {
-                "Lỗi: "
-            } else {
-                "Error: "
-            }
-        }
         _ => "",
     }
-}
-
-fn provider_heading(lang: Lang, p: &ProviderUsage) -> String {
-    let mut s = p.name.clone();
-    if let Some(plan) = &p.plan {
-        s.push_str(&format!(" · {plan}"));
-    }
-    if p.source == "local" {
-        if let Some(at) = p.as_of {
-            s.push_str(&format!(" ({})", tx(lang, "as_of").replace("{time}", &fmt_time(at))));
-        }
-    }
-    s
-}
-
-fn error_text(lang: Lang, err: &str) -> String {
-    match err {
-        "login_expired" | "no_data" | "no_percent" => tx(lang, err).into(),
-        other => format!("{}{}", tx(lang, "error"), other.chars().take(80).collect::<String>()),
-    }
-}
-
-fn window_text(lang: Lang, w: &UsageWindow, as_of: Option<i64>) -> String {
-    let label = match tx(lang, &w.id) {
-        "" => w.label.clone(),
-        l => l.to_owned(),
-    };
-    if w.id == "quota_hit" {
-        return format!("{label}: {}", as_of.map(fmt_time).unwrap_or_default());
-    }
-    let mut s = label;
-    if let Some(p) = w.used_percent {
-        s.push_str(&format!(": {p:.0}%"));
-    }
-    if let Some(d) = &w.detail {
-        s.push_str(&format!(" · {d}"));
-    }
-    if let Some(r) = w.resets_at {
-        let left = fmt_duration(lang, r - now_ms() as i64);
-        s.push_str(&format!(" · {}", tx(lang, "resets").replace("{time}", &fmt_time(r)).replace("{left}", &left)));
-    }
-    s
-}
-
-/// Local wall-clock: "16:20" today, else "13/10 05:00".
-pub fn fmt_time(ms: i64) -> String {
-    let (day, hm) = local_parts(ms);
-    let (today, _) = local_parts(now_ms() as i64);
-    if day == today {
-        hm
-    } else {
-        format!("{} {hm}", day)
-    }
-}
-
-fn fmt_duration(lang: Lang, ms: i64) -> String {
-    let min = (ms.max(0) + 59_999) / 60_000;
-    let (d, h, m) = (min / 1440, (min % 1440) / 60, min % 60);
-    let (dl, hl, ml) = if lang == Lang::Vi { (" ngày", " giờ", " phút") } else { ("d", "h", "m") };
-    match (d, h) {
-        (0, 0) => format!("{m}{ml}"),
-        (0, _) => format!("{h}{hl} {m}{ml}"),
-        _ => format!("{d}{dl} {h}{hl}"),
-    }
-}
-
-/// ("dd/mm", "HH:MM") in local time.
-fn local_parts(ms: i64) -> (String, String) {
-    #[cfg(unix)]
-    // SAFETY: localtime_r only writes into the struct we own.
-    unsafe {
-        let t: libc::time_t = (ms / 1000) as libc::time_t;
-        let mut tm: libc::tm = std::mem::zeroed();
-        if !libc::localtime_r(&t, &mut tm).is_null() {
-            return (format!("{:02}/{:02}", tm.tm_mday, tm.tm_mon + 1), format!("{:02}:{:02}", tm.tm_hour, tm.tm_min));
-        }
-    }
-    let secs = ms / 1000;
-    (format!("day {}", secs / 86_400), format!("{:02}:{:02} UTC", (secs % 86_400) / 3600, (secs % 3600) / 60))
 }
 
 #[cfg(test)]
@@ -517,34 +401,5 @@ mod tests {
         // A choice that has no number right now falls back to automatic.
         assert_eq!(pick(&ps, Some(&choice("gemini", "five_hour"))).0, Some(80.0));
         assert_eq!(pick(&[provider("codex", &[("monthly", Some(76.0))])], None), (None, None));
-    }
-
-    #[test]
-    fn durations_read_naturally() {
-        assert_eq!(fmt_duration(Lang::En, 5 * 60_000), "5m");
-        assert_eq!(fmt_duration(Lang::Vi, (2 * 60 + 5) * 60_000), "2 giờ 5 phút");
-        assert_eq!(fmt_duration(Lang::En, (3 * 1440 + 4 * 60) * 60_000), "3d 4h");
-        assert_eq!(fmt_duration(Lang::En, -10), "0m");
-    }
-
-    #[test]
-    fn window_lines_translate_known_ids_and_keep_unknown_labels() {
-        let w = UsageWindow {
-            id: "five_hour".into(),
-            label: "session".into(),
-            used_percent: Some(60.4),
-            resets_at: None,
-            detail: None,
-        };
-        assert_eq!(window_text(Lang::Vi, &w, None), "5 giờ: 60%");
-        let other = UsageWindow {
-            id: "weekly_cowork".into(),
-            label: "weekly cowork".into(),
-            used_percent: Some(5.0),
-            resets_at: None,
-            detail: None,
-        };
-        assert_eq!(window_text(Lang::En, &other, None), "weekly cowork: 5%");
-        assert_eq!(error_text(Lang::En, "login_expired"), "Login expired: open Claude Code to refresh it");
     }
 }

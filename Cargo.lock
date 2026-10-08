@@ -3379,7 +3379,6 @@ name = "quickdesk"
 version = "0.1.0"
 dependencies = [
  "keyring",
- "libc",
  "qd-ai-usage",
  "qd-clipboard",
  "qd-core",

@@ -1,36 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { Key, t, useI18n } from "../../shared/i18n";
-import { api, errorMessage, ProviderUsage, RingChoice, UsageSnapshot, UsageWindow, useBackendEvent } from "../../shared/ipc";
-import { absoluteTime, clockTime, relativeTime } from "../../shared/time";
-
-const STALE_MS = 60_000;
-
-export function level(percent: number): "ok" | "warn" | "high" {
-  return percent >= 85 ? "high" : percent >= 60 ? "warn" : "ok";
-}
-
-function duration(ms: number): string {
-  const min = Math.max(0, Math.ceil(ms / 60_000));
-  const d = Math.floor(min / 1440);
-  const h = Math.floor((min % 1440) / 60);
-  const m = min % 60;
-  if (d > 0) return t("ai.duration.dh", { d, h });
-  if (h > 0) return t("ai.duration.hm", { h, m });
-  return t("ai.duration.min", { m });
-}
-
-/** Today: "16:20"; otherwise date and time. */
-function windowLabel(w: UsageWindow): string {
-  const key = `ai.window.${w.id}` as Key;
-  return t(key) === key ? w.label : t(key);
-}
-
-const same = (a: RingChoice | null, p: string, w: string) => !!a && a.provider === p && a.window === w;
-
-function when(ms: number): string {
-  return new Date(ms).toDateString() === new Date().toDateString() ? clockTime(ms) : absoluteTime(ms);
-}
+import { t, useI18n } from "../../shared/i18n";
+import { api, errorMessage, UsageSnapshot, useBackendEvent } from "../../shared/ipc";
+import { relativeTime } from "../../shared/time";
+import { ProviderCard } from "./ProviderCard";
+import { STALE_MS, windowLabel } from "./usage";
 
 export function AiTab({ focusSignal }: { focusSignal: number }) {
   useI18n();
@@ -127,72 +101,6 @@ export function AiTab({ focusSignal }: { focusSignal: number }) {
         {snap.updatedAt && <>{t("ai.updated", { time: relativeTime(snap.updatedAt) })} · </>}
         {t("ai.footnote")}
       </p>
-    </div>
-  );
-}
-
-function ProviderCard({ p, ringShows }: { p: ProviderUsage; ringShows: RingChoice | null }) {
-  const errKey = p.error && (`ai.err.${p.error}` as Key);
-  const knownErr = errKey && ["ai.err.login_expired", "ai.err.no_data", "ai.err.no_percent"].includes(errKey);
-  return (
-    <section className="ai-card">
-      <header>
-        <h3>{p.name}</h3>
-        {p.plan && <span className="badge">{p.plan}</span>}
-        <span className="spacer" />
-        <span className={`badge ${p.source}`}>
-          {p.source === "live" ? t("ai.live") : p.asOf ? t("ai.local", { time: absoluteTime(p.asOf) }) : t("ai.local", { time: "?" })}
-        </span>
-      </header>
-      {p.error && <div className={knownErr ? "muted small" : "banner error"}>{knownErr ? t(errKey as Key) : p.error}</div>}
-      {p.windows.map((w) => (
-        <WindowRow key={w.id} w={w} asOf={p.asOf} onTopBar={same(ringShows, p.provider, w.id)} />
-      ))}
-    </section>
-  );
-}
-
-function WindowRow({ w, asOf, onTopBar }: { w: UsageWindow; asOf: number | null; onTopBar: boolean }) {
-  const label = windowLabel(w);
-  if (w.id === "quota_hit") {
-    return (
-      <div className="ai-window">
-        <div className="ai-window-head">
-          <span>{label}</span>
-          <span className="muted">{asOf ? when(asOf) : "-"}</span>
-        </div>
-      </div>
-    );
-  }
-  if (w.id === "extra_off") {
-    return (
-      <div className="ai-window">
-        <div className="ai-window-head">
-          <span>{label}</span>
-          <span className="muted">{t("ai.off")}</span>
-        </div>
-      </div>
-    );
-  }
-  const pct = w.usedPercent;
-  return (
-    <div className="ai-window">
-      <div className="ai-window-head">
-        <span>
-          {label}
-          {onTopBar && <span className="badge ring-badge">◔ {t("ai.onTopBar")}</span>}
-        </span>
-        <span className={pct !== null ? `ai-pct ${level(pct)}` : "muted"}>
-          {pct !== null ? `${Math.round(pct)}%` : ""}
-          {w.detail && <span className="muted"> {w.detail}</span>}
-        </span>
-      </div>
-      {pct !== null && (
-        <div className="ai-bar">
-          <div className={`ai-fill ${level(pct)}`} style={{ width: `${Math.min(100, Math.max(0, pct))}%` }} />
-        </div>
-      )}
-      {w.resetsAt && <div className="muted small">{t("ai.resets", { time: when(w.resetsAt), left: duration(w.resetsAt - Date.now()) })}</div>}
     </div>
   );
 }

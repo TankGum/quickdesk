@@ -42,6 +42,18 @@
         "skipTaskbar": true,
         "alwaysOnTop": true,
         "center": true
+      },
+      {
+        "label": "usage-popup",
+        "title": "AI usage",
+        "width": 400,
+        "height": 520,
+        "visible": false,
+        "decorations": false,
+        "resizable": false,
+        "skipTaskbar": true,
+        "alwaysOnTop": true,
+        "center": true
       }
     ],
     "security": {

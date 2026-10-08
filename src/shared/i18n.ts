@@ -273,6 +273,9 @@ const en = {
 
   // AI usage
   "tab.ai": "AI",
+  "ai.title": "AI usage",
+  "ai.resetsIn": "resets in {left}",
+  "ai.openFull": "Settings & details",
   "ai.intro": "Usage limits of the AI tools found on this computer.",
   "ai.refresh": "Refresh",
   "ai.refreshing": "Refreshing…",
@@ -283,7 +286,6 @@ const en = {
   "ai.none": "No AI tools detected (Claude Code, Codex, Antigravity). They appear here once installed and used.",
   "ai.live": "Live",
   "ai.local": "From the tool's logs · as of {time}",
-  "ai.resets": "Resets {time} · in {left}",
   "ai.window.five_hour": "5-hour limit",
   "ai.window.weekly": "Weekly limit",
   "ai.window.weekly_opus": "Weekly (Opus)",
@@ -561,6 +563,9 @@ const vi: Record<Key, string> = {
   "paste.checkAgain": "Kiểm tra lại",
 
   "tab.ai": "AI",
+  "ai.title": "Usage AI",
+  "ai.resetsIn": "đặt lại sau {left}",
+  "ai.openFull": "Cài đặt & chi tiết",
   "ai.intro": "Hạn mức sử dụng của các công cụ AI có trên máy này.",
   "ai.refresh": "Làm mới",
   "ai.refreshing": "Đang làm mới…",
@@ -571,7 +576,6 @@ const vi: Record<Key, string> = {
   "ai.none": "Chưa phát hiện công cụ AI nào (Claude Code, Codex, Antigravity). Chúng sẽ hiện ở đây sau khi được cài và sử dụng.",
   "ai.live": "Trực tiếp",
   "ai.local": "Từ log của công cụ · số liệu lúc {time}",
-  "ai.resets": "Đặt lại lúc {time} · còn {left}",
   "ai.window.five_hour": "Limit 5 giờ",
   "ai.window.weekly": "Limit theo tuần",
   "ai.window.weekly_opus": "Theo tuần (Opus)",

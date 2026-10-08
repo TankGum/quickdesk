@@ -11,6 +11,8 @@ pub enum Target {
     Ports,
     /// AI usage limits (main window, AI tab).
     Ai,
+    /// Compact AI usage popup (opened from the top-bar ring).
+    UsagePopup,
     Main,
 }
 
@@ -23,7 +25,8 @@ impl Target {
             "quick-note" | "quicknote" | "capture" => Some(Target::QuickNote),
             "clipboard" | "clip" => Some(Target::Clipboard),
             "ports" | "port" => Some(Target::Ports),
-            "ai" | "usage" => Some(Target::Ai),
+            "ai" => Some(Target::Ai),
+            "usage" => Some(Target::UsagePopup),
             "main" => Some(Target::Main),
             _ => None,
         }
@@ -36,6 +39,7 @@ impl Target {
             Target::Clipboard => "clipboard",
             Target::Ports => "ports",
             Target::Ai => "ai",
+            Target::UsagePopup => "usage",
             Target::Main => "main",
         }
     }
