@@ -138,6 +138,31 @@ export interface PasteInfo {
   setupCommand: string | null;
 }
 
+export interface UsageWindow {
+  id: string;
+  label: string;
+  usedPercent: number | null;
+  resetsAt: number | null;
+  detail: string | null;
+}
+
+export interface ProviderUsage {
+  provider: string;
+  name: string;
+  plan: string | null;
+  windows: UsageWindow[];
+  source: "live" | "local";
+  asOf: number | null;
+  error: string | null;
+}
+
+export interface UsageSnapshot {
+  providers: ProviderUsage[];
+  updatedAt: number | null;
+  headline: number | null;
+  trayEnabled: boolean;
+}
+
 /** Shape of every rejected command (see `CmdError` in Rust). */
 export interface CmdError {
   code: string;
@@ -186,6 +211,9 @@ export const api = {
   syncUnlock: (secret: string) => invoke<void>("sync_unlock", { secret }),
   syncNow: () => invoke<void>("sync_now"),
   syncDisconnect: () => invoke<void>("sync_disconnect"),
+  aiUsage: () => invoke<UsageSnapshot>("ai_usage_get"),
+  aiUsageRefresh: () => invoke<UsageSnapshot>("ai_usage_refresh"),
+  aiSetTray: (enabled: boolean) => invoke<void>("ai_set_tray", { enabled }),
   focusReport: (report: FocusReport) => invoke<void>("diag_focus_report", { report }),
   focusStats: () => invoke<FocusStats>("diag_focus_stats"),
   quit: () => invoke<void>("app_quit"),

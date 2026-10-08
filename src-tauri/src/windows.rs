@@ -27,6 +27,7 @@ fn label_and_tab(target: Target) -> (&'static str, Option<&'static str>) {
         Target::QuickNote => (NOTE_POPUP, None),
         Target::Clipboard => (CLIP_POPUP, None),
         Target::Ports => (MAIN, Some("ports")),
+        Target::Ai => (MAIN, Some("ai")),
         Target::Main => (MAIN, None),
     }
 }

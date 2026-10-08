@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { AiTab } from "../modules/ai/AiTab";
 import { ClipboardTab } from "../modules/clipboard/ClipboardTab";
 import { NotesTab } from "../modules/notes/NotesTab";
 import { PortsTab } from "../modules/ports/PortsTab";
@@ -11,7 +12,7 @@ import { LangPref, setLanguage, useI18n } from "../shared/i18n";
 import { api, AppInfo, currentWindow, FocusStats, hideWindow, useShown } from "../shared/ipc";
 import { Welcome } from "./Welcome";
 
-const TABS = ["notes", "clipboard", "ports", "settings"] as const;
+const TABS = ["notes", "clipboard", "ports", "ai", "settings"] as const;
 type Tab = (typeof TABS)[number];
 
 export function Main() {
@@ -64,6 +65,7 @@ export function Main() {
         {tab === "settings" && <Settings />}
         {tab === "ports" && <PortsTab focusSignal={shownAt} />}
         {tab === "clipboard" && <ClipboardTab focusSignal={shownAt} />}
+        {tab === "ai" && <AiTab focusSignal={shownAt} />}
       </section>
       <SyncFooter onOpenSettings={() => setTab("settings")} />
     </div>

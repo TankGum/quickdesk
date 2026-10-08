@@ -56,7 +56,7 @@ impl HotkeyConfig {
             Target::Notes => &self.notes,
             Target::QuickNote => &self.quick_note,
             Target::Clipboard => &self.clipboard,
-            Target::Ports | Target::Main => &self.ports,
+            Target::Ports | Target::Ai | Target::Main => &self.ports,
         }
     }
 
@@ -65,7 +65,7 @@ impl HotkeyConfig {
             Target::Notes => &mut self.notes,
             Target::QuickNote => &mut self.quick_note,
             Target::Clipboard => &mut self.clipboard,
-            Target::Ports | Target::Main => &mut self.ports,
+            Target::Ports | Target::Ai | Target::Main => &mut self.ports,
         }
     }
 

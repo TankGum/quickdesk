@@ -21,6 +21,7 @@ pub struct AppState {
     pub clipboard: ClipboardService,
     pub sync: SyncService,
     pub lang_pref: Mutex<crate::i18n::LangPref>,
+    pub ai: crate::ai_usage::AiUsageService,
 }
 
 impl AppState {

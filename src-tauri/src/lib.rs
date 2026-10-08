@@ -1,9 +1,11 @@
+mod ai_usage;
 mod cli;
 mod clipboard;
 mod commands;
 mod hotkeys;
 mod i18n;
 pub mod ipc;
+mod ring;
 mod secrets;
 mod state;
 mod sync;
@@ -69,6 +71,9 @@ pub fn run(args: Vec<String>) {
             commands::clipboard::clip_uinput_disable,
             commands::app::app_onboarding,
             commands::app::app_get_language,
+            commands::ai::ai_usage_get,
+            commands::ai::ai_usage_refresh,
+            commands::ai::ai_set_tray,
             commands::app::app_set_language,
             commands::app::app_onboarding_finish,
             commands::ports::ports_scan,
@@ -96,13 +101,14 @@ pub fn run(args: Vec<String>) {
             std::fs::create_dir_all(&data_dir)?;
             let db =
                 Db::open(&data_dir.join("quickdesk.db"), &[&qd_notes::NotesModule, &qd_clipboard::ClipboardModule])?;
-            let (device_id, hotkeys, clip, lang_pref) = {
+            let (device_id, hotkeys, clip, lang_pref, ai) = {
                 let conn = db.conn()?;
                 (
                     settings::device_id(&conn)?,
                     HotkeyConfig::load(&conn)?,
                     clipboard::ClipboardService::new(&conn),
                     settings::get::<i18n::LangPref>(&conn, i18n::SETTINGS_KEY)?.unwrap_or_default(),
+                    ai_usage::AiUsageService::new(&conn),
                 )
             };
             let clip_paused = clip.is_paused();
@@ -129,11 +135,13 @@ pub fn run(args: Vec<String>) {
                 clipboard: clip,
                 sync: sync::SyncService::new(),
                 lang_pref: Mutex::new(lang_pref),
+                ai,
             });
 
             tray::build(app, clip_paused)?;
             clipboard::start(app.handle());
             sync::start(app.handle());
+            ai_usage::start(app.handle());
 
             let handle = app.handle().clone();
             ipc::serve(move |msg| dispatch(&handle, msg))?;

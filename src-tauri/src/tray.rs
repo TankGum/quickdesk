@@ -41,6 +41,7 @@ pub fn pause_label(lang: Lang, paused: bool) -> &'static str {
 
 /// Rebuild the menu after a language change.
 pub fn relabel(app: &AppHandle) {
+    crate::ai_usage::relabel(app);
     let state = app.state::<AppState>();
     let (lang, paused) = (state.lang(), state.clipboard.is_paused());
     match (app.tray_by_id(TRAY_ID), menu(app, lang, paused)) {

@@ -18,6 +18,7 @@ qd-notes.workspace = true
 qd-ports.workspace = true
 qd-clipboard.workspace = true
 qd-sync.workspace = true
+qd-ai-usage.workspace = true
 rusqlite.workspace = true
 serde.workspace = true
 serde_json.workspace = true
@@ -30,3 +31,6 @@ tokio = { version = "1", features = ["time"] }
 keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service", "crypto-rust"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing-appender = "0.2"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"

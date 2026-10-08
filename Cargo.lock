@@ -3277,6 +3277,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "qd-ai-usage"
+version = "0.1.0"
+dependencies = [
+ "libc",
+ "serde",
+ "serde_json",
+ "tracing",
+ "ureq",
+]
+
+[[package]]
 name = "qd-clipboard"
 version = "0.1.0"
 dependencies = [
@@ -3368,6 +3379,8 @@ name = "quickdesk"
 version = "0.1.0"
 dependencies = [
  "keyring",
+ "libc",
+ "qd-ai-usage",
  "qd-clipboard",
  "qd-core",
  "qd-notes",
@@ -5039,6 +5052,8 @@ dependencies = [
  "once_cell",
  "rustls",
  "rustls-pki-types",
+ "serde",
+ "serde_json",
  "url",
  "webpki-roots 0.26.11",
 ]

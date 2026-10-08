@@ -1,5 +1,6 @@
 //! Tauri command handlers: thin wrappers that call module crates and emit events.
 
+pub mod ai;
 pub mod app;
 pub mod clipboard;
 pub mod hotkeys;

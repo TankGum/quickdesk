@@ -14,6 +14,7 @@ qd-notes = { path = "crates/qd-notes" }
 qd-ports = { path = "crates/qd-ports" }
 qd-clipboard = { path = "crates/qd-clipboard" }
 qd-sync = { path = "crates/qd-sync" }
+qd-ai-usage = { path = "crates/qd-ai-usage" }
 rusqlite = { version = "0.32", features = ["bundled"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

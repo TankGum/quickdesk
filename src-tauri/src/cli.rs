@@ -9,6 +9,8 @@ pub enum Target {
     QuickNote,
     Clipboard,
     Ports,
+    /// AI usage limits (main window, AI tab).
+    Ai,
     Main,
 }
 
@@ -21,6 +23,7 @@ impl Target {
             "quick-note" | "quicknote" | "capture" => Some(Target::QuickNote),
             "clipboard" | "clip" => Some(Target::Clipboard),
             "ports" | "port" => Some(Target::Ports),
+            "ai" | "usage" => Some(Target::Ai),
             "main" => Some(Target::Main),
             _ => None,
         }
@@ -32,6 +35,7 @@ impl Target {
             Target::QuickNote => "quick-note",
             Target::Clipboard => "clipboard",
             Target::Ports => "ports",
+            Target::Ai => "ai",
             Target::Main => "main",
         }
     }

@@ -216,3 +216,23 @@ button.icon:hover { background: var(--bg-subtle); color: var(--fg); }
 .spacer { flex: 1; }
 .radio-list.horizontal { flex-direction: row; gap: 18px; }
 .welcome-lang { align-self: flex-end; font-size: 13px; }
+
+/* AI usage */
+.ai-intro { flex: 1; }
+.ai-tray { margin-bottom: 12px; }
+.ai-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.ai-card { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.ai-card header { display: flex; gap: 8px; align-items: center; }
+.ai-card h3 { margin: 0; font-size: 15px; }
+.badge.live { color: #15803d; border-color: #22c55e; }
+.ai-window { display: flex; flex-direction: column; gap: 4px; }
+.ai-window-head { display: flex; justify-content: space-between; gap: 8px; }
+.ai-pct { font-weight: 600; font-variant-numeric: tabular-nums; }
+.ai-pct.ok { color: #16a34a; }
+.ai-pct.warn { color: #d97706; }
+.ai-pct.high { color: var(--danger); }
+.ai-bar { height: 8px; border-radius: 4px; background: var(--bg-subtle); overflow: hidden; }
+.ai-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
+.ai-fill.ok { background: #22c55e; }
+.ai-fill.warn { background: #f59e0b; }
+.ai-fill.high { background: #ef4444; }
