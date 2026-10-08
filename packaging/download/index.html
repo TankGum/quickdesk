@@ -79,7 +79,7 @@
             <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,.27)" stroke-width="2.4"/><circle cx="8" cy="8" r="6" fill="none" stroke="#f59e0b" stroke-width="2.4" stroke-dasharray="30.5 37.7" transform="rotate(-90 8 8)"/></svg>
           </button>
           <button type="button" class="desktop__tray" data-app-tray aria-label="QuickDesk menu">
-            <img src="assets/img/app-icon.png" alt="" width="16" height="16">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.3 3.7h9.4M3.3 8h5.3M3.3 12.3h9.4" stroke="#fff" stroke-width="2.3" stroke-linecap="round"/></svg>
           </button>
           <span class="desktop__ime">en</span>
           <span class="desktop__quick">
@@ -120,27 +120,31 @@
         <!-- The tray menus are GNOME's own menus; these copy how they look. -->
         <div class="shell-menu shell-menu--app" data-menu="app">
           <ul>
-            <li data-open="note-popup">✏️ Quick note</li>
-            <li data-open="notes">📝 Notes</li>
-            <li data-open="clipboard">📋 Clipboard</li>
-            <li data-open="ports">🔌 Ports</li>
+            <li data-open="note-popup">New Quick Note</li>
+            <li data-open="notes">Notes</li>
+            <li data-open="clipboard">Clipboard History</li>
+            <li data-open="ports">Ports</li>
             <li class="sep"></li>
-            <li data-pause>⏸️ Pause clipboard history</li>
+            <li class="check is-on" data-pause>Save Clipboard History</li>
             <li class="sep"></li>
-            <li data-open="main">🏠 Open QuickDesk</li>
-            <li data-quit>⛔ Quit QuickDesk</li>
+            <li data-open="main">Open QuickDesk</li>
+            <li data-quit>Quit QuickDesk</li>
           </ul>
         </div>
 
-        <div class="shell-menu shell-menu--ai" data-menu="ai" data-panel="ai">
+        <div class="shell-menu shell-menu--ai" data-menu="ai">
           <ul data-tray>
-            <li>Claude · 5-hour&nbsp;&nbsp; 42%&nbsp;&nbsp; · &nbsp;&nbsp;resets in 2h 10m</li>
-            <li>Claude · Weekly&nbsp;&nbsp; 18%&nbsp;&nbsp; · &nbsp;&nbsp;resets in 4d 6h</li>
-            <li>Codex · 5-hour&nbsp;&nbsp; 81%&nbsp;&nbsp; · &nbsp;&nbsp;resets in 38m</li>
-            <li>Codex · Weekly&nbsp;&nbsp; 27%&nbsp;&nbsp; · &nbsp;&nbsp;resets in 5d 2h</li>
+            <li class="head">Claude Pro</li>
+            <li data-limit>5-hour: 42% · resets in 2h 10m</li>
+            <li data-limit>Weekly: 18% · resets in 4d 6h</li>
             <li class="sep"></li>
-            <li class="sub">Ring shows</li>
-            <li>Refresh</li>
+            <li class="head">Codex Plus</li>
+            <li data-limit>5-hour: 81% · resets in 38m</li>
+            <li data-limit>Weekly: 27% · resets in 5d 2h</li>
+            <li class="sep"></li>
+            <li class="sub">Ring Shows</li>
+            <li data-refresh>Refresh Now</li>
+            <li data-limit>Open AI Usage…</li>
           </ul>
         </div>
 

@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 use qd_ai_usage::{ProviderUsage, UsageWindow};
 use serde::{Deserialize, Serialize};
 use tauri::image::Image;
-use tauri::menu::{CheckMenuItem, IconMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
+use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Emitter, Manager, Wry};
 
@@ -257,35 +257,46 @@ fn update_tray(app: &AppHandle, snap: &UsageSnapshot) {
     }
 }
 
-/// Compact menu: one line per limit with a small ring, then actions.
-/// Clicking a limit opens the AI tab.
+/// macOS-style menu: each tool is a section under a greyed title ("Claude
+/// Pro"), one line per limit, then the actions. Clicking a limit opens the
+/// AI tab. GNOME draws this menu, so it stays plain text.
 fn build_menu(app: &AppHandle, lang: Lang, snap: &UsageSnapshot) -> tauri::Result<Menu<Wry>> {
-    const ICON: u32 = 32;
     let menu = Menu::new(app)?;
     let mut any = false;
-    for (i, j, p, w) in ring_options(snap) {
-        any = true;
-        let label = match tx(lang, &w.id) {
-            "" => w.label.clone(),
-            l => l.to_owned(),
-        };
-        let pct = w.used_percent.unwrap_or(0.0);
-        let icon = Image::new_owned(crate::ring::render_sized(w.used_percent, ICON), ICON, ICON);
-        let mut text = format!("{} · {label}   {pct:.0}%", p.name);
-        if let Some(r) = w.resets_at {
-            text.push_str(&format!(
-                "   ·   {}",
-                tx(lang, "resets_in").replace("{left}", &fmt_duration(lang, r - now_ms() as i64))
-            ));
+    for (i, p) in snap.providers.iter().enumerate() {
+        let lines: Vec<_> = p.windows.iter().enumerate().filter(|(_, w)| w.used_percent.is_some()).collect();
+        if lines.is_empty() {
+            continue;
         }
-        menu.append(&IconMenuItem::with_id(app, format!("ai-p{i}-w{j}"), text, true, Some(icon), None::<&str>)?)?;
+        if any {
+            menu.append(&PredefinedMenuItem::separator(app)?)?;
+        }
+        any = true;
+        let title = match &p.plan {
+            Some(plan) => format!("{} {plan}", p.name),
+            None => p.name.clone(),
+        };
+        menu.append(&MenuItem::with_id(app, format!("ai-h{i}"), title, false, None::<&str>)?)?;
+        for (j, w) in lines {
+            let label = match tx(lang, &w.id) {
+                "" => w.label.clone(),
+                l => l.to_owned(),
+            };
+            let mut text = format!("{label}: {:.0}%", w.used_percent.unwrap_or(0.0));
+            if let Some(r) = w.resets_at {
+                text.push_str(" · ");
+                text.push_str(&tx(lang, "resets_in").replace("{left}", &fmt_duration(lang, r - now_ms() as i64)));
+            }
+            menu.append(&MenuItem::with_id(app, format!("ai-p{i}-w{j}"), text, true, None::<&str>)?)?;
+        }
     }
     if !any {
-        menu.append(&MenuItem::with_id(app, "ai-none", tx(lang, "no_percent"), true, None::<&str>)?)?;
+        menu.append(&MenuItem::with_id(app, "ai-none", tx(lang, "no_percent"), false, None::<&str>)?)?;
     }
     menu.append(&PredefinedMenuItem::separator(app)?)?;
     menu.append(&ring_submenu(app, lang, snap)?)?;
     menu.append(&MenuItem::with_id(app, "ai-refresh", tx(lang, "refresh"), true, None::<&str>)?)?;
+    menu.append(&MenuItem::with_id(app, "ai-open", tx(lang, "open"), true, None::<&str>)?)?;
     Ok(menu)
 }
 
@@ -399,9 +410,16 @@ fn tx(lang: Lang, key: &str) -> &'static str {
         }
         "refresh" => {
             if vi {
-                "Làm mới"
+                "Làm mới ngay"
             } else {
-                "Refresh"
+                "Refresh Now"
+            }
+        }
+        "open" => {
+            if vi {
+                "Mở trang AI…"
+            } else {
+                "Open AI Usage…"
             }
         }
         "no_percent" => {
@@ -422,7 +440,7 @@ fn tx(lang: Lang, key: &str) -> &'static str {
             if vi {
                 "Vòng tròn hiển thị"
             } else {
-                "Ring shows"
+                "Ring Shows"
             }
         }
         "ring_auto" => {

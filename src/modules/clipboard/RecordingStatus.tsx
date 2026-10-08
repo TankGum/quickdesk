@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Key, t, useI18n } from "../../shared/i18n";
 import { api, ClipStatus, errorMessage } from "../../shared/ipc";
 import { clockTime } from "../../shared/time";
+import { Icon } from "../../shared/Icon";
 
 const PAUSE_OPTIONS: { label: Key; minutes?: number }[] = [
   { label: "rec.for15", minutes: 15 },
@@ -50,7 +51,9 @@ export function RecordingStatus({ status, compact = false, onError }: { status: 
       : t("rec.staysOff");
     return (
       <div className={`recording paused ${compact ? "compact" : ""}`}>
-        <span className="recording-icon">⏸</span>
+        <span className="recording-icon">
+          <Icon name="pause" />
+        </span>
         <div className="recording-text">
           <b>{t("rec.paused")}</b>
           {!compact && <> {t("rec.pausedExplain")}</>} {until}
@@ -74,6 +77,7 @@ export function RecordingStatus({ status, compact = false, onError }: { status: 
       <div className="menu-anchor">
         <button className="btn" onClick={() => setMenu((m) => !m)} title={t("rec.pauseTitle")}>
           {t("rec.pause")}
+          <Icon name="chevronDown" size={14} />
         </button>
         {menu && (
           <div className="menu">

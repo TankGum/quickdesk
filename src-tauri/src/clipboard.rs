@@ -142,8 +142,7 @@ pub fn set_paused(app: &AppHandle, paused: bool, minutes: Option<u32>) -> qd_cor
         settings::set(&conn, PAUSED_UNTIL_KEY, &until)?;
     }
     if let Some(item) = state.clipboard.tray_item.lock().unwrap_or_else(|e| e.into_inner()).as_ref() {
-        let _ = item.set_checked(paused);
-        let _ = item.set_text(crate::tray::pause_label(state.lang(), paused));
+        let _ = item.set_checked(!paused);
     }
     let _ = app.emit("clipboard://changed", ());
     tracing::info!(paused, ?until, "clipboard history");

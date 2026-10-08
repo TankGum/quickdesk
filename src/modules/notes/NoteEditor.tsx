@@ -6,6 +6,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { useEffect } from "react";
 
 import { Key, t } from "../../shared/i18n";
+import { Icon, IconName } from "../../shared/Icon";
 
 /**
  * Rich-text note body, stored as Markdown so search, sync and the plain
@@ -53,6 +54,8 @@ export function NoteEditor({
 type Tool = {
   key: Key;
   label: string;
+  /** Drawn instead of `label` where a letter is not the usual symbol. */
+  icon?: IconName;
   shortcut: string;
   active: (e: Editor) => boolean;
   run: (e: Editor) => void;
@@ -62,15 +65,15 @@ const TOOLS: (Tool | "|")[] = [
   { key: "editor.bold", label: "B", shortcut: "Ctrl+B", active: (e) => e.isActive("bold"), run: (e) => e.chain().focus().toggleBold().run() },
   { key: "editor.italic", label: "I", shortcut: "Ctrl+I", active: (e) => e.isActive("italic"), run: (e) => e.chain().focus().toggleItalic().run() },
   { key: "editor.strike", label: "S", shortcut: "Ctrl+Shift+S", active: (e) => e.isActive("strike"), run: (e) => e.chain().focus().toggleStrike().run() },
-  { key: "editor.code", label: "</>", shortcut: "Ctrl+E", active: (e) => e.isActive("code"), run: (e) => e.chain().focus().toggleCode().run() },
+  { key: "editor.code", label: "", icon: "code", shortcut: "Ctrl+E", active: (e) => e.isActive("code"), run: (e) => e.chain().focus().toggleCode().run() },
   "|",
   { key: "editor.heading", label: "H", shortcut: "Ctrl+Alt+2", active: (e) => e.isActive("heading"), run: (e) => e.chain().focus().toggleHeading({ level: 2 }).run() },
-  { key: "editor.bullets", label: "•", shortcut: "Ctrl+Shift+8", active: (e) => e.isActive("bulletList"), run: (e) => e.chain().focus().toggleBulletList().run() },
-  { key: "editor.numbers", label: "1.", shortcut: "Ctrl+Shift+7", active: (e) => e.isActive("orderedList"), run: (e) => e.chain().focus().toggleOrderedList().run() },
-  { key: "editor.tasks", label: "☑", shortcut: "Ctrl+Shift+9", active: (e) => e.isActive("taskList"), run: (e) => e.chain().focus().toggleTaskList().run() },
+  { key: "editor.bullets", label: "", icon: "listBullet", shortcut: "Ctrl+Shift+8", active: (e) => e.isActive("bulletList"), run: (e) => e.chain().focus().toggleBulletList().run() },
+  { key: "editor.numbers", label: "", icon: "listNumber", shortcut: "Ctrl+Shift+7", active: (e) => e.isActive("orderedList"), run: (e) => e.chain().focus().toggleOrderedList().run() },
+  { key: "editor.tasks", label: "", icon: "checklist", shortcut: "Ctrl+Shift+9", active: (e) => e.isActive("taskList"), run: (e) => e.chain().focus().toggleTaskList().run() },
   "|",
-  { key: "editor.quote", label: "❝", shortcut: "Ctrl+Shift+B", active: (e) => e.isActive("blockquote"), run: (e) => e.chain().focus().toggleBlockquote().run() },
-  { key: "editor.codeBlock", label: "{ }", shortcut: "Ctrl+Alt+C", active: (e) => e.isActive("codeBlock"), run: (e) => e.chain().focus().toggleCodeBlock().run() },
+  { key: "editor.quote", label: "", icon: "quote", shortcut: "Ctrl+Shift+B", active: (e) => e.isActive("blockquote"), run: (e) => e.chain().focus().toggleBlockquote().run() },
+  { key: "editor.codeBlock", label: "", icon: "codeBlock", shortcut: "Ctrl+Alt+C", active: (e) => e.isActive("codeBlock"), run: (e) => e.chain().focus().toggleCodeBlock().run() },
 ];
 
 function Toolbar({ editor }: { editor: Editor }) {
@@ -95,7 +98,7 @@ function Toolbar({ editor }: { editor: Editor }) {
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => tool.run(editor)}
           >
-            {tool.label}
+            {tool.icon ? <Icon name={tool.icon} size={17} /> : tool.label}
           </button>
         ),
       )}

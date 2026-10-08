@@ -40,27 +40,24 @@ fn system_lang() -> Lang {
     }
 }
 
-/// Tray menu strings.
+/// Tray menu strings. GNOME draws tray menus itself, so they stay plain text,
+/// macOS style: short title-case labels, a check mark for the one toggle.
 pub fn tr(lang: Lang, key: &str) -> &'static str {
-    // Native tray menus cannot be styled (GNOME draws them), so each entry
-    // gets a symbol; the red one marks Quit.
     match (lang, key) {
-        (Lang::Vi, "quick-note") => "✏️  Ghi nhanh",
-        (Lang::Vi, "notes") => "📝  Ghi chú",
-        (Lang::Vi, "clipboard") => "📋  Clipboard",
-        (Lang::Vi, "ports") => "🔌  Cổng",
-        (Lang::Vi, "main") => "🏠  Mở QuickDesk",
-        (Lang::Vi, "quit") => "⛔  Thoát QuickDesk",
-        (Lang::Vi, "pause") => "⏸️  Tạm dừng lưu clipboard",
-        (Lang::Vi, "paused") => "▶️  Đang tạm dừng lưu clipboard: bấm để bật lại",
-        (_, "quick-note") => "✏️  Quick note",
-        (_, "notes") => "📝  Notes",
-        (_, "clipboard") => "📋  Clipboard",
-        (_, "ports") => "🔌  Ports",
-        (_, "main") => "🏠  Open QuickDesk",
-        (_, "quit") => "⛔  Quit QuickDesk",
-        (_, "pause") => "⏸️  Pause clipboard history",
-        (_, "paused") => "▶️  Clipboard history paused: click to resume",
+        (Lang::Vi, "quick-note") => "Ghi chú nhanh mới",
+        (Lang::Vi, "notes") => "Ghi chú",
+        (Lang::Vi, "clipboard") => "Lịch sử clipboard",
+        (Lang::Vi, "ports") => "Cổng",
+        (Lang::Vi, "main") => "Mở QuickDesk",
+        (Lang::Vi, "quit") => "Thoát QuickDesk",
+        (Lang::Vi, "save-clipboard") => "Lưu lịch sử clipboard",
+        (_, "quick-note") => "New Quick Note",
+        (_, "notes") => "Notes",
+        (_, "clipboard") => "Clipboard History",
+        (_, "ports") => "Ports",
+        (_, "main") => "Open QuickDesk",
+        (_, "quit") => "Quit QuickDesk",
+        (_, "save-clipboard") => "Save Clipboard History",
         _ => "",
     }
 }
@@ -74,7 +71,7 @@ mod tests {
         assert_eq!(LangPref::Vi.resolve(), Lang::Vi);
         assert_eq!(LangPref::En.resolve(), Lang::En);
         for lang in [Lang::En, Lang::Vi] {
-            for key in ["quick-note", "notes", "clipboard", "ports", "main", "quit", "pause", "paused"] {
+            for key in ["quick-note", "notes", "clipboard", "ports", "main", "quit", "save-clipboard"] {
                 assert!(!tr(lang, key).is_empty(), "{lang:?} {key}");
             }
         }

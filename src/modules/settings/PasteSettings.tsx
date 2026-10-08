@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { Key, t, useI18n } from "../../shared/i18n";
 import { api, errorMessage, PasteInfo, PasteMethod } from "../../shared/ipc";
+import { Icon } from "../../shared/Icon";
 
 const METHODS: { value: PasteMethod; label: Key; hint: Key }[] = [
   { value: "auto", label: "paste.auto", hint: "paste.auto.hint" },
@@ -63,7 +64,9 @@ export function PasteSettings() {
         <div className="setup-box">
           {info.uinputAvailable ? (
             <div className="row tight">
-              <span>{t("paste.enabled")}</span>
+              <span className="ok-text">
+                <Icon name="check" size={14} /> {t("paste.enabled")}
+              </span>
               {info.ruleInstalled && (
                 <button className="btn" disabled={busy} onClick={() => void run(api.clipUinputDisable)}>
                   {busy ? t("common.waitingPassword") : t("paste.disable")}

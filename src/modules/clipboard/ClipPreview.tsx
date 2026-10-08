@@ -1,3 +1,4 @@
+import { Icon, IconName } from "../../shared/Icon";
 import { t } from "../../shared/i18n";
 import { ClipEntry } from "../../shared/ipc";
 import { oneLine } from "./useClipboard";
@@ -11,26 +12,28 @@ export function formatBytes(n: number): string {
 const fileName = (p: string) => p.split("/").filter(Boolean).pop() ?? p;
 const dirName = (p: string) => p.slice(0, Math.max(0, p.lastIndexOf("/"))) || "/";
 
-function fileIcon(p: string): string {
+function fileIcon(p: string): IconName {
   const ext = p.split(".").pop()?.toLowerCase() ?? "";
-  if (["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext)) return "🖼️";
-  if (["pdf"].includes(ext)) return "📕";
-  if (["zip", "gz", "tar", "rar", "7z"].includes(ext)) return "🗜️";
-  if (["mp4", "mov", "mkv", "webm"].includes(ext)) return "🎞️";
-  if (!p.split("/").pop()?.includes(".")) return "📁";
-  return "📄";
+  if (["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext)) return "photo";
+  if (["zip", "gz", "tar", "rar", "7z"].includes(ext)) return "archive";
+  if (["mp4", "mov", "mkv", "webm"].includes(ext)) return "film";
+  if (!p.split("/").pop()?.includes(".")) return "folder";
+  return "doc";
 }
 
 /** Square tile in front of a popup row: ★ when pinned, else what kind it is. */
 export function ClipIcon({ c }: { c: ClipEntry }) {
-  if (c.pinned) return <span className="clip-icon pinned">★</span>;
-  if (c.kind === "image") {
-    return c.thumb ? <img className="clip-icon thumb" src={c.thumb} alt="" /> : <span className="clip-icon">🖼️</span>;
-  }
-  if (c.kind === "files") return <span className="clip-icon">{fileIcon(c.preview.split("\n")[0] ?? "")}</span>;
+  const tile = (name: IconName, cls = "") => (
+    <span className={`clip-icon ${cls}`}>
+      <Icon name={name} />
+    </span>
+  );
+  if (c.pinned) return tile("starFill", "pinned");
+  if (c.kind === "image") return c.thumb ? <img className="clip-icon thumb" src={c.thumb} alt="" /> : tile("photo");
+  if (c.kind === "files") return tile(fileIcon(c.preview.split("\n")[0] ?? ""));
   const text = c.preview.trim();
-  if (/^https?:\/\/\S+$/.test(text)) return <span className="clip-icon">↗</span>;
-  return <span className="clip-icon text">{COMMAND.test(text) && !text.includes("\n") ? ">_" : "Aa"}</span>;
+  if (/^https?:\/\/\S+$/.test(text)) return tile("link");
+  return tile(COMMAND.test(text) && !text.includes("\n") ? "terminal" : "text");
 }
 
 const COMMAND = /^(\$ |sudo |ssh |git |docker |kubectl |npm |npx |pnpm |yarn |cargo |python3? |pip |make |curl |wget |apt |systemctl |cd |ls )/;
@@ -56,7 +59,9 @@ export function ClipPreview({ c, compact = false }: { c: ClipEntry; compact?: bo
       <div className={`clip-files ${compact ? "compact" : ""}`}>
         {shown.map((p) => (
           <div key={p} className="clip-file" title={p}>
-            <span className="clip-file-icon">{fileIcon(p)}</span>
+            <span className="clip-file-icon">
+              <Icon name={fileIcon(p)} size={14} />
+            </span>
             <span className="clip-file-name">{fileName(p)}</span>
             {!compact && <span className="muted clip-file-dir">{dirName(p)}</span>}
           </div>

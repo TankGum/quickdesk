@@ -7,6 +7,7 @@ import { ClipPreview } from "./ClipPreview";
 import { KindFilter } from "./KindFilter";
 import { RecordingStatus } from "./RecordingStatus";
 import { useClipboard } from "./useClipboard";
+import { Icon } from "../../shared/Icon";
 
 export function ClipboardTab({ focusSignal }: { focusSignal: number }) {
   const { t } = useI18n();
@@ -80,7 +81,7 @@ export function ClipboardTab({ focusSignal }: { focusSignal: number }) {
           {entries.map((c) => (
             <li key={c.id} className={c.pinned ? "pinned" : ""}>
               <button className={`icon pin ${c.pinned ? "on" : ""}`} title={c.pinned ? t("common.unpin") : t("clip.pinHint")} onClick={() => void run(api.clipPin(c.id, !c.pinned))}>
-                {c.pinned ? "★" : "☆"}
+                <Icon name={c.pinned ? "starFill" : "star"} />
               </button>
               <div className="clip-main" onClick={() => void run(api.clipCopy(c.id), t("clip.copiedToClipboard"))} title={t("clip.clickToCopy")}>
                 <ClipPreview c={c} />
@@ -92,7 +93,7 @@ export function ClipboardTab({ focusSignal }: { focusSignal: number }) {
                 </div>
               </div>
               <button className="icon delete" title={t("common.delete")} onClick={() => void run(api.clipDelete(c.id))}>
-                ✕
+                <Icon name="xmark" />
               </button>
             </li>
           ))}

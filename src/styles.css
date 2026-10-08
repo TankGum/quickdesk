@@ -126,15 +126,18 @@ kbd {
 /* ---------- Main window ---------- */
 
 .main { display: flex; flex-direction: column; height: 100%; }
-.tabs { display: flex; gap: 2px; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.tabs { display: flex; justify-content: center; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.segmented { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--raised); }
 .tabs button {
   display: inline-flex; gap: 7px; align-items: center;
-  border: none; background: none; padding: 6px 12px; border-radius: 8px;
-  cursor: pointer; color: var(--muted); font-weight: 500;
-  transition: background-color 0.15s, color 0.15s;
+  border: none; background: none; padding: 5px 14px; border-radius: 7px;
+  cursor: pointer; color: var(--muted); font-weight: 500; font-size: 13px;
+  transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
 }
-.tabs button:hover { background: var(--hover); color: var(--fg); }
-.tabs button.active { background: var(--raised); color: var(--fg); }
+.tabs button:hover { color: var(--fg); }
+.tabs button.active { background: var(--surface); color: var(--fg); box-shadow: 0 1px 3px rgb(0 0 0 / 0.18), 0 0 0 0.5px var(--border-2); }
+:root[data-theme="dark"] .tabs button.active { background: #3a3a3e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tabs button.active { background: #3a3a3e; } }
 /* WebKitGTK draws a grey ring on the clicked tab; use the module colour, keyboard only. */
 .tabs button:focus { outline: none; }
 .tabs button:focus-visible { box-shadow: 0 0 0 2px color-mix(in srgb, var(--dot, var(--mod)) 55%, transparent); }
@@ -174,7 +177,12 @@ button.quit:hover { background: color-mix(in srgb, var(--danger) 20%, transparen
 .banner.error { background: color-mix(in srgb, var(--danger) 10%, transparent); }
 .badge { display: inline-flex; gap: 5px; align-items: center; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 999px; color: var(--muted); background: var(--hover); white-space: nowrap; }
 .badge.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, transparent); }
-button.icon { border: none; background: none; cursor: pointer; color: var(--faint); padding: 2px 6px; border-radius: 6px; font-size: 14px; }
+/* SF Symbols-style icons (src/shared/Icon.tsx) */
+.icon-svg { flex: none; display: block; }
+.btn .icon-svg, .chip .icon-svg, .badge .icon-svg, .ok-text .icon-svg { display: inline-block; }
+.ok-text { display: inline-flex; gap: 5px; align-items: center; color: var(--ok); }
+.container-icon { display: inline-block; vertical-align: -2px; color: var(--clip); }
+button.icon { display: inline-grid; place-items: center; border: none; background: none; cursor: pointer; color: var(--faint); padding: 4px; border-radius: 6px; }
 button.icon:hover { background: var(--hover); color: var(--fg); }
 .toast {
   position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 70;
@@ -205,7 +213,7 @@ button.icon:hover { background: var(--hover); color: var(--fg); }
 /* Chips (clipboard kind filter) */
 .kind-filter { display: flex; gap: 6px; margin: 0 0 10px; flex-wrap: wrap; }
 .kind-filter.compact { margin: 2px 0 0; gap: 5px; }
-.chip { border: 1px solid var(--border-2); background: none; color: var(--muted); border-radius: 999px; padding: 3px 11px; font-size: 12px; cursor: pointer; transition: background-color 0.15s, color 0.15s; }
+.chip { display: inline-flex; gap: 5px; align-items: center; border: 1px solid var(--border-2); background: none; color: var(--muted); border-radius: 999px; padding: 3px 11px; font-size: 12px; cursor: pointer; transition: background-color 0.15s, color 0.15s; }
 .chip:hover { color: var(--fg); background: var(--hover); }
 .chip.on { background: var(--mod); border-color: transparent; color: var(--mod-ink); }
 
@@ -265,9 +273,8 @@ button.icon:hover { background: var(--hover); color: var(--fg); }
 .clip-list li > .clip-image, .clip-list li > .clip-files, .clip-list li > .clip-text { min-width: 0; flex: 1; }
 .clip-icon {
   flex: none; width: 30px; height: 30px; border-radius: 8px;
-  display: grid; place-items: center; font-size: 15px; background: var(--hover); color: var(--muted);
+  display: grid; place-items: center; background: var(--hover); color: var(--muted);
 }
-.clip-icon.text { font: 600 11px/1 var(--mono); }
 .clip-icon.pinned { color: var(--notes); background: color-mix(in srgb, var(--notes) 16%, transparent); }
 .clip-icon.thumb { object-fit: cover; padding: 0; }
 .clip-list li.selected .clip-icon:not(.pinned):not(.thumb) { background: color-mix(in srgb, var(--mod) 30%, transparent); color: var(--fg); }
@@ -299,6 +306,8 @@ button.icon:hover { background: var(--hover); color: var(--fg); }
 .clip-file-dir { font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .clip-files.compact { flex-direction: row; gap: 8px; align-items: baseline; }
 .clip-files.compact .clip-file-icon { display: none; }
+.clip-file { align-items: center; }
+.clip-file-icon { color: var(--muted); }
 
 /* Clipboard recording status */
 .recording { display: flex; gap: 10px; align-items: center; padding: 9px 12px; border-radius: 10px; margin-bottom: 10px; }
@@ -306,7 +315,7 @@ button.icon:hover { background: var(--hover); color: var(--fg); }
 .recording.on .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); flex-shrink: 0; }
 .recording.paused { background: color-mix(in srgb, var(--warn) 13%, transparent); border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent); }
 .recording.compact { margin: 8px 16px 2px; padding: 6px 10px; font-size: 12px; }
-.recording-icon { font-size: 16px; }
+.recording-icon { display: grid; color: var(--warn); }
 .recording-text { flex: 1; min-width: 0; }
 .menu-anchor { position: relative; }
 .menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 10; width: 290px; background: var(--surface); border: 1px solid var(--border-2); border-radius: 12px; box-shadow: var(--shadow); padding: 6px; display: flex; flex-direction: column; }
@@ -387,12 +396,12 @@ button.icon:hover { background: var(--hover); color: var(--fg); }
 .confirm-body { display: flex; gap: 12px; padding: 18px 18px 8px; }
 .confirm-body h3 { margin: 0 0 6px; font-size: 15px; }
 .confirm-body p { margin: 0; overflow-wrap: anywhere; }
-.confirm-icon { font-size: 22px; line-height: 1; }
+.confirm-icon { flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: var(--danger); background: color-mix(in srgb, var(--danger) 14%, transparent); }
 
 /* Rich note editor */
 .note-editor { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .note-toolbar { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; padding: 4px 12px 8px; border-bottom: 1px solid var(--border); }
-.note-toolbar .tool { min-width: 30px; height: 28px; padding: 0 6px; border: 1px solid transparent; border-radius: 7px; background: none; color: var(--fg); cursor: pointer; font-size: 13px; }
+.note-toolbar .tool { display: inline-grid; place-items: center; min-width: 30px; height: 28px; padding: 0 6px; border: 1px solid transparent; border-radius: 7px; background: none; color: var(--fg); cursor: pointer; font-size: 13px; }
 .note-toolbar .tool:hover { background: var(--hover); }
 .note-toolbar .tool.on { background: color-mix(in srgb, var(--mod) 18%, transparent); color: var(--mod-text); }
 .note-toolbar .tool.bold { font-weight: 800; }

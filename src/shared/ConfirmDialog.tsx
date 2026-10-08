@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 
 import { t } from "./i18n";
+import { Icon } from "./Icon";
 
 /** Modal yes/no for destructive actions. Cancel has focus; Esc cancels. */
 export function ConfirmDialog({
@@ -34,7 +35,9 @@ export function ConfirmDialog({
         }}
       >
         <div className="confirm-body">
-          <div className="confirm-icon">🗑️</div>
+          <div className="confirm-icon">
+            <Icon name="trash" size={20} />
+          </div>
           <div>
             <h3>{title}</h3>
             <p className="muted">{message}</p>

@@ -153,9 +153,9 @@
   // Like the real tray: a usage line opens the AI tab; Refresh refreshes.
   $('[data-tray]', demo).addEventListener('click', (e) => {
     const li = e.target.closest('li');
-    if (!li || li.classList.contains('sep') || li.classList.contains('sub')) return;
+    if (!li || !('limit' in li.dataset || 'refresh' in li.dataset)) return;
     takeOver();
-    if (li.textContent.trim() === 'Refresh') {
+    if ('refresh' in li.dataset) {
       openMenu(null);
       if (!Object.values(wins).some((w) => w.classList.contains('is-open'))) closePanel();
       showToast('Usage refreshed');
@@ -186,7 +186,7 @@
     else if (open === 'main') showWindow('main', null);
     else if ('pause' in li.dataset) {
       paused = !paused;
-      li.textContent = paused ? '▶️ Clipboard history paused: click to resume' : '⏸️ Pause clipboard history';
+      li.classList.toggle('is-on', !paused);
       Object.keys(wins).forEach((w) => post(w, { type: 'pause', paused }));
       openMenu(null);
       if (!Object.values(wins).some((w) => w.classList.contains('is-open'))) closePanel();

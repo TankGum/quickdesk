@@ -1,3 +1,4 @@
+use tauri::image::Image;
 use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{App, AppHandle, Manager, Wry};
@@ -12,10 +13,11 @@ const PAUSE_CLIP: &str = "pause_clipboard";
 
 const TRAY_ID: &str = "quickdesk";
 
-/// The tray menu in `lang`; also remembers the pause checkbox for later updates.
+/// The tray menu in `lang`; also remembers the clipboard checkbox for later updates.
 fn menu<M: Manager<Wry>>(m: &M, lang: Lang, clip_paused: bool) -> tauri::Result<Menu<Wry>> {
     let item = |id: &str| MenuItem::with_id(m, id, tr(lang, id), true, None::<&str>);
-    let pause = CheckMenuItem::with_id(m, PAUSE_CLIP, pause_label(lang, clip_paused), true, clip_paused, None::<&str>)?;
+    // Checked while copies are being saved; unchecking pauses history.
+    let pause = CheckMenuItem::with_id(m, PAUSE_CLIP, tr(lang, "save-clipboard"), true, !clip_paused, None::<&str>)?;
     let menu = Menu::with_items(
         m,
         &[
@@ -32,11 +34,6 @@ fn menu<M: Manager<Wry>>(m: &M, lang: Lang, clip_paused: bool) -> tauri::Result<
     )?;
     *m.state::<AppState>().clipboard.tray_item.lock().unwrap_or_else(|e| e.into_inner()) = Some(pause);
     Ok(menu)
-}
-
-/// Label that says what clicking the pause item will do.
-pub fn pause_label(lang: Lang, paused: bool) -> &'static str {
-    tr(lang, if paused { "paused" } else { "pause" })
 }
 
 /// Rebuild the menu after a language change.
@@ -78,9 +75,8 @@ pub fn build(app: &App, clip_paused: bool) -> tauri::Result<()> {
                 windows::show(app, target, now_ms());
             },
         );
-    if let Some(icon) = app.default_window_icon() {
-        tray = tray.icon(icon.clone());
-    }
+    // A white glyph, like the system icons beside it (the app icon is a blue tile).
+    tray = tray.icon(Image::new_owned(crate::ring::app_glyph(crate::ring::SIZE), crate::ring::SIZE, crate::ring::SIZE));
     tray.build(app)?;
     Ok(())
 }

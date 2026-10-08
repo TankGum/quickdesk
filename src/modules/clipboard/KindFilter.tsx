@@ -1,8 +1,9 @@
 import { t } from "../../shared/i18n";
 import { ClipKind } from "../../shared/ipc";
+import { Icon, IconName } from "../../shared/Icon";
 
 const KINDS: (ClipKind | undefined)[] = [undefined, "text", "image", "files"];
-const ICON: Record<string, string> = { all: "", text: "📝 ", image: "🖼️ ", files: "📄 " };
+const ICON: Record<string, IconName | null> = { all: null, text: "text", image: "photo", files: "doc" };
 
 /** All / Text / Images / Files chips. */
 export function KindFilter({ value, onChange, compact = false }: { value?: ClipKind; onChange: (k?: ClipKind) => void; compact?: boolean }) {
@@ -18,7 +19,7 @@ export function KindFilter({ value, onChange, compact = false }: { value?: ClipK
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => onChange(k)}
         >
-          {ICON[k ?? "all"]}
+          {ICON[k ?? "all"] && <Icon name={ICON[k ?? "all"]!} size={13} />}
           {t(`clip.kind.${k ?? "all"}` as const)}
         </button>
       ))}

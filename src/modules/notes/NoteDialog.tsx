@@ -5,6 +5,7 @@ import { api, errorMessage, Note } from "../../shared/ipc";
 import { absoluteTime, relativeTime } from "../../shared/time";
 import { ConfirmDialog } from "../../shared/ConfirmDialog";
 import { NoteEditor } from "./NoteEditor";
+import { Icon } from "../../shared/Icon";
 
 /** `note` = edit that note; `null` = write a new one. */
 export function NoteDialog({ note, onClose, onDeleted }: { note: Note | null; onClose: () => void; onDeleted: (n: Note) => void }) {
@@ -102,7 +103,7 @@ export function NoteDialog({ note, onClose, onDeleted }: { note: Note | null; on
             }}
           />
           <button className={`icon pin ${pinned ? "on" : ""}`} title={pinned ? t("common.unpin") : t("common.pin")} onClick={() => setPinned((p) => !p)}>
-            {pinned ? "★" : "☆"}
+            <Icon name={pinned ? "starFill" : "star"} size={18} />
           </button>
         </div>
         <NoteEditor

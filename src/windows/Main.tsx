@@ -54,13 +54,16 @@ export function Main() {
   return (
     // data-mod picks the module colour (notes yellow, clipboard blue, …).
     <div className="main" data-mod={tab}>
-      <nav className="tabs" role="tablist">
-        {TABS.map((name) => (
-          <button key={name} role="tab" aria-selected={name === tab} data-mod={name} className={name === tab ? "active" : ""} onClick={() => setTab(name)}>
-            <span className="tab-dot" />
-            {t(`tab.${name}` as const)}
-          </button>
-        ))}
+      <nav className="tabs">
+        {/* macOS-style segmented control */}
+        <div className="segmented" role="tablist">
+          {TABS.map((name) => (
+            <button key={name} role="tab" aria-selected={name === tab} data-mod={name} className={name === tab ? "active" : ""} onClick={() => setTab(name)}>
+              <span className="tab-dot" />
+              {t(`tab.${name}` as const)}
+            </button>
+          ))}
+        </div>
       </nav>
       <section className="content">
         {tab === "notes" && <NotesTab focusSignal={shownAt} />}

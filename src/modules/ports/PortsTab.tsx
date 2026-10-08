@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { t, useI18n } from "../../shared/i18n";
 import { api, currentWindow, errorMessage, PortEntry } from "../../shared/ipc";
+import { Icon } from "../../shared/Icon";
 
 const REFRESH_MS = 2000;
 const TERM_GRACE_MS = 3000;
@@ -126,7 +127,7 @@ export function PortsTab({ focusSignal }: { focusSignal: number }) {
           onKeyDown={(e) => e.key === "Escape" && setQuery("")}
         />
         <button className="btn" onClick={() => void refresh()} title={t("ports.rescan")}>
-          ↻
+          <Icon name="refresh" />
         </button>
       </div>
       {error && <div className="banner error">{error}</div>}
@@ -223,7 +224,7 @@ function Owner({ e }: { e: PortEntry }) {
     return (
       <>
         <div>
-          🐳 <b>{e.container.name}</b> <span className="muted">→ :{e.container.privatePort}</span>
+          <Icon name="box" size={14} className="container-icon" /> <b>{e.container.name}</b> <span className="muted">→ :{e.container.privatePort}</span>
         </div>
         <div className="cmd" title={e.container.image}>
           {e.container.image}

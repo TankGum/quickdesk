@@ -5,6 +5,7 @@ import { api, errorMessage, Note, useBackendEvent } from "../../shared/ipc";
 import { absoluteTime, relativeTime } from "../../shared/time";
 import { ConfirmDialog } from "../../shared/ConfirmDialog";
 import { markdownToText } from "./markdown";
+import { Icon } from "../../shared/Icon";
 
 // The rich editor is large; load it only when a note is opened.
 const NoteDialog = lazy(() => import("./NoteDialog").then((m) => ({ default: m.NoteDialog })));
@@ -97,6 +98,7 @@ export function NotesTab({ focusSignal }: { focusSignal: number }) {
           }}
         />
         <button className="btn primary" title={t("notes.newHint")} onClick={() => setEditing(null)}>
+          <Icon name="plus" />
           {t("notes.new")}
         </button>
       </div>
@@ -115,7 +117,7 @@ export function NotesTab({ focusSignal }: { focusSignal: number }) {
                   title={n.pinned ? t("common.unpin") : t("common.pin")}
                   onClick={() => void run(api.notesUpdate(n.id, { pinned: !n.pinned }))}
                 >
-                  {n.pinned ? "★" : "☆"}
+                  <Icon name={n.pinned ? "starFill" : "star"} />
                 </button>
                 <button className="note-main note-open" onClick={() => setEditing(n)}>
                   <div className="note-heading">{h.text || t("notes.untitled")}</div>
@@ -123,6 +125,7 @@ export function NotesTab({ focusSignal }: { focusSignal: number }) {
                   <div className="note-meta">
                     {n.conflictOf && (
                       <span className="badge warn" title={t("notes.conflictHint")}>
+                        <Icon name="warning" size={12} />
                         {t("notes.conflict")}
                       </span>
                     )}
@@ -130,7 +133,7 @@ export function NotesTab({ focusSignal }: { focusSignal: number }) {
                   </div>
                 </button>
                 <button className="icon delete" title={t("common.delete")} onClick={() => setConfirmDelete(n)}>
-                  🗑️
+                  <Icon name="trash" />
                 </button>
               </li>
             );

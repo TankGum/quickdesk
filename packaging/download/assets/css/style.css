@@ -552,6 +552,11 @@ kbd {
 .shell-menu li:hover { background: rgba(255, 255, 255, .08); }
 .shell-menu li.sep { height: 1px; margin: 6px 14px; padding: 0; background: rgba(255, 255, 255, .13); cursor: default; }
 .shell-menu li.sub { display: flex; justify-content: space-between; gap: 40px; }
+/* Disabled section titles, and the check ornament of toggle items */
+.shell-menu li.head { color: rgba(255, 255, 255, .45); cursor: default; padding-block: 8px 6px; }
+.shell-menu li.head:hover { background: none; }
+.shell-menu ul:has(.check) li:not(.sep) { padding-left: 34px; position: relative; }
+.shell-menu li.check.is-on::before { content: "✓"; position: absolute; left: 13px; }
 .shell-menu li.sub::after { content: "›"; font-size: 18px; line-height: .8; }
 
 /* Ports — story rows */
