@@ -80,3 +80,7 @@ src-tauri            app shell: windows, tray, hotkeys, commands, background wor
 src                  React UI (popups + main window)
 spikes/wayland       Wayland clipboard/hotkey spike and findings
 ```
+
+## License
+
+[MIT](LICENSE)
