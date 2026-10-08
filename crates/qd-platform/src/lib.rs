@@ -3,6 +3,7 @@
 pub mod accel;
 pub mod clipboard;
 pub mod gnome;
+pub mod paste;
 pub mod session;
 
 pub use accel::Accelerator;

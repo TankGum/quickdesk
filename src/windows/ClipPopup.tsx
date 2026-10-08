@@ -18,19 +18,35 @@ export function ClipPopup() {
     setSelected(0);
   }, () => input.current);
 
+  // A stale error from an earlier attempt should not greet the next open.
+  useEffect(() => {
+    if (!error) return;
+    const id = setTimeout(() => setError(null), 8000);
+    return () => clearTimeout(id);
+  }, [error, setError]);
+
   useEffect(() => setSelected(0), [query]);
   useEffect(() => {
     list.current?.children[selected]?.scrollIntoView({ block: "nearest" });
   }, [selected]);
 
-  const pick = async (index: number) => {
+  const pick = async (index: number, copyOnly = false) => {
     const entry = entries[index];
     if (!entry) return;
     try {
-      await api.clipCopy(entry.id);
-      await hideWindow();
+      if (status?.autoPaste && !copyOnly) {
+        // Backend hides the popup, then types the text into the previous app.
+        await api.clipPaste(entry.id);
+      } else {
+        await api.clipCopy(entry.id);
+        await hideWindow();
+      }
     } catch (e) {
-      setError(errorMessage(e));
+      const pasteFailed = typeof e === "object" && e !== null && (e as { code?: string }).code === "paste_failed";
+      setError(
+        pasteFailed ? `Copied, but auto-paste failed (${errorMessage(e)}). Press Ctrl+V / Ctrl+Shift+V.` : errorMessage(e),
+      );
+      if (pasteFailed) void api.show("clipboard");
     }
   };
 
@@ -47,7 +63,7 @@ export function ClipPopup() {
         break;
       case "Enter":
         e.preventDefault();
-        void pick(selected);
+        void pick(selected, e.ctrlKey || e.metaKey);
         break;
       case "Escape":
         e.preventDefault();
@@ -107,7 +123,10 @@ export function ClipPopup() {
           ))}
         </ul>
       )}
-      <div className="popup-hint">↑↓ select · Enter copy · Ctrl+P pin · Del delete · Esc close</div>
+      <div className="popup-hint">
+        ↑↓ select · Enter {status?.autoPaste ? "paste" : "copy"}
+        {status?.autoPaste && " · Ctrl+Enter copy only"} · Ctrl+P pin · Del delete · Esc close
+      </div>
     </div>
   );
 }

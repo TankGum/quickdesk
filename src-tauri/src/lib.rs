@@ -39,7 +39,6 @@ pub fn run(args: Vec<String>) {
             dispatch(app, Forwarded { args: argv.into_iter().skip(1).collect(), sent_at_ms: now_ms() });
         }))
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_clipboard_manager::init())
         .invoke_handler(tauri::generate_handler![
             commands::app::app_info,
             commands::app::diag_focus_report,
@@ -61,6 +60,8 @@ pub fn run(args: Vec<String>) {
             commands::clipboard::clip_clear,
             commands::clipboard::clip_status,
             commands::clipboard::clip_set_paused,
+            commands::clipboard::clip_paste,
+            commands::clipboard::clip_set_auto_paste,
             commands::ports::ports_scan,
             commands::ports::ports_kill,
             commands::ports::ports_is_alive,
@@ -86,14 +87,11 @@ pub fn run(args: Vec<String>) {
             std::fs::create_dir_all(&data_dir)?;
             let db =
                 Db::open(&data_dir.join("quickdesk.db"), &[&qd_notes::NotesModule, &qd_clipboard::ClipboardModule])?;
-            let (device_id, hotkeys, clip_paused) = {
+            let (device_id, hotkeys, clip) = {
                 let conn = db.conn()?;
-                (
-                    settings::device_id(&conn)?,
-                    HotkeyConfig::load(&conn)?,
-                    clipboard::ClipboardService::load_paused(&conn),
-                )
+                (settings::device_id(&conn)?, HotkeyConfig::load(&conn)?, clipboard::ClipboardService::new(&conn))
             };
+            let clip_paused = clip.is_paused();
             let session = Session::detect();
             let strategy = session.hotkey_strategy();
             tracing::info!(?session, ?strategy, data_dir = %data_dir.display(), "starting");
@@ -114,7 +112,7 @@ pub fn run(args: Vec<String>) {
                 strategy,
                 hotkeys: Mutex::new(hotkeys),
                 focus_reports: Mutex::new(Vec::new()),
-                clipboard: clipboard::ClipboardService::new(clip_paused),
+                clipboard: clip,
                 sync: sync::SyncService::new(),
             });
 

@@ -36,6 +36,16 @@ export function ClipboardTab({ focusSignal }: { focusSignal: number }) {
           onKeyDown={(e) => e.key === "Escape" && setQuery("")}
         />
         {status && (
+          <label className="switch" title="Choosing an entry in the popup types it into the app you were using">
+            <input
+              type="checkbox"
+              checked={status.autoPaste}
+              onChange={(e) => void run(api.clipSetAutoPaste(e.target.checked))}
+            />
+            Auto-paste
+          </label>
+        )}
+        {status && (
           <label className="switch" title="Stop recording new copies">
             <input
               type="checkbox"

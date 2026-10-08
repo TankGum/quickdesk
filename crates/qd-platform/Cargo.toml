@@ -6,14 +6,13 @@ license.workspace = true
 
 [dependencies]
 thiserror.workspace = true
+arboard = { version = "3", default-features = false }
 tracing.workspace = true
 
 [target.'cfg(target_os = "linux")'.dependencies]
 x11rb = { version = "0.14", features = ["xfixes"] }
 libc = "0.2"
+ashpd = { version = "0.13", default-features = false, features = ["tokio", "remote_desktop", "screencast"] }
+tokio = { version = "1", features = ["sync", "time"] }
 
-[target.'cfg(not(target_os = "linux"))'.dependencies]
-arboard = { version = "3", default-features = false }
 
-[target.'cfg(target_os = "linux")'.dev-dependencies]
-arboard = { version = "3", default-features = false }

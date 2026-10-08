@@ -99,6 +99,6 @@ pub fn app_show(app: AppHandle, target: String) -> super::CmdResult<()> {
 
 #[tauri::command]
 pub fn clipboard_write(app: AppHandle, text: String) -> super::CmdResult<()> {
-    use tauri_plugin_clipboard_manager::ClipboardExt;
-    app.clipboard().write_text(text).map_err(|e| super::CmdError::new("internal", e.to_string()))
+    let _ = app;
+    qd_platform::paste::write_text(&text).map_err(|e| super::CmdError::new("internal", e))
 }

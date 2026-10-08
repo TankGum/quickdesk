@@ -97,6 +97,7 @@ export interface ClipStatus {
   state: "starting" | "running" | "retrying" | "unavailable";
   detail: string | null;
   paused: boolean;
+  autoPaste: boolean;
 }
 
 export interface S3Config {
@@ -151,6 +152,8 @@ export const api = {
   clipList: (limit?: number) => invoke<ClipEntry[]>("clip_list", { limit }),
   clipSearch: (query: string, limit?: number) => invoke<ClipEntry[]>("clip_search", { query, limit }),
   clipCopy: (id: number) => invoke<void>("clip_copy", { id }),
+  clipPaste: (id: number) => invoke<void>("clip_paste", { id }),
+  clipSetAutoPaste: (enabled: boolean) => invoke<void>("clip_set_auto_paste", { enabled }),
   clipPin: (id: number, pinned: boolean) => invoke<ClipEntry>("clip_pin", { id, pinned }),
   clipDelete: (id: number) => invoke<void>("clip_delete", { id }),
   clipClear: (keepPinned: boolean) => invoke<number>("clip_clear", { keepPinned }),
