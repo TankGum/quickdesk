@@ -236,12 +236,7 @@ fn update_tray(app: &AppHandle, snap: &UsageSnapshot) {
         .menu(&menu)
         .show_menu_on_left_click(true)
         .on_menu_event(|app, event| match event.id().as_ref() {
-            // GNOME closes the menu on any click, so show the fresh numbers
-            // in the AI tab rather than making the user reopen the menu.
-            "ai-refresh" => {
-                app.state::<AppState>().ai.refresh_soon();
-                crate::windows::show(app, Target::Ai, now_ms());
-            }
+            "ai-refresh" => app.state::<AppState>().ai.refresh_soon(),
             "ai-ring-auto" => {
                 let _ = set_ring(app, None);
             }
