@@ -87,13 +87,17 @@ python3 -m http.server -d /tmp/qd-page 8000   # then open http://localhost:8000
    (Vietnamese: `### Mới` / `### Cải thiện` / `### Sửa lỗi`). The release fails
    without it. These notes appear in the app's update banner, in "what's new"
    after updating, on the download page and on GitHub Releases.
-2. Bump `version` in `src-tauri/tauri.conf.json`, `Cargo.toml` (workspace) and `package.json`.
-3. Commit, then tag and push:
+2. Run the release command; it bumps the version in `tauri.conf.json`,
+   `package.json` and `Cargo.toml` (and their lock files), checks both
+   changelogs have the section, commits "Release <version>" and tags it:
    ```sh
-   git tag v0.2.0
-   git push origin main v0.2.0
+   npm run release 0.2.3            # then: git push origin main v0.2.3
+   npm run release 0.2.3 -- --push  # or let it push (starts the Release workflow)
    ```
-4. The **Release** workflow checks the tag matches the version and that release notes exist, builds on Ubuntu
+   It refuses to run with other uncommitted changes, a version that is not
+   newer, an existing tag, or missing release notes (`-- --dry-run` checks only).
+3. Wait for the **Release** workflow (about 15 minutes).
+4. The workflow checks the tag matches the version and that release notes exist, builds on Ubuntu
    22.04 (packages then also install on newer distributions), and uploads:
    ```
    releases/<version>/QuickDesk_<version>_amd64.deb
