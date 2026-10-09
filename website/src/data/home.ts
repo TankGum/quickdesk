@@ -112,18 +112,6 @@ export const home = {
     "en": "Jot something down on your desktop and pick it up on your laptop. Notes sync through a storage bucket you own, encrypted on your device before they leave it — no account, no QuickDesk server.",
     "vi": "Ghi nhanh trên máy bàn, mở lại trên laptop. Ghi chú đồng bộ qua bucket lưu trữ của chính bạn và được mã hoá ngay trên máy trước khi gửi đi — không tài khoản, không server QuickDesk."
   },
-  "t30": {
-    "en": "<strong>End-to-end encrypted sync</strong><span>Bring your own S3-compatible bucket — Cloudflare R2, AWS S3, MinIO. It only ever stores ciphertext.</span>",
-    "vi": "<strong>Đồng bộ mã hoá đầu-cuối</strong><span>Dùng bucket tương thích S3 của bạn — Cloudflare R2, AWS S3, MinIO. Nơi lưu chỉ thấy dữ liệu đã mã hoá.</span>"
-  },
-  "t31": {
-    "en": "<strong>Markdown editor</strong><span>Headings, checklists, quotes and code blocks, with instant search across every note.</span>",
-    "vi": "<strong>Trình soạn Markdown</strong><span>Tiêu đề, checklist, trích dẫn và khối code, tìm kiếm tức thì trong mọi ghi chú.</span>"
-  },
-  "t32": {
-    "en": "<strong>Offline-first</strong><span>Saved on your machine first and synced when you’re back online. Edited on two devices at once? Both versions are kept.</span>",
-    "vi": "<strong>Ưu tiên ngoại tuyến</strong><span>Lưu trên máy trước, đồng bộ khi có mạng lại. Sửa cùng lúc trên hai máy? Cả hai bản đều được giữ.</span>"
-  },
   "t33": {
     "en": "Copy now.<br>Paste whenever.",
     "vi": "Copy bây giờ.<br>Dán lúc nào cũng được."
@@ -152,18 +140,6 @@ export const home = {
     "en": "Pinned · never removed automatically",
     "vi": "Đã ghim · không bao giờ bị tự xoá"
   },
-  "t40": {
-    "en": "<strong>Search that understands you</strong><span>Accent-insensitive: type <code>hop doi</code> to find “Họp dời”. Filter by text, images or files.</span>",
-    "vi": "<strong>Tìm kiếm hiểu tiếng Việt</strong><span>Không cần gõ dấu: gõ <code>hop doi</code> vẫn ra “Họp dời”. Lọc theo chữ, ảnh hoặc file.</span>"
-  },
-  "t41": {
-    "en": "<strong>Paste where you were</strong><span>Enter pastes into the previous app — terminals included. Pin the snippets you use every day.</span>",
-    "vi": "<strong>Dán đúng chỗ đang gõ</strong><span>Enter là dán vào app trước đó — kể cả terminal. Ghim những đoạn bạn dùng hằng ngày.</span>"
-  },
-  "t42": {
-    "en": "<strong>Private by design</strong><span>Stays on this device and never syncs. Password-manager copies are skipped, and you can pause saving anytime.</span>",
-    "vi": "<strong>Riêng tư từ thiết kế</strong><span>Chỉ nằm trên máy này, không bao giờ đồng bộ. Bỏ qua mục copy từ trình quản lý mật khẩu, và bạn có thể tạm dừng lưu bất cứ lúc nào.</span>"
-  },
   "t43": {
     "en": "“Port 3000 is already in use.”<br>Not anymore.",
     "vi": "“Port 3000 is already in use.”<br>Hết rồi nhé."
@@ -175,18 +151,6 @@ export const home = {
   "t45": {
     "en": "Replay <span aria-hidden=\"true\">↺</span>",
     "vi": "Xem lại <span aria-hidden=\"true\">↺</span>"
-  },
-  "t46": {
-    "en": "<strong>Every listening TCP port</strong><span>IPv4 and IPv6, with the full command line. Filter by port, PID, process or container.</span>",
-    "vi": "<strong>Mọi cổng TCP đang lắng nghe</strong><span>IPv4 và IPv6, kèm đầy đủ dòng lệnh. Lọc theo cổng, PID, tiến trình hoặc container.</span>"
-  },
-  "t47": {
-    "en": "<strong>Docker-aware</strong><span>Published ports show the container and image, and stop the container instead of killing <code>docker-proxy</code>.</span>",
-    "vi": "<strong>Hiểu Docker</strong><span>Cổng do container mở hiện tên container và image, và dừng đúng container thay vì kill <code>docker-proxy</code>.</span>"
-  },
-  "t48": {
-    "en": "<strong>Kill safely</strong><span>Asks first, stops politely, and offers a force kill only if the process refuses to quit.</span>",
-    "vi": "<strong>Dừng an toàn</strong><span>Hỏi trước, dừng nhẹ nhàng, chỉ đề nghị force kill khi tiến trình không chịu thoát.</span>"
   },
   "t49": {
     "en": "<kbd>Top bar</kbd><kbd>◔</kbd>",
@@ -203,18 +167,6 @@ export const home = {
   "t51": {
     "en": "A small ring in the top bar shows how much of your Claude Code and Codex limits you’ve used, and when they reset — so you’re never cut off in the middle of a task.",
     "vi": "Một vòng tròn nhỏ trên thanh trên cùng cho biết bạn đã dùng bao nhiêu hạn mức Claude Code và Codex, và khi nào được đặt lại — để không bị cắt ngang giữa chừng."
-  },
-  "t52": {
-    "en": "<strong>Live for Claude Code</strong><span>Reuses the login Claude Code already has on this machine. Checked every 5 minutes, sent only to Anthropic.</span>",
-    "vi": "<strong>Trực tiếp cho Claude Code</strong><span>Dùng lại phiên đăng nhập Claude Code có sẵn trên máy. Kiểm tra mỗi 5 phút, chỉ gửi tới Anthropic.</span>"
-  },
-  "t53": {
-    "en": "<strong>Codex &amp; Antigravity</strong><span>Read from the logs these tools keep on your computer. Nothing leaves your machine.</span>",
-    "vi": "<strong>Codex &amp; Antigravity</strong><span>Đọc từ log mà các công cụ này lưu trên máy bạn. Không có gì rời khỏi máy.</span>"
-  },
-  "t54": {
-    "en": "<strong>Your ring, your choice</strong><span>Let it follow whichever 5-hour limit is highest, pin it to one limit, or hide it.</span>",
-    "vi": "<strong>Vòng tròn theo ý bạn</strong><span>Tự theo hạn mức 5 giờ cao nhất, cố định vào một hạn mức, hoặc ẩn đi.</span>"
   },
   "t55": {
     "en": "Built for the keyboard.<br><span class=\"muted\">Made for Linux.</span>",
