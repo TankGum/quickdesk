@@ -1,7 +1,8 @@
 # QuickDesk
 
 Developer toolbox in the tray: **Quick Notes** (E2E-encrypted sync through your own S3/R2 bucket),
-**Clipboard history** (local only) and **Port Manager** (incl. Docker containers).
+**Clipboard history** (local only), **Port Manager** (incl. Docker containers) and
+**AI usage limits** (a ring in the top bar). Website: [quickdesk.click](https://quickdesk.click).
 Tauri 2 + Rust + React. Design: [`docs/SPEC.md`](docs/SPEC.md).
 
 | Hotkey | Opens |
@@ -36,8 +37,16 @@ Download from [quickdesk.click](https://quickdesk.click/download) · [Docs](http
 | Fedora / openSUSE | `.rpm` | `sudo dnf install ./QuickDesk-<version>-1.x86_64.rpm` |
 | Any other | `.AppImage` | `chmod +x QuickDesk_<version>_amd64.AppImage && ./QuickDesk_<version>_amd64.AppImage` |
 
-Data lives in `~/.local/share/click.quickdesk/` (logs in `logs/` there).
-Releasing: see [`docs/RELEASING.md`](docs/RELEASING.md).
+Data lives in `~/.local/share/click.quickdesk/` (logs in `logs/` there). QuickDesk updates
+itself (Settings → Updates).
+
+## Working on QuickDesk
+
+- **[`docs/WORKFLOW.md`](docs/WORKFLOW.md)**: how app changes, website changes and releases
+  flow (CI, Cloudflare Pages, the download host, the in-app updater) and which file to edit.
+- [`docs/RELEASING.md`](docs/RELEASING.md): one-time setup (R2 bucket, domains, secrets,
+  signing key, Pages project).
+- Ship a release: notes in `CHANGELOG.md` + `CHANGELOG.vi.md`, then `npm run release <version> -- --push`.
 
 ## Develop
 
@@ -48,12 +57,13 @@ sudo apt install build-essential libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-a
   librsvg2-dev libxdo-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev libdbus-1-dev
 ```
 
-Then, with Rust (rustup) and Node ≥ 18:
+Then, with Rust (rustup) and Node ≥ 18 (the website in `website/` needs Node 22):
 
 ```sh
 npm install
 npx tauri dev          # run
-npx tauri build        # .deb / AppImage
+npx tauri build        # .deb / .rpm / AppImage
+npm run build:demo && cd website && npm install && npm run dev   # website, http://localhost:4321
 ```
 
 ## Test
@@ -76,8 +86,13 @@ crates/qd-notes      notes storage, FTS, sync merge rules
 crates/qd-clipboard  clipboard history storage and search
 crates/qd-ports      listening ports, process/container lookup, kill
 crates/qd-sync       encryption, S3 transport, sync engine
-src-tauri            app shell: windows, tray, hotkeys, commands, background workers
+crates/qd-ai-usage   AI usage limits (Claude Code, Codex, Antigravity)
+src-tauri            app shell: windows, tray, hotkeys, updater, commands, background workers
 src                  React UI (popups + main window)
+src/demo             sample-data backend: the same UI runs in the website's demo
+website              quickdesk.click (Astro, Cloudflare Pages), English + Vietnamese
+scripts              release tools: release.py, changelog.py, publish_r2.py
+docs                 WORKFLOW.md, RELEASING.md, SPEC.md
 spikes/wayland       Wayland clipboard/hotkey spike and findings
 ```
 
