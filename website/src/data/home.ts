@@ -1,5 +1,9 @@
 // Home page strings (English and Vietnamese), converted from the original page.
 export const home = {
+  "hero-docs": {
+    "en": "Read the docs <span aria-hidden=\"true\">›</span>",
+    "vi": "Đọc tài liệu <span aria-hidden=\"true\">›</span>"
+  },
   "t4": {
     "en": "Free &amp; open source · for Linux",
     "vi": "Miễn phí &amp; mã nguồn mở · cho Linux"

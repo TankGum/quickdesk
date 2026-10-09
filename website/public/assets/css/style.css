@@ -388,6 +388,34 @@ kbd {
   color: var(--text-3);
 }
 
+/* Hero with the live demo right under the headline */
+.hero { padding: calc(var(--nav-h) + 72px) 24px 104px; }
+.hero__glow { top: 30px; height: 520px; }
+.hero__title { font-size: clamp(40px, 6.6vw, 84px); }
+.hero__sub { margin-top: 22px; max-width: 680px; font-size: clamp(18px, 2vw, 22px); }
+.hero__cta { margin-top: 30px; }
+.hero .demo { padding: 56px 0 0; }
+.demo__bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px 28px;
+  margin-bottom: 22px;
+}
+/* The hotkey and the "click the ring" hint share one spot. */
+.demo__keys { display: grid; place-items: center; min-height: 48px; }
+.demo__keys > * { grid-area: 1 / 1; }
+.hero .combo { gap: 8px; margin: 0; }
+.hero .plus { font-size: 16px; }
+.hero .key { height: 46px; min-width: 46px; padding: 6px 10px; border-radius: 10px; font-size: 12px; }
+.hero .key--mod { min-width: 76px; }
+.hero .key__icon { font-size: 12px; }
+.hero .key--letter { font-size: 21px; }
+.hero .key.is-down { transform: translateY(2px); }
+.hero .combo__tray { height: auto; transform: none; font-size: 14px; white-space: nowrap; }
+.hero .demo__hint { margin: 18px 0 0; }
+
 /* Desktop mock */
 .desktop {
   position: relative;
@@ -1228,8 +1256,12 @@ kbd {
 }
 
 @media (max-width: 640px) {
+  .nav__gh { display: none; }
+  .hero { padding-top: calc(var(--nav-h) + 48px); }
+  .hero .demo { padding-top: 40px; }
+  .hero .combo__tray { white-space: normal; max-width: 300px; }
   .nav__links { display: none; }
-  .nav__gh { margin-left: auto; }
+  .lang { margin-left: auto; }
   .bento { grid-template-columns: 1fr; }
   .tile--wide { grid-column: auto; }
   .tile { min-height: 0; }
@@ -1237,7 +1269,6 @@ kbd {
   .switcher button { padding: 7px 12px 7px 8px; font-size: 13px; }
   .switcher { display: inline-grid; grid-template-columns: repeat(2, 1fr); border-radius: 22px; }
   .switcher button { justify-content: flex-start; }
-  .hero { padding-top: calc(var(--nav-h) + 80px); }
 }
 
 @media (max-width: 400px) {
