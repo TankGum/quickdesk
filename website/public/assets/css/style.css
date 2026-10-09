@@ -389,14 +389,12 @@ kbd {
 }
 
 /* Hero with the live demo right under the headline */
-.hero { padding: calc(var(--nav-h) + 36px) 24px 104px; }
-/* Demo first, then the headline under it */
-.hero__text { margin-top: 72px; }
-.hero__glow { top: auto; bottom: 40px; height: 520px; }
+.hero { padding: calc(var(--nav-h) + 72px) 24px 104px; }
+.hero__glow { top: 30px; height: 520px; }
 .hero__title { font-size: clamp(40px, 6.6vw, 84px); }
 .hero__sub { margin-top: 22px; max-width: 680px; font-size: clamp(18px, 2vw, 22px); }
 .hero__cta { margin-top: 30px; }
-.hero .demo { padding: 0; }
+.hero .demo { padding: 56px 0 0; }
 .demo__bar {
   display: flex;
   justify-content: center;
@@ -1259,8 +1257,8 @@ kbd {
 
 @media (max-width: 640px) {
   .nav__gh { display: none; }
-  .hero { padding-top: calc(var(--nav-h) + 24px); }
-  .hero__text { margin-top: 48px; }
+  .hero { padding-top: calc(var(--nav-h) + 48px); }
+  .hero .demo { padding-top: 40px; }
   .hero .combo__tray { white-space: normal; max-width: 300px; }
   .nav__links { display: none; }
   .lang { margin-left: auto; }

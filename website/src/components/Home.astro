@@ -19,6 +19,17 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
   <!-- ============ HERO + LIVE DEMO ============ -->
   <section class="hero" id="top">
     <div class="hero__glow" aria-hidden="true"></div>
+    <div class="hero__text">
+      <p class="eyebrow"><Fragment set:html={t("t4")} /></p>
+      <h1 class="hero__title"><Fragment set:html={t("t5")} /></h1>
+      <p class="hero__sub"><Fragment set:html={t("t6")} /></p>
+      <div class="hero__cta">
+        <a class="btn btn--primary btn--lg" href={href(lang, "/download")}><Fragment set:html={t("t7")} /></a>
+        <a class="btn btn--link" href={href(lang, "/docs")}><Fragment set:html={t("hero-docs")} /></a>
+      </div>
+      <p class="hero__meta">v{release.version} · Ubuntu 22.04+ · Debian 12+ · Fedora · x86_64</p>
+    </div>
+
     <!-- The real app UI on sample data (see docs/WORKFLOW.md). -->
     <div class="demo" id="demo">
       <div class="demo__bar">
@@ -122,17 +133,6 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
         <div class="desktop__toast" id="toast" role="status" aria-live="polite"></div>
       </div>
       <p class="demo__hint"><Fragment set:html={t("t13")} /></p>
-    </div>
-
-    <div class="hero__text">
-      <p class="eyebrow"><Fragment set:html={t("t4")} /></p>
-      <h1 class="hero__title"><Fragment set:html={t("t5")} /></h1>
-      <p class="hero__sub"><Fragment set:html={t("t6")} /></p>
-      <div class="hero__cta">
-        <a class="btn btn--primary btn--lg" href={href(lang, "/download")}><Fragment set:html={t("t7")} /></a>
-        <a class="btn btn--link" href={href(lang, "/docs")}><Fragment set:html={t("hero-docs")} /></a>
-      </div>
-      <p class="hero__meta">v{release.version} · Ubuntu 22.04+ · Debian 12+ · Fedora · x86_64</p>
     </div>
   </section>
 
