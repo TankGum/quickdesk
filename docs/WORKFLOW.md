@@ -79,11 +79,12 @@ Every page exists in English (`/…`) and Vietnamese (`/vi/…`); `website/src/p
 thin wrappers around the same components. Version, sizes and checksums come from
 `dl.quickdesk.click/latest.json` at build time, so they are never edited by hand.
 
-Run it locally (needs **Node 22**; the app itself works with Node 18):
+Run it locally (needs **Node 22**; the app itself works with Node 18). With
+[nvm](https://github.com/nvm-sh/nvm) (`nvm install 22` once), `website/.nvmrc` picks it:
 
 ```sh
 npm run build:demo                      # repo root: the demo the home page embeds
-cd website && npm install && npm run dev   # http://localhost:4321
+cd website && nvm use && npm install && npm run dev   # http://localhost:4321
 ```
 
 ## 3. Releasing
