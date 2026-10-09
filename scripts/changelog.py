@@ -31,11 +31,14 @@ def section(lang: str, version: str) -> str | None:
 
 def _inline(text: str) -> str:
     out = html.escape(text, quote=False)
-    return re.sub(r"`([^`]+)`", r"<code>\1</code>", out)
+    out = re.sub(r"`([^`]+)`", r"<code>\1</code>", out)
+    # [text](https://…) links; only http(s), so notes cannot inject script URLs.
+    return re.sub(r"\[([^\]]+)\]\((https?://[^)\s\"]+)\)", r'<a class="btn--link" href="\2">\1</a>', out)
 
 
 def to_html(md: str) -> str:
-    """The small Markdown subset the changelog uses: ### groups and - bullets."""
+    """The small Markdown subset the changelog uses: ### groups, - bullets,
+    `code` and [links](https://…)."""
     parts, items = [], []
 
     def flush():

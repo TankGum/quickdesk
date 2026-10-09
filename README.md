@@ -28,7 +28,7 @@ On GNOME Wayland the hotkeys are registered as GNOME custom shortcuts running
 
 ## Install (Linux)
 
-Download from the [QuickDesk download page](https://pub-c87aab3360aa43119ac701dbe62a3688.r2.dev/index.html):
+Download from [quickdesk.click](https://quickdesk.click):
 
 | Distribution | File | Install |
 |---|---|---|
@@ -36,7 +36,7 @@ Download from the [QuickDesk download page](https://pub-c87aab3360aa43119ac701db
 | Fedora / openSUSE | `.rpm` | `sudo dnf install ./QuickDesk-<version>-1.x86_64.rpm` |
 | Any other | `.AppImage` | `chmod +x QuickDesk_<version>_amd64.AppImage && ./QuickDesk_<version>_amd64.AppImage` |
 
-Data lives in `~/.local/share/io.github.tankgum.quickdesk/` (logs in `logs/` there).
+Data lives in `~/.local/share/click.quickdesk/` (logs in `logs/` there).
 Releasing: see [`docs/RELEASING.md`](docs/RELEASING.md).
 
 ## Develop

@@ -213,7 +213,7 @@ const commands: Record<string, (a: Args) => unknown> = {
     hotkeyStrategy: "GnomeKeybinding",
     hotkeys,
     deviceId: "0192a7c4-demo",
-    dataDir: "~/.local/share/io.github.tankgum.quickdesk",
+    dataDir: "~/.local/share/click.quickdesk",
   }),
   app_autostart_get: () => true,
   app_autostart_set: (a) => a.enabled,

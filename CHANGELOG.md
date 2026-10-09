@@ -8,6 +8,15 @@ Each release is a `## <version> — <date>` section with up to three groups:
 a version that has no section here, and shows the section in the app, on the
 download page and on GitHub Releases.
 
+## 0.3.0 — 2026-10-09
+
+### New
+- QuickDesk has its own address: [quickdesk.click](https://quickdesk.click). Downloads and updates come from there.
+
+### Improved
+- Your data now lives in `~/.local/share/click.quickdesk`. QuickDesk moves it there by itself the first time it starts; notes, clipboard history and settings stay as they are.
+- Restarting after an update is more reliable.
+
 ## 0.2.2 — 2026-10-09
 
 ### New

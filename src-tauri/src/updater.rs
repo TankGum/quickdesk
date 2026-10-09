@@ -184,6 +184,9 @@ pub async fn install(app: &AppHandle) -> Result<(), String> {
     match result {
         Ok(()) => {
             tracing::info!(%version, "update installed; restarting");
+            // Free the single-instance socket first, so the new process does
+            // not hand itself over to this exiting one.
+            crate::ipc::cleanup();
             app.restart();
         }
         Err(e) => {

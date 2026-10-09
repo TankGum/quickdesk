@@ -16,6 +16,14 @@ published to a Cloudflare R2 bucket, which also serves the download page.
    - note the **Access Key ID** and **Secret Access Key** (shown once);
    - the **Account ID** is shown on the R2 overview page.
 
+### Custom domain (quickdesk.click)
+
+The bucket is served at `https://quickdesk.click` (R2 → bucket → Settings →
+Custom Domains). Releases use it for every link (`R2_PUBLIC_URL` in the Release
+workflow), and the app's updater asks it first. **Keep the `r2.dev` public URL
+enabled**: QuickDesk 0.2.2 only knows `https://pub-…r2.dev/update.json`, and
+newer builds list it as a fallback in `plugins.updater.endpoints`.
+
 ### 2. GitHub secrets
 
 Repository → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**:

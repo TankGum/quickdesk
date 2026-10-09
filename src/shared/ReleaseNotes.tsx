@@ -19,7 +19,9 @@ export function pickNotes(notes: string | null, notesVi: string | null): string 
 }
 
 function inline(text: string) {
-  return text.split(/(`[^`]+`)/).map((part, i) => (part.startsWith("`") && part.endsWith("`") ? <code key={i}>{part.slice(1, -1)}</code> : part));
+  // [text](url) shows as its text: a link would navigate the app's own window.
+  const plain = text.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+  return plain.split(/(`[^`]+`)/).map((part, i) => (part.startsWith("`") && part.endsWith("`") ? <code key={i}>{part.slice(1, -1)}</code> : part));
 }
 
 /** Renders the changelog's Markdown subset (### groups, - bullets) without HTML injection. */

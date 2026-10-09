@@ -6,6 +6,15 @@ Mỗi bản phát hành QuickDesk có gì mới. Bản tiếng Anh là
 Mỗi bản là một mục `## <phiên bản> — <ngày>` với tối đa ba nhóm:
 `### Mới`, `### Cải thiện`, `### Sửa lỗi`.
 
+## 0.3.0 — 2026-10-09
+
+### Mới
+- QuickDesk có địa chỉ riêng: [quickdesk.click](https://quickdesk.click). Gói tải về và bản cập nhật đều lấy từ đây.
+
+### Cải thiện
+- Dữ liệu giờ nằm ở `~/.local/share/click.quickdesk`. QuickDesk tự chuyển dữ liệu sang đó ở lần mở đầu tiên; ghi chú, lịch sử clipboard và cài đặt vẫn giữ nguyên.
+- Khởi động lại sau khi cập nhật ổn định hơn.
+
 ## 0.2.2 — 2026-10-09
 
 ### Mới

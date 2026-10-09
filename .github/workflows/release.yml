@@ -81,7 +81,7 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
           # Public base URL of the bucket (update.json links must be absolute).
-          R2_PUBLIC_URL: https://pub-c87aab3360aa43119ac701dbe62a3688.r2.dev
+          R2_PUBLIC_URL: https://quickdesk.click
         run: python3 scripts/publish_r2.py
 
       - name: GitHub Release
@@ -92,7 +92,7 @@ jobs:
           version="${GITHUB_REF_NAME#v}"
           python3 scripts/changelog.py notes "$version" > release-notes.md
           echo "" >> release-notes.md
-          echo "Download: https://pub-c87aab3360aa43119ac701dbe62a3688.r2.dev/index.html" >> release-notes.md
+          echo "Download: https://quickdesk.click" >> release-notes.md
           gh release create "$GITHUB_REF_NAME" --title "QuickDesk $version" --notes-file release-notes.md \
             target/release/bundle/deb/*.deb target/release/bundle/rpm/*.rpm \
             target/release/bundle/appimage/*.AppImage target/release/bundle/*/*.sig \
