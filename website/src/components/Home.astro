@@ -16,123 +16,119 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
 ---
 
 
-  <!-- ============ HERO + LIVE DEMO ============ -->
+  <!-- ============ HERO ============ -->
   <section class="hero" id="top">
     <div class="hero__glow" aria-hidden="true"></div>
-    <div class="hero__text">
-      <p class="eyebrow"><Fragment set:html={t("t4")} /></p>
-      <h1 class="hero__title"><Fragment set:html={t("t5")} /></h1>
-      <p class="hero__sub"><Fragment set:html={t("t6")} /></p>
-      <div class="hero__cta">
-        <a class="btn btn--primary btn--lg" href={href(lang, "/download")}><Fragment set:html={t("t7")} /></a>
-        <a class="btn btn--link" href={href(lang, "/docs")}><Fragment set:html={t("hero-docs")} /></a>
-      </div>
-      <p class="hero__meta">v{release.version} · Ubuntu 22.04+ · Debian 12+ · Fedora · x86_64</p>
+    <p class="eyebrow"><Fragment set:html={t("t4")} /></p>
+    <h1 class="hero__title"><Fragment set:html={t("t5")} /></h1>
+    <p class="hero__sub"><Fragment set:html={t("t6")} /></p>
+    <div class="hero__cta">
+      <a class="btn btn--primary btn--lg" href={href(lang, "/download")}><Fragment set:html={t("t7")} /></a>
+      <a class="btn btn--link" href="#demo"><Fragment set:html={t("t8")} /></a>
     </div>
+    <p class="hero__meta">v{release.version} · Ubuntu 22.04+ · Debian 12+ · Fedora · x86_64</p>
+  </section>
 
-    <!-- The real app UI on sample data (see docs/WORKFLOW.md). -->
-    <div class="demo" id="demo">
-      <div class="demo__bar">
-        <div class="demo__keys">
-        <div class="combo" aria-hidden="true">
-          <span class="key key--mod"><span class="key__icon">❖</span>super</span>
-          <span class="plus">+</span>
-          <span class="key key--mod"><span class="key__icon">⌥</span>alt</span>
-          <span class="plus">+</span>
-          <span class="key key--letter" id="comboLetter">N</span>
-        </div>
-        <p class="combo__tray" aria-hidden="true"><Fragment set:html={t("t9")} /></p>
-        </div>
-      <div class="switcher" role="tablist" aria-label="QuickDesk panels">
-        <button type="button" role="tab" data-mode="notes" aria-selected="false"><Fragment set:html={t("t10")} /></button>
-        <button type="button" role="tab" data-mode="clipboard" aria-selected="false"><b>V</b>Clipboard</button>
-        <button type="button" role="tab" data-mode="ports" aria-selected="false"><Fragment set:html={t("t11")} /></button>
-        <button type="button" role="tab" data-mode="ai" aria-selected="false"><Fragment set:html={t("t12")} /></button>
-      </div>
-      </div>
-      <div class="desktop" id="desktop">
-        <div class="desktop__bar">
-          <span class="desktop__activities"><Fragment set:html={t("t14")} /></span>
-          <span class="desktop__clock" id="clock">Tue Oct 7 09:41</span>
-          <span class="desktop__sys">
-            <!-- QuickDesk's two tray icons, as on a real GNOME top bar -->
-            <button type="button" class="desktop__tray" data-ring aria-label="AI usage ring">
-              <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,.27)" stroke-width="2.4"/><circle cx="8" cy="8" r="6" fill="none" stroke="#f59e0b" stroke-width="2.4" stroke-dasharray="30.5 37.7" transform="rotate(-90 8 8)"/></svg>
-            </button>
-            <button type="button" class="desktop__tray" data-app-tray aria-label="QuickDesk menu">
-              <img src="/assets/img/favicon.svg" alt="" width="16" height="16">
-            </button>
-            <span class="desktop__ime">en</span>
-            <span class="desktop__quick">
-              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 12.5a1.2 1.2 0 1 1 0 .01M3.5 8.2a6.4 6.4 0 0 1 9 0M5.4 10.2a3.7 3.7 0 0 1 5.2 0M1.6 6.2a9.2 9.2 0 0 1 12.8 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10l-3.5-3H2z" fill="currentColor"/><path d="M10.5 5.5a3.5 3.5 0 0 1 0 5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-              <svg viewBox="0 0 20 16" aria-hidden="true"><rect x="1" y="4" width="15" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.3"/><rect x="3" y="6" width="9" height="4" rx="1" fill="currentColor"/><rect x="17" y="6.5" width="1.6" height="3" rx=".6" fill="currentColor"/></svg>
-            </span>
+  <!-- ============ INTERACTIVE DEMO ============ -->
+  <section class="demo" id="demo">
+    <div class="combo" aria-hidden="true">
+      <span class="key key--mod"><span class="key__icon">❖</span>super</span>
+      <span class="plus">+</span>
+      <span class="key key--mod"><span class="key__icon">⌥</span>alt</span>
+      <span class="plus">+</span>
+      <span class="key key--letter" id="comboLetter">N</span>
+    </div>
+    <p class="combo__tray" aria-hidden="true"><Fragment set:html={t("t9")} /></p>
+
+    <div class="switcher" role="tablist" aria-label="QuickDesk panels">
+      <button type="button" role="tab" data-mode="notes" aria-selected="false"><Fragment set:html={t("t10")} /></button>
+      <button type="button" role="tab" data-mode="clipboard" aria-selected="false"><b>V</b>Clipboard</button>
+      <button type="button" role="tab" data-mode="ports" aria-selected="false"><Fragment set:html={t("t11")} /></button>
+      <button type="button" role="tab" data-mode="ai" aria-selected="false"><Fragment set:html={t("t12")} /></button>
+    </div>
+    <p class="demo__hint"><Fragment set:html={t("t13")} /></p>
+
+    <div class="desktop" id="desktop">
+      <div class="desktop__bar">
+        <span class="desktop__activities"><Fragment set:html={t("t14")} /></span>
+        <span class="desktop__clock" id="clock">Tue Oct 7 09:41</span>
+        <span class="desktop__sys">
+          <!-- QuickDesk's two tray icons, as on a real GNOME top bar -->
+          <button type="button" class="desktop__tray" data-ring aria-label="AI usage ring">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,.27)" stroke-width="2.4"/><circle cx="8" cy="8" r="6" fill="none" stroke="#f59e0b" stroke-width="2.4" stroke-dasharray="30.5 37.7" transform="rotate(-90 8 8)"/></svg>
+          </button>
+          <button type="button" class="desktop__tray" data-app-tray aria-label="QuickDesk menu">
+            <img src="/assets/img/favicon.svg" alt="" width="16" height="16">
+          </button>
+          <span class="desktop__ime">en</span>
+          <span class="desktop__quick">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 12.5a1.2 1.2 0 1 1 0 .01M3.5 8.2a6.4 6.4 0 0 1 9 0M5.4 10.2a3.7 3.7 0 0 1 5.2 0M1.6 6.2a9.2 9.2 0 0 1 12.8 0" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h2.5L8 3v10l-3.5-3H2z" fill="currentColor"/><path d="M10.5 5.5a3.5 3.5 0 0 1 0 5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <svg viewBox="0 0 20 16" aria-hidden="true"><rect x="1" y="4" width="15" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.3"/><rect x="3" y="6" width="9" height="4" rx="1" fill="currentColor"/><rect x="17" y="6.5" width="1.6" height="3" rx=".6" fill="currentColor"/></svg>
           </span>
-        </div>
-
-        <div class="desktop__dock" aria-hidden="true">
-          <i style="--c:#ff7a45"></i><i style="--c:#3a86ff"></i><i style="--c:#8338ec"></i><i style="--c:#2ec4b6"></i><i class="is-qd"><img src="/assets/img/favicon.svg" alt=""></i>
-        </div>
-
-        <p class="desktop__empty" aria-hidden="true"><Fragment set:html={t("t15")} /></p>
-
-        <div class="desktop__stage">
-
-          <!-- The real QuickDesk UI (npm run build:demo) running on sample data. -->
-          <div class="appwin appwin--main" data-appwin="main" style="--w: 903px; --h: 643px">
-            <div class="appwin__bar">
-              <span>QuickDesk</span>
-              <span class="appwin__btns">
-                <button type="button" data-close aria-label="Minimise"><svg viewBox="0 0 16 16"><path d="M4.5 8.5h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-                <button type="button" aria-label="Maximise" tabindex="-1"><svg viewBox="0 0 16 16"><rect x="4.5" y="4.5" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
-                <button type="button" data-close aria-label="Close"><svg viewBox="0 0 16 16"><path d="m5 5 6 6m0-6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-              </span>
-            </div>
-            <iframe title="QuickDesk main window (demo)" src="/demo/?window=main&amp;theme=dark" width="903" height="603"></iframe>
-          </div>
-          <div class="appwin appwin--popup" data-appwin="clip-popup" style="--w: 520px; --h: 420px">
-            <iframe title="QuickDesk clipboard popup (demo)" src="/demo/?window=clip-popup&amp;theme=dark" width="520" height="420"></iframe>
-          </div>
-          <div class="appwin appwin--popup" data-appwin="note-popup" style="--w: 480px; --h: 140px">
-            <iframe title="QuickDesk quick note popup (demo)" src="/demo/?window=note-popup&amp;theme=dark" width="480" height="140"></iframe>
-          </div>
-
-          <!-- The tray menus are GNOME's own menus; these copy how they look. -->
-          <div class="shell-menu shell-menu--app" data-menu="app">
-            <ul>
-              <li data-open="note-popup"><Fragment set:html={t("t16")} /></li>
-              <li data-open="notes"><Fragment set:html={t("t0")} /></li>
-              <li data-open="clipboard"><Fragment set:html={t("t17")} /></li>
-              <li data-open="ports"><Fragment set:html={t("t1")} /></li>
-              <li class="sep"></li>
-              <li class="check is-on" data-pause><Fragment set:html={t("t18")} /></li>
-              <li class="sep"></li>
-              <li data-open="main"><Fragment set:html={t("t19")} /></li>
-              <li data-quit><Fragment set:html={t("t20")} /></li>
-            </ul>
-          </div>
-
-          <div class="shell-menu shell-menu--ai" data-menu="ai">
-            <ul data-tray>
-              <li class="head">Claude Pro</li>
-              <li data-limit><Fragment set:html={t("t21")} /></li>
-              <li data-limit><Fragment set:html={t("t22")} /></li>
-              <li class="sep"></li>
-              <li class="head">Codex Plus</li>
-              <li data-limit><Fragment set:html={t("t23")} /></li>
-              <li data-limit><Fragment set:html={t("t24")} /></li>
-              <li class="sep"></li>
-              <li class="sub"><Fragment set:html={t("t25")} /></li>
-              <li data-refresh><Fragment set:html={t("t26")} /></li>
-              <li data-limit><Fragment set:html={t("t27")} /></li>
-            </ul>
-          </div>
-
-        </div>
-        <div class="desktop__toast" id="toast" role="status" aria-live="polite"></div>
+        </span>
       </div>
-      <p class="demo__hint"><Fragment set:html={t("t13")} /></p>
+
+      <div class="desktop__dock" aria-hidden="true">
+        <i style="--c:#ff7a45"></i><i style="--c:#3a86ff"></i><i style="--c:#8338ec"></i><i style="--c:#2ec4b6"></i><i class="is-qd"><img src="/assets/img/favicon.svg" alt=""></i>
+      </div>
+
+      <p class="desktop__empty" aria-hidden="true"><Fragment set:html={t("t15")} /></p>
+
+      <div class="desktop__stage">
+
+        <!-- The real QuickDesk UI (npm run build:demo) running on sample data. -->
+        <div class="appwin appwin--main" data-appwin="main" style="--w: 903px; --h: 643px">
+          <div class="appwin__bar">
+            <span>QuickDesk</span>
+            <span class="appwin__btns">
+              <button type="button" data-close aria-label="Minimise"><svg viewBox="0 0 16 16"><path d="M4.5 8.5h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+              <button type="button" aria-label="Maximise" tabindex="-1"><svg viewBox="0 0 16 16"><rect x="4.5" y="4.5" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
+              <button type="button" data-close aria-label="Close"><svg viewBox="0 0 16 16"><path d="m5 5 6 6m0-6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+            </span>
+          </div>
+          <iframe title="QuickDesk main window (demo)" src="/demo/?window=main&amp;theme=dark" width="903" height="603"></iframe>
+        </div>
+        <div class="appwin appwin--popup" data-appwin="clip-popup" style="--w: 520px; --h: 420px">
+          <iframe title="QuickDesk clipboard popup (demo)" src="/demo/?window=clip-popup&amp;theme=dark" width="520" height="420"></iframe>
+        </div>
+        <div class="appwin appwin--popup" data-appwin="note-popup" style="--w: 480px; --h: 140px">
+          <iframe title="QuickDesk quick note popup (demo)" src="/demo/?window=note-popup&amp;theme=dark" width="480" height="140"></iframe>
+        </div>
+
+        <!-- The tray menus are GNOME's own menus; these copy how they look. -->
+        <div class="shell-menu shell-menu--app" data-menu="app">
+          <ul>
+            <li data-open="note-popup"><Fragment set:html={t("t16")} /></li>
+            <li data-open="notes"><Fragment set:html={t("t0")} /></li>
+            <li data-open="clipboard"><Fragment set:html={t("t17")} /></li>
+            <li data-open="ports"><Fragment set:html={t("t1")} /></li>
+            <li class="sep"></li>
+            <li class="check is-on" data-pause><Fragment set:html={t("t18")} /></li>
+            <li class="sep"></li>
+            <li data-open="main"><Fragment set:html={t("t19")} /></li>
+            <li data-quit><Fragment set:html={t("t20")} /></li>
+          </ul>
+        </div>
+
+        <div class="shell-menu shell-menu--ai" data-menu="ai">
+          <ul data-tray>
+            <li class="head">Claude Pro</li>
+            <li data-limit><Fragment set:html={t("t21")} /></li>
+            <li data-limit><Fragment set:html={t("t22")} /></li>
+            <li class="sep"></li>
+            <li class="head">Codex Plus</li>
+            <li data-limit><Fragment set:html={t("t23")} /></li>
+            <li data-limit><Fragment set:html={t("t24")} /></li>
+            <li class="sep"></li>
+            <li class="sub"><Fragment set:html={t("t25")} /></li>
+            <li data-refresh><Fragment set:html={t("t26")} /></li>
+            <li data-limit><Fragment set:html={t("t27")} /></li>
+          </ul>
+        </div>
+
+      </div>
+      <div class="desktop__toast" id="toast" role="status" aria-live="polite"></div>
     </div>
   </section>
 
