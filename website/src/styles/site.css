@@ -4,7 +4,6 @@
 .skip { position: absolute; left: -9999px; top: 8px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: var(--blue); color: #fff; }
 .skip:focus { left: 12px; }
 
-.nav__links a[aria-current] { color: var(--text); }
 
 main.page { padding: calc(var(--nav-h) + 64px) 0 120px; min-height: 70vh; }
 
@@ -67,7 +66,7 @@ main.page { padding: calc(var(--nav-h) + 64px) 0 120px; min-height: 70vh; }
 .pkg__badge { display: inline-block; margin-bottom: 10px; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #fff; background: var(--blue); }
 .pkg__get { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 .pkg__meta { color: var(--text-3); font-size: 13px; }
-.pkg__more { grid-column: 1 / -1; display: grid; gap: 8px; }
+.pkg__more { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .pkg__cmd { display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 16px; border-radius: 12px; background: #0b0b0d; border: 1px solid var(--line); }
 .pkg__cmd code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font: 13.5px/1.5 var(--mono); color: var(--text); }
 .pkg__sha { margin: 0; color: var(--text-3); font-size: 12.5px; overflow-wrap: anywhere; }
@@ -85,4 +84,168 @@ main.page { padding: calc(var(--nav-h) + 64px) 0 120px; min-height: 70vh; }
   .docs__toc { position: static; }
   .pkg { grid-template-columns: 1fr; }
   .pkg__get { align-items: flex-start; }
+}
+
+/* ---------- Phones: menu button + full-screen menu ---------- */
+.nav__menu {
+  display: none;
+  position: relative;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+}
+/* Two bars that turn into an X */
+.nav__menu span {
+  position: absolute;
+  left: 11px;
+  right: 11px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: currentColor;
+  transition: transform .35s var(--ease), top .35s var(--ease);
+}
+.nav__menu span:first-child { top: 16px; }
+.nav__menu span:last-child { top: 23px; }
+.nav__menu[aria-expanded="true"] span:first-child { top: 19.5px; transform: rotate(45deg); }
+.nav__menu[aria-expanded="true"] span:last-child { top: 19.5px; transform: rotate(-45deg); }
+
+/* The menu: a glass sheet under the floating header; the page behind dims. */
+.drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  background: rgba(0, 0, 0, .5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+.drawer[hidden] { display: none; }
+.drawer.is-open { opacity: 1; }
+html.drawer-open { overflow: hidden; }
+/* While the menu is open the header is always the floating capsule */
+html.drawer-open .nav__inner {
+  background: rgba(22, 22, 25, .97);
+  border-color: rgba(255, 255, 255, .1);
+  backdrop-filter: saturate(180%) blur(22px);
+  -webkit-backdrop-filter: saturate(180%) blur(22px);
+}
+
+.drawer__panel {
+  position: absolute;
+  top: calc(var(--nav-h) + 22px + env(safe-area-inset-top, 0px));
+  left: 16px;
+  right: 16px;
+  max-height: calc(100dvh - var(--nav-h) - 40px);
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: 26px;
+  background: rgba(22, 22, 25, .97);
+  border: 1px solid rgba(255, 255, 255, .1);
+  box-shadow: 0 30px 70px -20px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .06);
+  backdrop-filter: saturate(180%) blur(28px);
+  -webkit-backdrop-filter: saturate(180%) blur(28px);
+  transform-origin: 50% 0;
+  transform: translateY(-14px) scale(.96);
+  opacity: 0;
+  transition: transform .3s var(--ease), opacity .22s ease;
+}
+.drawer.is-open .drawer__panel { transform: none; opacity: 1; transition: transform .45s var(--ease), opacity .3s ease; }
+
+.drawer ul { margin: 0; padding: 0; list-style: none; }
+.drawer__main a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 12px;
+  border-radius: 16px;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--text);
+  transition: background-color .2s;
+}
+.drawer__main a:active, .drawer__main a:hover { background: rgba(255, 255, 255, .06); }
+.drawer__main a[aria-current] { background: rgba(255, 255, 255, .09); }
+.drawer__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, .07);
+  color: var(--text-2);
+}
+.drawer__main a[aria-current] .drawer__icon { background: var(--blue); color: #fff; }
+.drawer__icon svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.drawer__text { flex: 1; }
+.drawer__chev { font-size: 20px; color: var(--text-3); }
+/* GitHub (the last row) leaves the site: separate it a little */
+.drawer__main li:last-child { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); }
+
+.drawer__foot { display: grid; gap: 8px; padding: 10px 4px 4px; }
+.lang--wide { display: grid; grid-template-columns: 1fr 1fr; margin: 0; padding: 3px; }
+.lang--wide a { padding: 9px 0; text-align: center; font-size: 13.5px; }
+.drawer__cta { width: 100%; padding: 13px 0; font-size: 16px; }
+
+/* Rows arrive one after another when opening; all leave together when closing. */
+.drawer li, .drawer__foot { opacity: 0; transform: translateY(-6px); transition: opacity .15s ease, transform .2s var(--ease); }
+.drawer.is-open li, .drawer.is-open .drawer__foot {
+  opacity: 1;
+  transform: none;
+  transition: opacity .35s ease calc(var(--i) * 35ms + 80ms), transform .45s var(--ease) calc(var(--i) * 35ms + 80ms);
+}
+
+@media (max-width: 640px) {
+  .nav__menu { display: block; }
+  .nav__end > .lang, .brand__ver { display: none; }
+  .nav__inner { grid-template-columns: 1fr auto; padding: 0 10px 0 16px; }
+  .nav.is-scrolled .nav__inner { padding: 0 6px 0 14px; }
+}
+
+/* ---------- Phones: page fixes ---------- */
+@media (max-width: 640px) {
+  main.page { padding-top: calc(var(--nav-h) + 36px); }
+  .prose { font-size: 16px; }
+  .prose h1 { font-size: 34px; }
+  .prose h2 { margin-top: 44px; font-size: 22px; }
+  .prose .lead { font-size: 18px; }
+
+  /* Download: nothing may push a card wider than the screen */
+  .pkg { padding: 20px 18px; grid-template-columns: minmax(0, 1fr); }
+  .pkg > * { min-width: 0; }
+  .pkg__get { align-items: stretch; }
+  .pkg__get .btn { justify-content: center; }
+  .pkg__cmd { padding: 8px 8px 8px 12px; }
+  .pkg__cmd code { font-size: 12.5px; }
+  .dlpage__head .section-title { font-size: 32px; }
+
+  /* Docs: the contents become one scrollable row */
+  .docs__toc { margin: 0 -24px; padding: 0 24px; overflow-x: auto; scrollbar-width: none; }
+  .docs__toc::-webkit-scrollbar { display: none; }
+  .docs__toc-title { display: none; }
+  .docs__toc ol { display: flex; gap: 6px; width: max-content; }
+  .docs__toc a { padding: 6px 12px; border: 1px solid var(--line-2); border-radius: 999px; white-space: nowrap; font-size: 13px; }
+
+  /* Tables become one card per row, each cell labelled */
+  .prose table, .prose tbody, .prose tr, .prose td { display: block; width: 100%; }
+  .prose table { border: 0; }
+  .prose tr:first-child:has(th) { display: none; }
+  .prose tr { margin: 0 0 12px; padding: 12px 14px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+  .prose td { padding: 4px 0; border: 0; }
+  .prose td[data-label]::before { content: attr(data-label); display: block; margin-bottom: 2px; color: var(--text-3); font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+  .prose td:has(kbd) { white-space: nowrap; }
+
+  .changelog .release time { margin-left: 0; width: 100%; }
+}
+
+/* Medium widths: keep the header on one line */
+@media (max-width: 900px) and (min-width: 641px) {
+  .brand__ver { display: none; }
+  .nav__links a { padding: 6px 10px; }
 }

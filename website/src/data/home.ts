@@ -1,16 +1,12 @@
 // Home page strings (English and Vietnamese), converted from the original page.
 export const home = {
   "t4": {
-    "en": "Free &amp; open source · for Linux",
-    "vi": "Miễn phí &amp; mã nguồn mở · cho Linux"
+    "en": "Free &amp; open source",
+    "vi": "Miễn phí, mã nguồn mở"
   },
   "t5": {
     "en": "Your whole desk.<br><span class=\"grad\">One shortcut away.</span>",
     "vi": "Cả bàn làm việc.<br><span class=\"grad\">Chỉ cách một phím tắt.</span>"
-  },
-  "t6": {
-    "en": "Encrypted notes, clipboard history, a live port manager and your AI usage limits — summoned instantly with <kbd>Super</kbd> <kbd>Alt</kbd>.",
-    "vi": "Ghi chú mã hoá, lịch sử clipboard, trình quản lý cổng và hạn mức AI của bạn — gọi ra tức thì bằng <kbd>Super</kbd> <kbd>Alt</kbd>."
   },
   "t7": {
     "en": "Download for Linux",
@@ -19,10 +15,6 @@ export const home = {
   "t8": {
     "en": "Try the shortcuts <span aria-hidden=\"true\">›</span>",
     "vi": "Thử phím tắt <span aria-hidden=\"true\">›</span>"
-  },
-  "t9": {
-    "en": "No shortcut needed — click the ring in the top bar.",
-    "vi": "Không cần phím tắt — bấm vào vòng tròn trên thanh trên cùng."
   },
   "t10": {
     "en": "<b>N</b>Notes",
@@ -168,58 +160,6 @@ export const home = {
     "en": "A small ring in the top bar shows how much of your Claude Code and Codex limits you’ve used, and when they reset — so you’re never cut off in the middle of a task.",
     "vi": "Một vòng tròn nhỏ trên thanh trên cùng cho biết bạn đã dùng bao nhiêu hạn mức Claude Code và Codex, và khi nào được đặt lại — để không bị cắt ngang giữa chừng."
   },
-  "t55": {
-    "en": "Built for the keyboard.<br><span class=\"muted\">Made for Linux.</span>",
-    "vi": "Sinh ra cho bàn phím.<br><span class=\"muted\">Làm cho Linux.</span>"
-  },
-  "t56": {
-    "en": "Keyboard-first",
-    "vi": "Bàn phím là trên hết"
-  },
-  "t57": {
-    "en": "Open, search, paste, pin — every everyday action has a key. Your hands never leave the keyboard.",
-    "vi": "Mở, tìm, dán, ghim — thao tác hằng ngày nào cũng có phím. Tay không cần rời bàn phím."
-  },
-  "t58": {
-    "en": "Always ready",
-    "vi": "Luôn sẵn sàng"
-  },
-  "t59": {
-    "en": "Starts with your session, waits in the tray, and pops up the moment you press a shortcut.",
-    "vi": "Khởi động cùng máy, chờ trên khay hệ thống và hiện ra ngay khi bạn bấm phím tắt."
-  },
-  "t60": {
-    "en": "Local-first",
-    "vi": "Ưu tiên trên máy"
-  },
-  "t61": {
-    "en": "Everything lives on your machine. Only notes sync — encrypted, to storage you own.",
-    "vi": "Mọi thứ nằm trên máy bạn. Chỉ ghi chú được đồng bộ — đã mã hoá, tới nơi lưu của chính bạn."
-  },
-  "t62": {
-    "en": "Instant search",
-    "vi": "Tìm kiếm tức thì"
-  },
-  "t63": {
-    "en": "Full-text search across notes and clipboard, with or without accents.",
-    "vi": "Tìm toàn văn trong ghi chú và clipboard, có dấu hay không dấu đều được."
-  },
-  "t64": {
-    "en": "Rebind anything",
-    "vi": "Đổi phím tuỳ ý"
-  },
-  "t65": {
-    "en": "Pick your own shortcuts. QuickDesk warns you when one clashes with GNOME or your input method.",
-    "vi": "Tự chọn phím tắt. QuickDesk cảnh báo khi phím trùng với GNOME hoặc bộ gõ."
-  },
-  "t66": {
-    "en": "Light &amp; dark · English &amp; Tiếng Việt",
-    "vi": "Sáng &amp; tối · Tiếng Việt &amp; English"
-  },
-  "t67": {
-    "en": "Follows your system theme and language, or pick one yourself in Settings.",
-    "vi": "Theo giao diện và ngôn ngữ của hệ thống, hoặc tự chọn trong Cài đặt."
-  },
   "gh-title": {
     "en": "Open source, MIT licensed.",
     "vi": "Mã nguồn mở, giấy phép MIT."
@@ -319,5 +259,25 @@ export const home = {
   "t100": {
     "en": "Turn off “Start QuickDesk when I log in” in Settings, quit from the tray, then run <code>sudo apt remove quick-desk</code> (Debian/Ubuntu) or <code>sudo dnf remove QuickDesk</code> (Fedora), or just delete the AppImage. Your notes and clipboard history stay in <code>~/.local/share/click.quickdesk</code> until you delete that folder.",
     "vi": "Tắt “Tự chạy QuickDesk khi đăng nhập” trong Cài đặt, thoát app từ khay hệ thống, rồi chạy <code>sudo apt remove quick-desk</code> (Debian/Ubuntu) hoặc <code>sudo dnf remove QuickDesk</code> (Fedora), hoặc chỉ cần xoá file AppImage. Ghi chú và lịch sử clipboard vẫn nằm trong <code>~/.local/share/click.quickdesk</code> cho tới khi bạn xoá thư mục đó."
+  },
+  "hero-new": {
+    "en": "New",
+    "vi": "Mới"
+  },
+  "hero-whatsnew": {
+    "en": "see what’s new",
+    "vi": "xem có gì mới"
+  },
+  "kb-notes": {
+    "en": "Notes",
+    "vi": "Ghi chú"
+  },
+  "kb-clip": {
+    "en": "Clipboard history",
+    "vi": "Lịch sử clipboard"
+  },
+  "kb-ports": {
+    "en": "Ports",
+    "vi": "Cổng"
   }
 } as const;

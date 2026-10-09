@@ -34,6 +34,40 @@
   const lang = document.documentElement.lang === 'vi' ? 'vi' : 'en';
   const tr = (key) => STR[lang][key];
 
+  /* ---------- Hero: the shortcut presses itself ---------- */
+  const kb = $('.kb');
+  if (kb) {
+    const heroEl = $('.hero');
+    const keys = $$('.kk', kb);
+    const letterCap = $('[data-kb-letter]', kb);
+    const wave = $('.kk__wave', kb);
+    const labels = $$('[data-kb-mod]', kb);
+    const SEQ = [['notes', 'N'], ['clipboard', 'V'], ['ports', 'P']];
+    let step = 0;
+    const show = (mod) => labels.forEach((l) => l.classList.toggle('is-on', l.dataset.kbMod === mod));
+    const press = () => {
+      const [mod, key] = SEQ[step % SEQ.length];
+      step += 1;
+      letterCap.textContent = key;
+      heroEl.dataset.kb = mod;
+      // super, alt, letter go down one after another, then all come back up.
+      keys.forEach((k, i) => setTimeout(() => k.classList.add('is-down'), i * 120));
+      setTimeout(() => {
+        wave.classList.remove('is-on');
+        void wave.offsetWidth; // restart the animation
+        wave.classList.add('is-on');
+        show(mod);
+      }, 2 * 120 + 60);
+      setTimeout(() => keys.forEach((k) => k.classList.remove('is-down')), 760);
+    };
+    if (reduceMotion) {
+      show('notes');
+    } else {
+      setTimeout(press, 500);
+      setInterval(press, 2800);
+    }
+  }
+
   /* ---------- Footer year ---------- */
   const year = $('#year');
   if (year) year.textContent = new Date().getFullYear();
@@ -74,16 +108,33 @@
   let autoTimer = null;
   let userTookOver = false;
 
+  // Phones: windows with data-mw / data-mh switch to that narrower size, so the
+  // app lays itself out for it and its text stays readable once scaled down.
+  const NARROW = 600;
+  function size(el, width) {
+    if (!el.dataset.w) {
+      el.dataset.w = parseFloat(el.style.getPropertyValue('--w'));
+      el.dataset.h = parseFloat(el.style.getPropertyValue('--h'));
+    }
+    const narrow = el.dataset.mw && width < NARROW;
+    const [w, h] = narrow ? [+el.dataset.mw, +el.dataset.mh] : [+el.dataset.w, +el.dataset.h];
+    el.style.setProperty('--w', `${w}px`);
+    el.style.setProperty('--h', `${h}px`);
+    return [w, h];
+  }
+
   // Scale each window to fit the mock screen (and the inline shots to their column).
   function fit() {
     const pad = 0.94;
-    Object.values(wins).forEach((w) => {
-      const s = Math.min(1, (stage.clientWidth * pad) / parseFloat(w.style.getPropertyValue('--w')),
-        (stage.clientHeight * pad) / parseFloat(w.style.getPropertyValue('--h')));
-      w.style.setProperty('--s', s.toFixed(4));
+    Object.values(wins).forEach((win) => {
+      const [w, h] = size(win, stage.clientWidth);
+      const s = Math.min(1, (stage.clientWidth * pad) / w, (stage.clientHeight * pad) / h);
+      win.style.setProperty('--s', s.toFixed(4));
     });
     $$('[data-shot]').forEach((shot) => {
-      shot.firstElementChild.style.setProperty('--s', (shot.clientWidth / parseFloat(shot.style.getPropertyValue('--w'))).toFixed(4));
+      const [w, h] = size(shot, shot.clientWidth);
+      shot.style.aspectRatio = `${w} / ${h}`;
+      shot.firstElementChild.style.setProperty('--s', (shot.clientWidth / w).toFixed(4));
     });
   }
   fit();
@@ -99,7 +150,7 @@
     comboKeys.forEach((k) => k.classList.remove('is-down'));
     demo.classList.toggle('is-tray', Boolean(MODES[mode].tray));
     if (MODES[mode].tray) return;
-    letter.textContent = MODES[mode].letter;
+    if (letter) letter.textContent = MODES[mode].letter;
     comboKeys.forEach((k, i) => pressTimers.push(setTimeout(() => k.classList.add('is-down'), i * 90)));
     pressTimers.push(setTimeout(() => comboKeys.forEach((k) => k.classList.remove('is-down')), 520));
   }

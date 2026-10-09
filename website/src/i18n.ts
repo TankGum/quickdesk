@@ -14,7 +14,9 @@ export function otherLang(lang: Lang): Lang {
 
 /** Strip the /vi prefix: the page path shared by both languages. */
 export function pagePath(pathname: string): string {
-  const p = pathname.replace(/^\/vi(?=\/|$)/, "") || "/";
+  // Static builds name pages docs.html / index.html; links use /docs and /.
+  const clean = pathname.replace(/\.html$/, "").replace(/\/index$/, "/");
+  const p = clean.replace(/^\/vi(?=\/|$)/, "") || "/";
   return p.length > 1 ? p.replace(/\/$/, "") : p;
 }
 
@@ -29,6 +31,8 @@ export const ui = {
     language: "Language",
     footer: "QuickDesk · MIT License. Made for Linux, with care.",
     skip: "Skip to content",
+    menu: "Menu",
+    close: "Close",
   },
   vi: {
     home: "Trang chủ",
@@ -40,6 +44,8 @@ export const ui = {
     language: "Ngôn ngữ",
     footer: "QuickDesk · Giấy phép MIT. Làm cho Linux, bằng cả tấm lòng.",
     skip: "Bỏ qua tới nội dung",
+    menu: "Menu",
+    close: "Đóng",
   },
 } as const;
 

@@ -17,10 +17,10 @@ export const privacy: Record<Lang, { title: string; updated: string; html: strin
 <h2>What QuickDesk sends, and where</h2>
 <table>
 <tr><th>When</th><th>To</th><th>What</th></tr>
-<tr><td>Checking for updates (30 s after start, then every 6 hours; can be turned off)</td><td><code>dl.quickdesk.click</code> (Cloudflare)</td><td>A request for <code>update.json</code>, and the package when you choose to update. Your IP address is visible to Cloudflare, as with any download.</td></tr>
-<tr><td>Note sync, only if you set it up</td><td>The storage bucket <strong>you</strong> chose</td><td>Your notes, encrypted on your computer (XChaCha20-Poly1305) with a key derived from your passphrase. The bucket owner, you, cannot read them without the passphrase or recovery key; neither can anyone else.</td></tr>
-<tr><td>AI usage, only if Claude Code is signed in on this computer</td><td><code>api.anthropic.com</code></td><td>A usage request authorised with Claude Code's existing login, at most every 5 minutes. The token is read, never stored, refreshed or sent anywhere else.</td></tr>
-<tr><td>Auto-paste through the desktop portal</td><td>Your own desktop (GNOME), not the network</td><td>A Shift + Insert key press.</td></tr>
+<tr><td data-label="When">Checking for updates (30 s after start, then every 6 hours; can be turned off)</td><td data-label="To"><code>dl.quickdesk.click</code> (Cloudflare)</td><td data-label="What">A request for <code>update.json</code>, and the package when you choose to update. Your IP address is visible to Cloudflare, as with any download.</td></tr>
+<tr><td data-label="When">Note sync, only if you set it up</td><td data-label="To">The storage bucket <strong>you</strong> chose</td><td data-label="What">Your notes, encrypted on your computer (XChaCha20-Poly1305) with a key derived from your passphrase. The bucket owner, you, cannot read them without the passphrase or recovery key; neither can anyone else.</td></tr>
+<tr><td data-label="When">AI usage, only if Claude Code is signed in on this computer</td><td data-label="To"><code>api.anthropic.com</code></td><td data-label="What">A usage request authorised with Claude Code's existing login, at most every 5 minutes. The token is read, never stored, refreshed or sent anywhere else.</td></tr>
+<tr><td data-label="When">Auto-paste through the desktop portal</td><td data-label="To">Your own desktop (GNOME), not the network</td><td data-label="What">A Shift + Insert key press.</td></tr>
 </table>
 <p>Codex and Antigravity usage is read from log files on your computer; nothing is sent.</p>
 <h2>This website</h2>
@@ -42,10 +42,10 @@ export const privacy: Record<Lang, { title: string; updated: string; html: strin
 <h2>QuickDesk gửi gì, và gửi tới đâu</h2>
 <table>
 <tr><th>Khi nào</th><th>Tới đâu</th><th>Nội dung</th></tr>
-<tr><td>Kiểm tra bản mới (30 giây sau khi mở, rồi mỗi 6 giờ; có thể tắt)</td><td><code>dl.quickdesk.click</code> (Cloudflare)</td><td>Một yêu cầu tải <code>update.json</code>, và gói cài khi bạn chọn cập nhật. Cloudflare thấy địa chỉ IP của bạn, như mọi lần tải file.</td></tr>
-<tr><td>Đồng bộ ghi chú, chỉ khi bạn cài đặt</td><td>Bucket lưu trữ do <strong>bạn</strong> chọn</td><td>Ghi chú đã được mã hoá trên máy (XChaCha20-Poly1305) bằng khoá sinh từ passphrase của bạn. Không ai đọc được nếu không có passphrase hoặc recovery key.</td></tr>
-<tr><td>Usage AI, chỉ khi Claude Code đã đăng nhập trên máy</td><td><code>api.anthropic.com</code></td><td>Một yêu cầu usage dùng phiên đăng nhập sẵn có của Claude Code, tối đa mỗi 5 phút. Token chỉ được đọc: không lưu, không làm mới, không gửi đi đâu khác.</td></tr>
-<tr><td>Tự động dán qua portal của desktop</td><td>Chính desktop của bạn (GNOME), không qua mạng</td><td>Một lần bấm Shift + Insert.</td></tr>
+<tr><td data-label="Khi nào">Kiểm tra bản mới (30 giây sau khi mở, rồi mỗi 6 giờ; có thể tắt)</td><td data-label="Tới đâu"><code>dl.quickdesk.click</code> (Cloudflare)</td><td data-label="Nội dung">Một yêu cầu tải <code>update.json</code>, và gói cài khi bạn chọn cập nhật. Cloudflare thấy địa chỉ IP của bạn, như mọi lần tải file.</td></tr>
+<tr><td data-label="Khi nào">Đồng bộ ghi chú, chỉ khi bạn cài đặt</td><td data-label="Tới đâu">Bucket lưu trữ do <strong>bạn</strong> chọn</td><td data-label="Nội dung">Ghi chú đã được mã hoá trên máy (XChaCha20-Poly1305) bằng khoá sinh từ passphrase của bạn. Không ai đọc được nếu không có passphrase hoặc recovery key.</td></tr>
+<tr><td data-label="Khi nào">Usage AI, chỉ khi Claude Code đã đăng nhập trên máy</td><td data-label="Tới đâu"><code>api.anthropic.com</code></td><td data-label="Nội dung">Một yêu cầu usage dùng phiên đăng nhập sẵn có của Claude Code, tối đa mỗi 5 phút. Token chỉ được đọc: không lưu, không làm mới, không gửi đi đâu khác.</td></tr>
+<tr><td data-label="Khi nào">Tự động dán qua portal của desktop</td><td data-label="Tới đâu">Chính desktop của bạn (GNOME), không qua mạng</td><td data-label="Nội dung">Một lần bấm Shift + Insert.</td></tr>
 </table>
 <p>Usage của Codex và Antigravity được đọc từ file log trên máy; không gửi gì cả.</p>
 <h2>Trang web này</h2>

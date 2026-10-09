@@ -1,6 +1,7 @@
 ---
 // Shared page shell: head (SEO, hreflang), nav, footer.
 import "../styles/site.css";
+import { release } from "../data/release";
 import { GITHUB, href, otherLang, pagePath, ui, type Lang } from "../i18n";
 
 interface Props {
@@ -19,6 +20,22 @@ const nav = [
   { path: "/download", label: s.download },
   { path: "/docs", label: s.docs },
   { path: "/changelog", label: s.changelog },
+];
+const icons = {
+  home: "M4 11.5 12 5l8 6.5M6 10v9h4.5v-5h3v5H18v-9",
+  download: "M12 4v11m-4.5-4.5L12 15l4.5-4.5M5 19h14",
+  docs: "M6 4.5h9l3 3v12H6zM9 11h6M9 14.5h6M14.5 4.5V8H18",
+  changelog: "M12 7v5l3 2M20 12a8 8 0 1 1-2.34-5.66M20 4v4h-4",
+  privacy: "M12 3.5 19 6v5.5c0 4.2-3 7.4-7 9-4-1.6-7-4.8-7-9V6z",
+  github: "M9 19c-4 1.3-4-2-6-2.5m12 4.5v-3.4a3 3 0 0 0-.8-2.3c2.8-.3 5.8-1.4 5.8-6.2a4.8 4.8 0 0 0-1.3-3.3 4.5 4.5 0 0 0-.1-3.3s-1-.3-3.4 1.3a11.6 11.6 0 0 0-6 0C6.8 2.2 5.7 2.5 5.7 2.5a4.5 4.5 0 0 0-.1 3.3 4.8 4.8 0 0 0-1.3 3.3c0 4.8 3 5.9 5.8 6.2a3 3 0 0 0-.8 2.3V21",
+};
+const menu = [
+  { href: href(lang, "/"), label: s.home, icon: icons.home, current: page === "/" },
+  { href: href(lang, "/download"), label: s.download, icon: icons.download, current: page === "/download" },
+  { href: href(lang, "/docs"), label: s.docs, icon: icons.docs, current: page === "/docs" },
+  { href: href(lang, "/changelog"), label: s.changelog, icon: icons.changelog, current: page === "/changelog" },
+  { href: href(lang, "/privacy"), label: s.privacy, icon: icons.privacy, current: page === "/privacy" },
+  { href: GITHUB, label: s.github, icon: icons.github, current: false },
 ];
 const ghMark =
   "M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z";
@@ -54,22 +71,54 @@ const ghMark =
     <header class="nav" id="nav">
       <div class="nav__inner">
         <a href={href(lang, "/")} class="brand" aria-label="QuickDesk">
-          <img src="/favicon.svg" alt="" width="22" height="22" />
+          <img src="/favicon.svg" alt="" width="24" height="24" />
           <span>QuickDesk</span>
+          <span class="brand__ver">v{release.version}</span>
         </a>
         <nav class="nav__links" aria-label="Primary">
           {nav.map((n) => <a href={href(lang, n.path)} aria-current={page === n.path ? "page" : undefined}>{n.label}</a>)}
         </nav>
-        <a class="nav__gh" href={GITHUB} aria-label="QuickDesk on GitHub" title="GitHub">
-          <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d={ghMark} /></svg>
-        </a>
-        <div class="lang" role="group" aria-label={s.language}>
-          <a href={href("en", page)} hreflang="en" aria-current={lang === "en" ? "true" : undefined}>EN</a>
-          <a href={href("vi", page)} hreflang="vi" aria-current={lang === "vi" ? "true" : undefined}>VI</a>
+        <div class="nav__end">
+          <a class="nav__gh" href={GITHUB} aria-label="QuickDesk on GitHub" title="GitHub">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d={ghMark} /></svg>
+          </a>
+          <div class="lang" role="group" aria-label={s.language}>
+            <a href={href("en", page)} hreflang="en" aria-current={lang === "en" ? "true" : undefined}>EN</a>
+            <a href={href("vi", page)} hreflang="vi" aria-current={lang === "vi" ? "true" : undefined}>VI</a>
+          </div>
+          <a href={href(lang, "/download")} class="btn btn--primary btn--sm nav__cta">{s.download}</a>
+          <button type="button" class="nav__menu" aria-label={s.menu} aria-controls="drawer" aria-expanded="false" data-drawer-toggle>
+            <span></span><span></span>
+          </button>
         </div>
-        <a href={href(lang, "/download")} class="btn btn--primary btn--sm">{s.download}</a>
       </div>
     </header>
+
+    <!-- Phones: the menu is a glass sheet that drops from the header. -->
+    <div class="drawer" id="drawer" hidden>
+      <nav class="drawer__panel" aria-label="Menu">
+        <ul class="drawer__main">
+          {
+            menu.map((m, i) => (
+              <li style={`--i: ${i}`}>
+                <a href={m.href} aria-current={m.current ? "page" : undefined}>
+                  <span class="drawer__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d={m.icon} /></svg></span>
+                  <span class="drawer__text">{m.label}</span>
+                  <span class="drawer__chev" aria-hidden="true">›</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <div class="drawer__foot" style={`--i: ${menu.length}`}>
+          <div class="lang lang--wide" role="group" aria-label={s.language}>
+            <a href={href("en", page)} hreflang="en" aria-current={lang === "en" ? "true" : undefined}>English</a>
+            <a href={href("vi", page)} hreflang="vi" aria-current={lang === "vi" ? "true" : undefined}>Tiếng Việt</a>
+          </div>
+          <a href={href(lang, "/download")} class="btn btn--primary drawer__cta">{s.download}</a>
+        </div>
+      </nav>
+    </div>
 
     <main id="content" class={wide ? "" : "page"}>
       <slot />
@@ -93,6 +142,33 @@ const ghMark =
       </div>
     </footer>
 
+    <script is:inline>
+      // Phone menu: the button toggles it; it fades and slides in and out.
+      (() => {
+        const drawer = document.getElementById("drawer");
+        const button = document.querySelector("[data-drawer-toggle]");
+        let closing;
+        const open = () => {
+          clearTimeout(closing);
+          drawer.hidden = false;
+          // Read layout once so the transition starts from the closed state.
+          void drawer.offsetHeight;
+          drawer.classList.add("is-open");
+          button.setAttribute("aria-expanded", "true");
+          document.documentElement.classList.add("drawer-open");
+        };
+        const close = () => {
+          drawer.classList.remove("is-open");
+          button.setAttribute("aria-expanded", "false");
+          document.documentElement.classList.remove("drawer-open");
+          closing = setTimeout(() => (drawer.hidden = true), 320);
+        };
+        button.addEventListener("click", () => (drawer.classList.contains("is-open") ? close() : open()));
+        drawer.addEventListener("click", (e) => e.target === drawer && close());
+        document.addEventListener("keydown", (e) => e.key === "Escape" && drawer.classList.contains("is-open") && close());
+        matchMedia("(min-width: 641px)").addEventListener("change", (e) => e.matches && close());
+      })();
+    </script>
     <script is:inline src="/assets/js/main.js" defer></script>
   </body>
 </html>

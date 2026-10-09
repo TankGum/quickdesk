@@ -154,50 +154,87 @@ kbd {
 :focus-visible { outline: 2px solid var(--link); outline-offset: 3px; border-radius: 8px; }
 
 /* ---------- Nav ---------- */
-
+/* Transparent at the top of the page; once scrolled it becomes a floating
+   glass capsule (main.js adds .is-scrolled). */
 .nav {
   position: fixed;
   inset: 0 0 auto;
   z-index: 50;
-  height: calc(var(--nav-h) + env(safe-area-inset-top, 0px));
-  padding-top: env(safe-area-inset-top, 0px);
-  background: rgba(0, 0, 0, .72);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 1px solid transparent;
-  transition: border-color .3s;
+  height: calc(var(--nav-h) + 12px + env(safe-area-inset-top, 0px));
+  padding: calc(6px + env(safe-area-inset-top, 0px)) 16px 0;
+  pointer-events: none;
 }
-.nav.is-scrolled { border-bottom-color: var(--line); }
-
 .nav__inner {
+  pointer-events: auto;
   height: var(--nav-h);
-  max-width: var(--wrap);
+  max-width: calc(var(--wrap) + 48px);
   margin: 0 auto;
-  padding-inline: 24px;
-  display: flex;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  transition: max-width .5s var(--ease), padding .5s var(--ease), background-color .4s, border-color .4s, box-shadow .4s, transform .5s var(--ease);
 }
+.nav.is-scrolled .nav__inner {
+  max-width: 980px;
+  padding: 0 8px 0 18px;
+  background: rgba(22, 22, 24, .72);
+  border-color: rgba(255, 255, 255, .1);
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .06);
+  backdrop-filter: saturate(180%) blur(22px);
+  -webkit-backdrop-filter: saturate(180%) blur(22px);
+  transform: translateY(4px);
+}
+
 .brand {
+  justify-self: start;
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  font-weight: 600;
-  font-size: 17px;
+  font-weight: 650;
+  font-size: 16.5px;
   letter-spacing: -.02em;
 }
+.brand img { border-radius: 7px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), 0 6px 16px -6px rgba(10, 132, 255, .5); }
+.brand__ver {
+  padding: 2px 7px;
+  border-radius: 999px;
+  font: 500 11px/1.4 var(--mono);
+  color: var(--text-3);
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid var(--line);
+}
+
+/* Centre links in a pill; the current page and hover get a soft highlight */
 .nav__links {
   display: flex;
-  gap: 28px;
-  margin-left: auto;
-  font-size: 13px;
-  color: var(--text-2);
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .045);
+  border: 1px solid rgba(255, 255, 255, .07);
+  font-size: 13.5px;
+  font-weight: 500;
 }
-.nav__links a { transition: color .2s; }
-.nav__links a:hover { color: var(--text); }
+.nav.is-scrolled .nav__links { background: transparent; border-color: transparent; }
+.nav__links a {
+  padding: 6px 14px;
+  border-radius: 999px;
+  color: var(--text-2);
+  transition: color .2s, background-color .2s;
+}
+.nav__links a:hover { color: var(--text); background: rgba(255, 255, 255, .07); }
+.nav__links a[aria-current] { color: var(--text); background: rgba(255, 255, 255, .11); }
+
+.nav__end { justify-self: end; display: flex; align-items: center; gap: 10px; }
+.nav__cta { box-shadow: 0 6px 18px -8px rgba(0, 113, 227, .9); }
 
 /* GitHub links */
-.nav__gh { display: grid; place-items: center; margin-left: 24px; color: var(--text-2); transition: color .2s; }
+.nav__gh { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; color: var(--text-2); transition: color .2s, background-color .2s; }
+.nav__gh:hover { background: rgba(255, 255, 255, .07); }
 .nav__gh:hover { color: var(--text); }
 .nav__gh svg { width: 18px; height: 18px; }
 
@@ -212,8 +249,6 @@ kbd {
 .lang {
   display: inline-flex;
   gap: 2px;
-  margin-left: 16px;
-  margin-right: 12px;
   padding: 2px;
   border-radius: 999px;
   background: rgba(255, 255, 255, .08);
@@ -269,6 +304,141 @@ kbd {
   line-height: 1.42;
   color: var(--text-2);
 }
+/* ---------- Hero motion graphic: the shortcut as 3D keys ---------- */
+@property --kc { syntax: "<color>"; inherits: true; initial-value: #ffd60a; }
+.hero { --kc: var(--notes); overflow: clip; isolation: isolate; }
+.hero[data-kb="clipboard"] { --kc: var(--clip); }
+.hero[data-kb="ports"] { --kc: var(--ports); }
+.hero__glow { display: none; }
+
+.kb { position: relative; margin: 54px auto 0; perspective: 1100px; }
+/* Soft light on the "desk" under the keys, in the current module's colour */
+.kb__floor {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: min(880px, 110vw);
+  height: 260px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--kc) 30%, transparent), transparent);
+  filter: blur(30px);
+  z-index: -1;
+}
+.kb__keys {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(10px, 2vw, 22px);
+  transform: rotateX(32deg);
+  transform-style: preserve-3d;
+}
+.kk__plus { font-size: clamp(20px, 3vw, 32px); font-weight: 300; color: var(--text-3); }
+
+/* One key: a cap that sits on a darker body; pressing moves the cap down */
+.kk { --depth: 14px; position: relative; display: block; border-radius: 22px; background: #0b0b0d; padding-bottom: var(--depth); }
+.kk__cap {
+  position: relative;
+  display: flex;
+  height: clamp(78px, 11vw, 128px);
+  min-width: clamp(78px, 11vw, 128px);
+  padding: 14px 18px;
+  border-radius: 22px;
+  font: 500 clamp(13px, 1.6vw, 18px)/1 var(--font);
+  color: #cfcfd4;
+  background: linear-gradient(180deg, #34343a 0%, #222226 55%, #1b1b1e 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .16),
+    inset 0 -2px 0 rgba(0, 0, 0, .4),
+    0 var(--depth) 0 #141417,
+    0 calc(var(--depth) + 22px) 40px -12px rgba(0, 0, 0, .9);
+  transform: translateY(0);
+  transition: transform .14s ease, box-shadow .14s ease, color .3s;
+}
+.kk--mod .kk__cap { min-width: clamp(118px, 16vw, 188px); flex-direction: column; justify-content: space-between; align-items: flex-start; }
+.kk__cap i { font-style: normal; font-size: clamp(16px, 2vw, 22px); color: var(--text-2); }
+.kk--letter .kk__cap {
+  justify-content: center;
+  align-items: center;
+  font-size: clamp(36px, 5vw, 58px);
+  font-weight: 600;
+  color: var(--kc);
+  text-shadow: 0 0 24px color-mix(in srgb, var(--kc) 70%, transparent);
+}
+.kk.is-down .kk__cap {
+  transform: translateY(calc(var(--depth) - 3px));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .1),
+    inset 0 -1px 0 rgba(0, 0, 0, .4),
+    0 3px 0 #141417,
+    0 0 0 1px color-mix(in srgb, var(--kc) 60%, transparent),
+    0 0 60px -6px var(--kc);
+}
+/* The wave that leaves the letter key on every press */
+.kk__wave {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid var(--kc);
+  box-shadow: 0 0 30px var(--kc), inset 0 0 30px var(--kc);
+  transform: translate(-50%, -50%) scale(.6);
+  opacity: 0;
+  pointer-events: none;
+}
+.kk__wave.is-on { animation: wave 1.3s cubic-bezier(.2, .7, .3, 1); }
+@keyframes wave { 0% { opacity: .9; transform: translate(-50%, -50%) scale(.6); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(4.2); } }
+
+/* The module's name under the keys, crossfading */
+.kb__label { position: relative; height: 34px; margin: 34px 0 0; font-size: clamp(20px, 2.4vw, 26px); font-weight: 600; letter-spacing: -.02em; }
+.kb__label span { position: absolute; inset: 0; color: var(--kc); opacity: 0; transform: translateY(8px); transition: opacity .4s ease, transform .5s var(--ease); }
+.kb__label span.is-on { opacity: 1; transform: none; }
+
+@media (max-width: 640px) {
+  .kb { margin-top: 40px; }
+  .kb__keys { transform: rotateX(26deg); gap: 6px; }
+  .kk { --depth: 9px; border-radius: 16px; }
+  .kk__cap { border-radius: 16px; padding: 10px 12px; }
+  .kk--mod .kk__cap { min-width: 92px; }
+}
+
+/* "New in 0.3.0" pill above the headline, with a light sweeping across it */
+.hero__new {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 30px;
+  padding: 5px 14px 5px 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  font-size: 14px;
+  color: var(--text-2);
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid var(--line-2);
+  transition: border-color .2s, color .2s;
+}
+.hero__new:hover { color: var(--text); border-color: rgba(255, 255, 255, .28); }
+.hero__new::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .14) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: sweep 4s ease-in-out 1.2s infinite;
+  pointer-events: none;
+}
+@keyframes sweep { 0%, 60% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+.hero__new-tag {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #000;
+  background: linear-gradient(90deg, var(--notes), #ff9f0a);
+}
+
 .hero__cta {
   margin-top: 40px;
   display: flex;
@@ -1210,12 +1380,9 @@ kbd {
   .sync__badge { top: 50%; left: 18px; transform: translateY(-50%); }
   .device__body { min-height: 190px; }
 
-  .stack { height: 400px; }
-  .card { width: 260px; }
-  .card:nth-child(1) { --x: -30px; --y: -120px; --r: -6deg; }
-  .card:nth-child(2) { --x: 30px;  --y: -60px;  --r: 5deg; }
-  .card:nth-child(3) { --x: -30px; --y: 40px;   --r: -3deg; }
-  .card:nth-child(4) { --x: 10px;  --y: 110px;  --r: 1deg; }
+  .stack { height: auto; display: grid; gap: 12px; max-width: 420px; margin: 0 auto; }
+  .card { position: relative; left: auto; top: auto; width: 100%; max-width: none; transform: none; }
+  .card--top { order: -1; }
 
   .footer__copy { margin-left: 0; width: 100%; }
 }
@@ -1230,7 +1397,6 @@ kbd {
 @media (max-width: 640px) {
   .nav__gh { display: none; }
   .nav__links { display: none; }
-  .lang { margin-left: auto; }
   .bento { grid-template-columns: 1fr; }
   .tile--wide { grid-column: auto; }
   .tile { min-height: 0; }

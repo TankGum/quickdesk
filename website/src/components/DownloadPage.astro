@@ -10,12 +10,14 @@ interface Props {
 }
 const { lang } = Astro.props;
 const v = release.version;
+// Non-breaking hyphens: "2026-10-09" must not wrap across lines.
+const date = release.date.replaceAll("-", "\u2011");
 const notes = changelog(lang).find((e) => e.version === v);
 const f = release.files;
 const s = {
   en: {
     title: `Download QuickDesk ${v}`,
-    lead: `For Linux on x86_64 · released ${release.date}. Free and open source (MIT).`,
+    lead: `For Linux on x86_64 · released ${date}. Free and open source (MIT).`,
     recommended: "Recommended for you",
     deb: ["Ubuntu, Debian, Linux Mint, Pop!_OS", "Ubuntu 22.04 and newer, Debian 12 and newer."],
     rpm: ["Fedora and other RPM-based distros", "Fedora 36 and newer, openSUSE Tumbleweed."],
@@ -32,7 +34,7 @@ const s = {
   },
   vi: {
     title: `Tải QuickDesk ${v}`,
-    lead: `Cho Linux x86_64 · phát hành ${release.date}. Miễn phí, mã nguồn mở (MIT).`,
+    lead: `Cho Linux x86_64 · phát hành ${date}. Miễn phí, mã nguồn mở (MIT).`,
     recommended: "Phù hợp với máy bạn",
     deb: ["Ubuntu, Debian, Linux Mint, Pop!_OS", "Ubuntu 22.04 trở lên, Debian 12 trở lên."],
     rpm: ["Fedora và các distro dùng RPM", "Fedora 36 trở lên, openSUSE Tumbleweed."],

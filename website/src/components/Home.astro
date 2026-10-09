@@ -18,28 +18,39 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
 
   <!-- ============ HERO ============ -->
   <section class="hero" id="top">
-    <div class="hero__glow" aria-hidden="true"></div>
-    <p class="eyebrow"><Fragment set:html={t("t4")} /></p>
+    <a class="hero__new" href={href(lang, "/changelog")}>
+      <span class="hero__new-tag"><Fragment set:html={t("hero-new")} /></span>
+      <span>QuickDesk {release.version} — <Fragment set:html={t("hero-whatsnew")} /></span>
+      <span aria-hidden="true">›</span>
+    </a>
     <h1 class="hero__title"><Fragment set:html={t("t5")} /></h1>
-    <p class="hero__sub"><Fragment set:html={t("t6")} /></p>
+
+    <!-- Motion graphic: the shortcut itself. Three 3D keys press in turn; each
+         press sends out a wave in the module's colour and names the module. -->
+    <div class="kb" aria-hidden="true">
+      <div class="kb__floor"></div>
+      <div class="kb__keys">
+        <span class="kk kk--mod"><span class="kk__cap"><i>❖</i>super</span></span>
+        <span class="kk__plus">+</span>
+        <span class="kk kk--mod"><span class="kk__cap"><i>⌥</i>alt</span></span>
+        <span class="kk__plus">+</span>
+        <span class="kk kk--letter"><span class="kk__cap" data-kb-letter>N</span><span class="kk__wave"></span></span>
+      </div>
+      <p class="kb__label">
+        <span data-kb-mod="notes"><Fragment set:html={t("kb-notes")} /></span>
+        <span data-kb-mod="clipboard"><Fragment set:html={t("kb-clip")} /></span>
+        <span data-kb-mod="ports"><Fragment set:html={t("kb-ports")} /></span>
+      </p>
+    </div>
     <div class="hero__cta">
       <a class="btn btn--primary btn--lg" href={href(lang, "/download")}><Fragment set:html={t("t7")} /></a>
       <a class="btn btn--link" href="#demo"><Fragment set:html={t("t8")} /></a>
     </div>
-    <p class="hero__meta">v{release.version} · Ubuntu 22.04+ · Debian 12+ · Fedora · x86_64</p>
+    <p class="hero__meta"><Fragment set:html={t("t4")} /> · Ubuntu · Debian · Fedora</p>
   </section>
 
   <!-- ============ INTERACTIVE DEMO ============ -->
   <section class="demo" id="demo">
-    <div class="combo" aria-hidden="true">
-      <span class="key key--mod"><span class="key__icon">❖</span>super</span>
-      <span class="plus">+</span>
-      <span class="key key--mod"><span class="key__icon">⌥</span>alt</span>
-      <span class="plus">+</span>
-      <span class="key key--letter" id="comboLetter">N</span>
-    </div>
-    <p class="combo__tray" aria-hidden="true"><Fragment set:html={t("t9")} /></p>
-
     <div class="switcher" role="tablist" aria-label="QuickDesk panels">
       <button type="button" role="tab" data-mode="notes" aria-selected="false"><Fragment set:html={t("t10")} /></button>
       <button type="button" role="tab" data-mode="clipboard" aria-selected="false"><b>V</b>Clipboard</button>
@@ -78,7 +89,7 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
       <div class="desktop__stage">
 
         <!-- The real QuickDesk UI (npm run build:demo) running on sample data. -->
-        <div class="appwin appwin--main" data-appwin="main" style="--w: 903px; --h: 643px">
+        <div class="appwin appwin--main" data-appwin="main" data-mw="560" data-mh="720" style="--w: 903px; --h: 643px">
           <div class="appwin__bar">
             <span>QuickDesk</span>
             <span class="appwin__btns">
@@ -215,7 +226,7 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
       </header>
 
       <!-- The real AI tab, same as the demo above. -->
-      <div class="shot" data-shot style="--w: 903px; --h: 643px">
+      <div class="shot" data-shot data-mw="560" data-mh="900" style="--w: 903px; --h: 643px">
         <div class="appwin appwin--main is-static">
           <div class="appwin__bar">
             <span>QuickDesk</span>
@@ -227,45 +238,6 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
           </div>
           <iframe title="QuickDesk AI usage tab (demo)" src="/demo/?window=main&amp;tab=ai&amp;theme=dark" width="903" height="603" loading="lazy"></iframe>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ BENTO ============ -->
-  <section class="bento-section">
-    <div class="wrap">
-      <h2 class="section-title center"><Fragment set:html={t("t55")} /></h2>
-      <div class="bento">
-        <article class="tile tile--wide">
-          <div class="tile__keys" aria-hidden="true"><kbd>Super</kbd><kbd>Alt</kbd><kbd class="k-n">N</kbd><kbd class="k-v">V</kbd><kbd class="k-p">P</kbd></div>
-          <h3><Fragment set:html={t("t56")} /></h3>
-          <p><Fragment set:html={t("t57")} /></p>
-        </article>
-        <article class="tile">
-          <div class="tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
-          <h3><Fragment set:html={t("t58")} /></h3>
-          <p><Fragment set:html={t("t59")} /></p>
-        </article>
-        <article class="tile">
-          <div class="tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></div>
-          <h3><Fragment set:html={t("t60")} /></h3>
-          <p><Fragment set:html={t("t61")} /></p>
-        </article>
-        <article class="tile">
-          <div class="tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-          <h3><Fragment set:html={t("t62")} /></h3>
-          <p><Fragment set:html={t("t63")} /></p>
-        </article>
-        <article class="tile">
-          <div class="tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 10h.01M9.5 10h.01M13 10h.01M16.5 10h.01M8 14h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-          <h3><Fragment set:html={t("t64")} /></h3>
-          <p><Fragment set:html={t("t65")} /></p>
-        </article>
-        <article class="tile tile--wide">
-          <div class="tile__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg></div>
-          <h3><Fragment set:html={t("t66")} /></h3>
-          <p><Fragment set:html={t("t67")} /></p>
-        </article>
       </div>
     </div>
   </section>
