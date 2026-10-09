@@ -44,8 +44,15 @@ jobs:
           cache: npm
       - run: npm ci
 
+      # Signs every package for the in-app updater (<package>.sig); the
+      # public half of this key is plugins.updater.pubkey in tauri.conf.json.
       - name: Build packages
-        run: npx tauri build --bundles deb,rpm,appimage
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: >-
+          npx tauri build --bundles deb,rpm,appimage
+          --config '{"bundle":{"createUpdaterArtifacts":true}}'
 
       - name: Keep a copy on the workflow run
         uses: actions/upload-artifact@v4
@@ -55,6 +62,7 @@ jobs:
             target/release/bundle/deb/*.deb
             target/release/bundle/rpm/*.rpm
             target/release/bundle/appimage/*.AppImage
+            target/release/bundle/*/*.sig
 
       - name: Build the download page demo
         run: npm run build:demo
@@ -65,4 +73,6 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          # Public base URL of the bucket (update.json links must be absolute).
+          R2_PUBLIC_URL: https://pub-c87aab3360aa43119ac701dbe62a3688.r2.dev
         run: python3 scripts/publish_r2.py

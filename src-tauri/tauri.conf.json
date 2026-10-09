@@ -79,5 +79,13 @@
     "publisher": "TankGum",
     "homepage": "https://github.com/TankGum/quickdesk",
     "longDescription": "Developer toolbox in the tray: quick notes with end-to-end encrypted sync, clipboard history (text, images, files), a port manager and AI usage limits."
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE2MzEwMDZCNDI0RjYzNDcKUldSSFkwOUNhd0F4Rmx6NFVtL1l5bDVhS2dFemN0bFFUdURQYjFPWUJTVXNrOGhZTHNJQ2dLSVIK",
+      "endpoints": [
+        "https://pub-c87aab3360aa43119ac701dbe62a3688.r2.dev/update.json"
+      ]
+    }
   }
 }

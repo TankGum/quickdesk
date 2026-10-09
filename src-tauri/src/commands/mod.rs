@@ -7,6 +7,7 @@ pub mod hotkeys;
 pub mod notes;
 pub mod ports;
 pub mod sync;
+pub mod update;
 
 use serde::Serialize;
 

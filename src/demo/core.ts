@@ -11,7 +11,7 @@ import type {
   SyncStatus,
   UsageSnapshot,
 } from "../shared/ipc";
-import { demoLang, emit, toPage } from "./bus";
+import { demoLang, emit, params, toPage } from "./bus";
 
 const now = Date.now();
 const MIN = 60_000;
@@ -206,7 +206,7 @@ const commands: Record<string, (a: Args) => unknown> = {
   app_set_language: (a) => ({ pref: a.language, resolved: a.language === "vi" ? "vi" : "en" }),
   app_onboarding: () => ({ done: true, offerUinput: false }),
   app_info: () => ({
-    version: "0.2.0",
+    version: "0.2.1",
     os: "Ubuntu 24.04",
     wayland: true,
     desktop: "GNOME",
@@ -311,6 +311,17 @@ const commands: Record<string, (a: Args) => unknown> = {
   },
 
   hotkeys_get: () => ({ config: hotkeys, strategy: "GnomeKeybinding" }),
+
+  // ?update=available shows the update banner (for checking the UI).
+  update_status: () => ({
+    currentVersion: "0.2.1",
+    autoCheck: true,
+    status:
+      params.get("update") === "available"
+        ? { state: "available", version: "0.2.2", notes: null }
+        : { state: "upToDate", checkedAt: now - 20 * MIN },
+  }),
+  update_check: () => ({ currentVersion: "0.2.1", autoCheck: true, status: { state: "upToDate", checkedAt: Date.now() } }),
 };
 
 export async function invoke<T>(cmd: string, args: Args = {}): Promise<T> {

@@ -22,6 +22,7 @@ pub struct AppState {
     pub sync: SyncService,
     pub lang_pref: Mutex<crate::i18n::LangPref>,
     pub ai: crate::ai_usage::AiUsageService,
+    pub updates: crate::updater::UpdateService,
 }
 
 impl AppState {

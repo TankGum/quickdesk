@@ -10,6 +10,7 @@ mod secrets;
 mod state;
 mod sync;
 mod tray;
+mod updater;
 mod windows;
 
 use std::sync::{Mutex, OnceLock};
@@ -42,6 +43,7 @@ pub fn run(args: Vec<String>) {
             dispatch(app, Forwarded { args: argv.into_iter().skip(1).collect(), sent_at_ms: now_ms() });
         }))
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         // Login item starts hidden in the tray.
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
@@ -101,6 +103,10 @@ pub fn run(args: Vec<String>) {
             commands::notes::notes_restore,
             commands::notes::notes_list,
             commands::notes::notes_search,
+            commands::update::update_status,
+            commands::update::update_check,
+            commands::update::update_install,
+            commands::update::update_set_auto,
         ])
         .on_window_event(windows::on_window_event)
         .setup(move |app| {
@@ -111,7 +117,7 @@ pub fn run(args: Vec<String>) {
             std::fs::create_dir_all(&data_dir)?;
             let db =
                 Db::open(&data_dir.join("quickdesk.db"), &[&qd_notes::NotesModule, &qd_clipboard::ClipboardModule])?;
-            let (device_id, hotkeys, clip, lang_pref, ai) = {
+            let (device_id, hotkeys, clip, lang_pref, ai, updates) = {
                 let conn = db.conn()?;
                 (
                     settings::device_id(&conn)?,
@@ -119,6 +125,7 @@ pub fn run(args: Vec<String>) {
                     clipboard::ClipboardService::new(&conn, data_dir.join("clipboard-images")),
                     settings::get::<i18n::LangPref>(&conn, i18n::SETTINGS_KEY)?.unwrap_or_default(),
                     ai_usage::AiUsageService::new(&conn),
+                    updater::UpdateService::new(&conn),
                 )
             };
             let clip_paused = clip.is_paused();
@@ -146,12 +153,14 @@ pub fn run(args: Vec<String>) {
                 sync: sync::SyncService::new(),
                 lang_pref: Mutex::new(lang_pref),
                 ai,
+                updates,
             });
 
             tray::build(app, clip_paused)?;
             clipboard::start(app.handle());
             sync::start(app.handle());
             ai_usage::start(app.handle());
+            updater::start(app.handle());
 
             let handle = app.handle().clone();
             ipc::serve(move |msg| dispatch(&handle, msg))?;

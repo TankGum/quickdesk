@@ -8,6 +8,8 @@ import { SyncFooter } from "../modules/sync/SyncFooter";
 import { SyncSettings } from "../modules/sync/SyncSettings";
 import { HotkeySettings } from "../modules/settings/HotkeySettings";
 import { PasteSettings } from "../modules/settings/PasteSettings";
+import { UpdateBanner } from "../modules/update/UpdateBanner";
+import { UpdateSettings } from "../modules/update/UpdateSettings";
 import { LangPref, setLanguage, useI18n } from "../shared/i18n";
 import { api, AppInfo, currentWindow, errorMessage, FocusStats, hideWindow, useShown } from "../shared/ipc";
 import { Welcome } from "./Welcome";
@@ -65,6 +67,7 @@ export function Main() {
           ))}
         </div>
       </nav>
+      <UpdateBanner />
       <section className="content">
         {tab === "notes" && <NotesTab focusSignal={shownAt} />}
         {tab === "settings" && <Settings />}
@@ -152,6 +155,9 @@ function Settings() {
 
       <h2>{t("settings.autoPaste")}</h2>
       <PasteSettings />
+
+      <h2>{t("settings.updates")}</h2>
+      <UpdateSettings />
 
       {import.meta.env.DEV && <FocusTest stats={stats} />}
 

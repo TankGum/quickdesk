@@ -17,20 +17,24 @@ fn menu<M: Manager<Wry>>(m: &M, lang: Lang, clip_paused: bool) -> tauri::Result<
     let item = |id: &str| MenuItem::with_id(m, id, tr(lang, id), true, None::<&str>);
     // Checked while copies are being saved; unchecking pauses history.
     let pause = CheckMenuItem::with_id(m, PAUSE_CLIP, tr(lang, "save-clipboard"), true, !clip_paused, None::<&str>)?;
-    let menu = Menu::with_items(
-        m,
-        &[
-            &item("quick-note")?,
-            &item("notes")?,
-            &item("clipboard")?,
-            &item("ports")?,
-            &PredefinedMenuItem::separator(m)?,
-            &pause,
-            &PredefinedMenuItem::separator(m)?,
-            &item("main")?,
-            &item("quit")?,
-        ],
-    )?;
+    let menu = Menu::new(m)?;
+    // A waiting update comes first, like macOS apps do.
+    if let Some(version) = m.state::<AppState>().updates.available_version() {
+        let label = tr(lang, "update").replace("{version}", &version);
+        menu.append(&MenuItem::with_id(m, "update", label, true, None::<&str>)?)?;
+        menu.append(&PredefinedMenuItem::separator(m)?)?;
+    }
+    menu.append_items(&[
+        &item("quick-note")?,
+        &item("notes")?,
+        &item("clipboard")?,
+        &item("ports")?,
+        &PredefinedMenuItem::separator(m)?,
+        &pause,
+        &PredefinedMenuItem::separator(m)?,
+        &item("main")?,
+        &item("quit")?,
+    ])?;
     *m.state::<AppState>().clipboard.tray_item.lock().unwrap_or_else(|e| e.into_inner()) = Some(pause);
     Ok(menu)
 }
@@ -60,7 +64,8 @@ pub fn build(app: &App, clip_paused: bool) -> tauri::Result<()> {
                     "notes" => Target::Notes,
                     "clipboard" => Target::Clipboard,
                     "ports" => Target::Ports,
-                    "main" => Target::Main,
+                    // The main window shows the update banner with "Update Now".
+                    "main" | "update" => Target::Main,
                     PAUSE_CLIP => {
                         let paused = !app.state::<AppState>().clipboard.is_paused();
                         if let Err(e) = crate::clipboard::set_paused(app, paused, None) {

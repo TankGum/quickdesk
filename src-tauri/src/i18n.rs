@@ -51,6 +51,7 @@ pub fn tr(lang: Lang, key: &str) -> &'static str {
         (Lang::Vi, "main") => "Mở QuickDesk",
         (Lang::Vi, "quit") => "Thoát QuickDesk",
         (Lang::Vi, "save-clipboard") => "Lưu lịch sử clipboard",
+        (Lang::Vi, "update") => "Cập nhật lên {version}…",
         (_, "quick-note") => "New Quick Note",
         (_, "notes") => "Notes",
         (_, "clipboard") => "Clipboard History",
@@ -58,6 +59,7 @@ pub fn tr(lang: Lang, key: &str) -> &'static str {
         (_, "main") => "Open QuickDesk",
         (_, "quit") => "Quit QuickDesk",
         (_, "save-clipboard") => "Save Clipboard History",
+        (_, "update") => "Update to {version}…",
         _ => "",
     }
 }
@@ -71,7 +73,7 @@ mod tests {
         assert_eq!(LangPref::Vi.resolve(), Lang::Vi);
         assert_eq!(LangPref::En.resolve(), Lang::En);
         for lang in [Lang::En, Lang::Vi] {
-            for key in ["quick-note", "notes", "clipboard", "ports", "main", "quit", "save-clipboard"] {
+            for key in ["quick-note", "notes", "clipboard", "ports", "main", "quit", "save-clipboard", "update"] {
                 assert!(!tr(lang, key).is_empty(), "{lang:?} {key}");
             }
         }

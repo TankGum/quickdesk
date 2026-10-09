@@ -26,8 +26,36 @@ Repository → **Settings** → **Secrets and variables** → **Actions** → **
 | `R2_ACCESS_KEY_ID` | API token access key ID |
 | `R2_SECRET_ACCESS_KEY` | API token secret |
 | `R2_BUCKET` | bucket name, e.g. `quickdesk-downloads` |
+| `TAURI_SIGNING_PRIVATE_KEY` | updater signing key (see step 3) |
+| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | its password |
 
-### 3. Download page
+### 3. Updater signing key (once)
+
+The app updates itself (Settings → Updates, and a banner when a new version
+is out). Every package is signed, and the app installs only packages signed
+by this key, so a compromised bucket cannot push malware.
+
+```sh
+npx tauri signer generate -w ~/.tauri/quickdesk.key   # asks for a password
+```
+
+- Put the contents of `~/.tauri/quickdesk.key` in the GitHub secret
+  `TAURI_SIGNING_PRIVATE_KEY`, and its password in
+  `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`.
+- Put the contents of `~/.tauri/quickdesk.key.pub` in
+  `plugins.updater.pubkey` in `src-tauri/tauri.conf.json`.
+- **Back the private key up.** Without it, installed copies can never be
+  updated again (they only trust this key).
+
+The Release workflow builds with `createUpdaterArtifacts`, so each package gets
+a `.sig`, and `scripts/publish_r2.py` writes `update.json` with one entry per
+package type (`linux-x86_64-deb`, `-rpm`, `-appimage`): each install updates
+with the same kind of package it came from. A .deb or .rpm is installed with
+`pkexec dpkg -i` / `rpm -U`, which asks for the administrator password; the
+app then restarts. The endpoint is `plugins.updater.endpoints`; keep the old
+URL listed there if the bucket ever moves to a custom domain.
+
+### 4. Download page
 
 The page lives in `packaging/download/`: `index.html` plus `assets/` (CSS, JS,
 images), which are uploaded next to it. Its demo is **the real UI**:
@@ -67,7 +95,9 @@ python3 -m http.server -d /tmp/qd-page 8000   # then open http://localhost:8000
    releases/<version>/QuickDesk-<version>-1.x86_64.rpm
    releases/<version>/QuickDesk_<version>_amd64.AppImage
    releases/<version>/SHA256SUMS
+   releases/<version>/*.sig      updater signatures
    latest.json
+   update.json                   read by the app's updater
    index.html
    assets/...
    demo/...

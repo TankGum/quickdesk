@@ -181,6 +181,22 @@ export interface UsageSnapshot {
   trayEnabled: boolean;
 }
 
+/** Self-update state (src-tauri/src/updater.rs). */
+export type UpdateStatus =
+  | { state: "idle" }
+  | { state: "checking" }
+  | { state: "upToDate"; checkedAt: number }
+  | { state: "available"; version: string; notes: string | null }
+  | { state: "downloading"; version: string; downloaded: number; total: number | null }
+  | { state: "installing"; version: string }
+  | { state: "error"; message: string; version: string | null };
+
+export interface UpdateInfo {
+  currentVersion: string;
+  autoCheck: boolean;
+  status: UpdateStatus;
+}
+
 /** Shape of every rejected command (see `CmdError` in Rust). */
 export interface CmdError {
   code: string;
@@ -238,6 +254,10 @@ export const api = {
   aiSetRing: (choice: RingChoice | null) => invoke<void>("ai_set_ring", { choice }),
   focusReport: (report: FocusReport) => invoke<void>("diag_focus_report", { report }),
   focusStats: () => invoke<FocusStats>("diag_focus_stats"),
+  updateStatus: () => invoke<UpdateInfo>("update_status"),
+  updateCheck: () => invoke<UpdateInfo>("update_check"),
+  updateInstall: () => invoke<void>("update_install"),
+  updateSetAuto: (enabled: boolean) => invoke<UpdateInfo>("update_set_auto", { enabled }),
   quit: () => invoke<void>("app_quit"),
   show: (target: HotkeyTarget | "main" | "ai" | "usage") => invoke<void>("app_show", { target }),
   hotkeysGet: () => invoke<{ config: HotkeyConfig; strategy: AppInfo["hotkeyStrategy"] }>("hotkeys_get"),

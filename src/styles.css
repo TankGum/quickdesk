@@ -461,3 +461,18 @@ button.icon:hover { background: var(--hover); color: var(--fg); }
    give options explicit colours or light text lands on a light list. */
 select { color: var(--fg); background-color: var(--raised); }
 select option { color: var(--fg); background-color: var(--surface); }
+
+/* ---------- Update banner ---------- */
+
+.update-banner {
+  display: flex; gap: 10px; align-items: center;
+  margin: 10px 14px 0; padding: 8px 10px 8px 14px; border-radius: 10px;
+  background: color-mix(in srgb, var(--clip) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--clip) 35%, transparent);
+  color: var(--fg);
+}
+.update-banner .icon-svg { color: var(--clip); }
+.update-banner .update-text { flex: 1; min-width: 0; }
+.update-banner .btn.primary { background: var(--clip); color: #fff; }
+.update-banner.error { background: color-mix(in srgb, var(--danger) 10%, transparent); border-color: color-mix(in srgb, var(--danger) 35%, transparent); }
+.update-settings p { margin: 0 0 6px; }

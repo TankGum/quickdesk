@@ -8,6 +8,7 @@ Bucket layout:
     releases/<version>/QuickDesk_<version>_amd64.AppImage
     releases/<version>/SHA256SUMS
     latest.json            what the newest version is and where to get it
+    update.json            signed manifest the app's updater reads (tauri-plugin-updater)
     index.html             the download page, if packaging/download/index.html exists
     assets/...             files the page uses (packaging/download/assets)
     demo/...               the real UI on sample data (`npm run build:demo` → dist-demo)
@@ -23,8 +24,11 @@ page into DIR instead of uploading; serve DIR over HTTP to check it (the demo
 is an ES module app, which browsers do not load from file://). Without a local
 `npx tauri build` the download links and sizes are placeholders.
 
-Environment: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET.
+Environment: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET, and
+R2_PUBLIC_URL (the bucket's public base URL; update.json needs absolute links).
 R2_ENDPOINT overrides the endpoint (e.g. a local S3 server for testing).
+The packages must have been built with updater signatures (`<package>.sig`, from
+TAURI_SIGNING_PRIVATE_KEY and `bundle.createUpdaterArtifacts`).
 Requires the `aws` CLI (preinstalled on GitHub-hosted runners).
 """
 
@@ -47,6 +51,7 @@ CONTENT_TYPES = {
     ".rpm": "application/x-rpm",
     ".AppImage": "application/octet-stream",
     ".json": "application/json",
+    ".sig": "text/plain; charset=utf-8",
     ".html": "text/html; charset=utf-8",
     ".css": "text/css; charset=utf-8",
     ".js": "text/javascript; charset=utf-8",
@@ -98,6 +103,20 @@ def render_page(version: str, published: str, files: dict) -> str:
     for name, value in values.items():
         page = page.replace("{{" + name + "}}", value)
     return page
+
+
+def updater_manifest(version: str, published: str, public: str, files: dict, sigs: dict) -> dict:
+    """Static manifest in tauri-plugin-updater's format."""
+    platform = {"deb": "linux-x86_64-deb", "rpm": "linux-x86_64-rpm", "appimage": "linux-x86_64-appimage"}
+    return {
+        "version": version,
+        "notes": f"QuickDesk {version}",
+        "pub_date": published,
+        "platforms": {
+            platform[kind]: {"signature": sigs[kind].read_text().strip(), "url": f"{public}/{f['url']}"}
+            for kind, f in files.items()
+        },
+    }
 
 
 def main() -> None:
@@ -163,10 +182,18 @@ def main() -> None:
     sums = out / "SHA256SUMS"
     sums.write_text("".join(f"{f['sha256']}  {f['name']}\n" for f in files.values()))
 
+    # Updater signatures sit next to each package.
+    sigs = {kind: path.with_name(path.name + ".sig") for kind, path in expected.items()}
+    unsigned = [str(p) for p in sigs.values() if not p.is_file()]
+    if unsigned:
+        sys.exit("updater signatures not found (build with TAURI_SIGNING_PRIVATE_KEY and createUpdaterArtifacts):\n  " + "\n  ".join(unsigned))
+    public = env("R2_PUBLIC_URL").rstrip("/")
+
     # Versioned files never change: cache them for a long time.
     immutable = "public, max-age=31536000, immutable"
     for kind, path in expected.items():
         upload(path, files[kind]["url"], immutable)
+        upload(sigs[kind], files[kind]["url"] + ".sig", immutable)
     upload(sums, f"{prefix}/SHA256SUMS", immutable)
 
     latest = out / "latest.json"
@@ -174,6 +201,12 @@ def main() -> None:
     # Pointers to "the newest" must not be cached for long.
     fresh = "public, max-age=60"
     upload(latest, "latest.json", fresh)
+
+    # The app picks `linux-x86_64-<bundle type>`, so each install updates with
+    # the same kind of package it was installed from.
+    update = out / "update.json"
+    update.write_text(json.dumps(updater_manifest(version, published, public, files, sigs), indent=2) + "\n")
+    upload(update, "update.json", fresh)
 
     if TEMPLATE.is_file():
         # Assets keep fixed names across releases, so they get a short cache too.
