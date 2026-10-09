@@ -13,11 +13,8 @@
   window.addEventListener('scroll', onScroll, { passive: true });
 
   /* ---------- Language ---------- */
-  // English lives in the markup; Vietnamese for every [data-i18n] element is
-  // in #i18n-vi (inside index.html, so release placeholders get filled in).
-  const VI = JSON.parse($('#i18n-vi')?.textContent || '{}');
-  const EN_META = { title: document.title, description: $('meta[name="description"]').content };
-  // Strings this script writes itself.
+  // Each language has its own pages (/ and /vi/); this script only needs to
+  // know which one it is on. Strings it writes itself:
   const STR = {
     en: {
       refreshed: 'Usage refreshed', paused: 'Clipboard history paused', resumed: 'Clipboard history resumed',
@@ -34,41 +31,20 @@
       note: 'Họp đầu ngày — Thứ Ba\n• Đã xong ảnh trong clipboard\n• Đang rà quy trình phát hành\n• Không vướng gì',
     },
   };
-  let lang = 'en';
+  const lang = document.documentElement.lang === 'vi' ? 'vi' : 'en';
   const tr = (key) => STR[lang][key];
-  const langListeners = [];
 
-  function setLang(next, remember) {
-    lang = next === 'vi' ? 'vi' : 'en';
-    document.documentElement.lang = lang;
-    $$('[data-i18n]').forEach((el) => {
-      if (el.dataset.en === undefined) el.dataset.en = el.innerHTML;
-      const html = lang === 'vi' ? VI[el.dataset.i18n] : el.dataset.en;
-      if (html !== undefined) el.innerHTML = html;
-    });
-    document.title = lang === 'vi' ? VI.title : EN_META.title;
-    $('meta[name="description"]').content = lang === 'vi' ? VI.description : EN_META.description;
-    $$('[data-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
-    // The footer's year span is re-created with its sentence.
-    $('#year').textContent = new Date().getFullYear();
-    // The demo windows are the real app: switch its language too.
-    $$('iframe').forEach((f) => f.contentWindow?.postMessage({ source: 'quickdesk-page', type: 'lang', lang }, '*'));
-    langListeners.forEach((fn) => fn());
-    if (remember) {
-      try { localStorage.setItem('qd-lang', lang); } catch { /* private mode */ }
-    }
-  }
+  /* ---------- Footer year ---------- */
+  const year = $('#year');
+  if (year) year.textContent = new Date().getFullYear();
 
-  let saved = null;
-  try { saved = localStorage.getItem('qd-lang'); } catch { /* private mode */ }
-  setLang(saved || (navigator.language.toLowerCase().startsWith('vi') ? 'vi' : 'en'), false);
-  $$('[data-lang]').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.lang, true)));
-  // Iframes that finish loading later still need to hear the language.
-  $$('iframe').forEach((f) => f.addEventListener('load', () => {
+  // The demo windows are the real app: tell them which language to use.
+  $$('iframe[src*="/demo/"]').forEach((f) => f.addEventListener('load', () => {
     f.contentWindow?.postMessage({ source: 'quickdesk-page', type: 'lang', lang }, '*');
   }));
 
   /* ---------- Interactive demo ---------- */
+  if ($('#demo')) {
   // The windows are the real QuickDesk UI (demo/ = `npm run build:demo`),
   // running on sample data in iframes. This script only plays the desktop:
   // which window is up, the hotkey animation, the tray menu.
@@ -311,11 +287,6 @@
   let fmt = clockFormat();
   const tick = () => { clock.textContent = fmt.format(new Date()).replace(/,/g, ''); };
   tick();
-  langListeners.push(() => {
-    fmt = clockFormat();
-    tick();
-    $('.desktop__ime').textContent = lang;
-  });
   $('.desktop__ime').textContent = lang;
   setInterval(tick, 15000);
 
@@ -325,6 +296,7 @@
     toast.classList.add('is-on');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('is-on'), 2600);
+  }
   }
 
   /* ---------- Notes: live sync typing ---------- */
@@ -338,7 +310,6 @@
     if (reduceMotion) {
       const show = () => { src.textContent = NOTE(); dst.textContent = NOTE(); badge.textContent = tr('synced'); };
       show();
-      langListeners.push(show);
     } else {
       let started = false;
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

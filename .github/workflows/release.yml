@@ -47,7 +47,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - run: npm ci
 
@@ -71,9 +71,6 @@ jobs:
             target/release/bundle/appimage/*.AppImage
             target/release/bundle/*/*.sig
 
-      - name: Build the download page demo
-        run: npm run build:demo
-
       - name: Publish to Cloudflare R2
         env:
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
@@ -81,7 +78,7 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
           # Public base URL of the bucket (update.json links must be absolute).
-          R2_PUBLIC_URL: https://quickdesk.click
+          R2_PUBLIC_URL: https://dl.quickdesk.click
         run: python3 scripts/publish_r2.py
 
       - name: GitHub Release
@@ -92,8 +89,16 @@ jobs:
           version="${GITHUB_REF_NAME#v}"
           python3 scripts/changelog.py notes "$version" > release-notes.md
           echo "" >> release-notes.md
-          echo "Download: https://quickdesk.click" >> release-notes.md
+          echo "Download: https://quickdesk.click/download" >> release-notes.md
           gh release create "$GITHUB_REF_NAME" --title "QuickDesk $version" --notes-file release-notes.md \
             target/release/bundle/deb/*.deb target/release/bundle/rpm/*.rpm \
             target/release/bundle/appimage/*.AppImage target/release/bundle/*/*.sig \
             target/release/publish/SHA256SUMS
+
+      # The website (Cloudflare Pages) shows the newest release from
+      # latest.json; rebuild it now that there is a new one.
+      - name: Rebuild the website
+        env:
+          HOOK: ${{ secrets.CF_PAGES_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$HOOK" ]; then curl -fsS -X POST "$HOOK" >/dev/null && echo "website rebuild started"; else echo "::warning::CF_PAGES_DEPLOY_HOOK is not set; the website still shows the previous release"; fi

@@ -1,0 +1,16 @@
+---
+import Base from "../layouts/Base.astro";
+// One 404 for both languages (Cloudflare Pages serves 404.html for any miss).
+---
+<Base lang="en" title="Page not found · QuickDesk" description="This page does not exist.">
+  <div class="wrap wrap--narrow prose notfound">
+    <p class="notfound__code">404</p>
+    <h1>This page does not exist.</h1>
+    <p class="lead">Không tìm thấy trang này.</p>
+    <div class="hero__cta">
+      <a class="btn btn--primary" href="/">Home</a>
+      <a class="btn btn--secondary" href="/vi">Trang chủ</a>
+      <a class="btn btn--secondary" href="/docs">Docs</a>
+    </div>
+  </div>
+</Base>

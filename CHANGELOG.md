@@ -12,6 +12,7 @@ download page and on GitHub Releases.
 
 ### New
 - QuickDesk has its own address: [quickdesk.click](https://quickdesk.click). Downloads and updates come from there.
+- A real website: download page that suggests the right package, documentation, changelog and privacy pages, in English and Vietnamese.
 
 ### Improved
 - Your data now lives in `~/.local/share/click.quickdesk`. QuickDesk moves it there by itself the first time it starts; notes, clipboard history and settings stay as they are.

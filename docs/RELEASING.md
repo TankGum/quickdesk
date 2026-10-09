@@ -1,7 +1,9 @@
 # Releasing QuickDesk
 
 Linux packages (`.deb`, `.rpm`, `.AppImage`) are built by GitHub Actions and
-published to a Cloudflare R2 bucket, which also serves the download page.
+published to a Cloudflare R2 bucket served at `https://dl.quickdesk.click`.
+The website `https://quickdesk.click` (`website/`) is a separate Astro site on
+Cloudflare Pages that reads the newest release from the bucket's `latest.json`.
 
 ## One-time setup
 
@@ -16,9 +18,9 @@ published to a Cloudflare R2 bucket, which also serves the download page.
    - note the **Access Key ID** and **Secret Access Key** (shown once);
    - the **Account ID** is shown on the R2 overview page.
 
-### Custom domain (quickdesk.click)
+### Download host (dl.quickdesk.click)
 
-The bucket is served at `https://quickdesk.click` (R2 → bucket → Settings →
+The bucket is served at `https://dl.quickdesk.click` (R2 → bucket → Settings →
 Custom Domains). Releases use it for every link (`R2_PUBLIC_URL` in the Release
 workflow), and the app's updater asks it first. **Keep the `r2.dev` public URL
 enabled**: QuickDesk 0.2.2 only knows `https://pub-…r2.dev/update.json`, and
@@ -36,6 +38,7 @@ Repository → **Settings** → **Secrets and variables** → **Actions** → **
 | `R2_BUCKET` | bucket name, e.g. `quickdesk-downloads` |
 | `TAURI_SIGNING_PRIVATE_KEY` | updater signing key (see step 3) |
 | `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | its password |
+| `CF_PAGES_DEPLOY_HOOK` | the website's deploy hook URL (see step 4) |
 
 ### 3. Updater signing key (once)
 
@@ -63,30 +66,33 @@ with the same kind of package it came from. A .deb or .rpm is installed with
 app then restarts. The endpoint is `plugins.updater.endpoints`; keep the old
 URL listed there if the bucket ever moves to a custom domain.
 
-### 4. Download page
+### 4. Website (Cloudflare Pages)
 
-The page lives in `packaging/download/`: `index.html` plus `assets/` (CSS, JS,
-images), which are uploaded next to it. Its demo is **the real UI**:
-`npm run build:demo` builds the frontend with Tauri's API swapped for sample
-data (`src/demo/`, see `vite.config.ts`) into `dist-demo/`, published as
-`demo/` and shown in iframes. So any UI change ships to the page on the next
-release, with nothing to copy by hand; when you add a command, give it a demo
-answer in `src/demo/core.ts`. When publishing, these placeholders in
-`index.html` are filled in and the result is uploaded as `index.html`:
+The site lives in `website/` (Astro): home (with the demo), `/download`,
+`/docs`, `/changelog`, `/privacy`, each also under `/vi/` in Vietnamese. It
+reads the newest release from `https://dl.quickdesk.click/latest.json` and the
+changelog from `CHANGELOG*.md` at build time. The home page demo is **the real
+UI**: `npm run build:demo` builds the frontend with Tauri's API swapped for
+sample data (`src/demo/`, see `vite.config.ts`), and the site embeds it. When
+you add a command, give it a demo answer in `src/demo/core.ts`.
 
-`{{VERSION}}` `{{DATE}}` · `{{DEB_URL}}` `{{RPM_URL}}` `{{APPIMAGE_URL}}` (relative
-links) · `{{DEB_SHA256}}` `{{RPM_SHA256}}` `{{APPIMAGE_SHA256}}` ·
-`{{DEB_SIZE}}` `{{RPM_SIZE}}` `{{APPIMAGE_SIZE}}`.
+Set up once in Cloudflare → **Workers & Pages** → **Create** → **Pages** →
+**Connect to Git** → `TankGum/quickdesk`:
 
-A page can instead read `latest.json` at runtime (same data as JSON).
+| Setting | Value |
+|---|---|
+| Production branch | `main` |
+| Build command | `npm ci && npm run build:demo && npm ci --prefix website && npm run build --prefix website` |
+| Build output directory | `website/dist` |
+| Environment variable | `NODE_VERSION` = `22` |
 
-To check the page in a browser, render it without uploading anything (download
-links and sizes are real only after a local `npx tauri build`):
+Then **Custom domains** → add `quickdesk.click`, and **Settings → Builds →
+Deploy hooks** → create one for `main` and store its URL as the
+`CF_PAGES_DEPLOY_HOOK` secret: the Release workflow calls it so the site shows
+a new version as soon as it is published. Every push to `main` also rebuilds
+the site, and pull requests get preview URLs.
 
-```sh
-python3 scripts/publish_r2.py --preview /tmp/qd-page
-python3 -m http.server -d /tmp/qd-page 8000   # then open http://localhost:8000
-```
+Run it locally (Node 22): `npm run build:demo && cd website && npm install && npm run dev`.
 
 ## Each release
 
@@ -113,12 +119,10 @@ python3 -m http.server -d /tmp/qd-page 8000   # then open http://localhost:8000
    releases/<version>/QuickDesk_<version>_amd64.AppImage
    releases/<version>/SHA256SUMS
    releases/<version>/*.sig      updater signatures
-   latest.json
+   latest.json                   read by the website
    update.json                   read by the app's updater
-   index.html
-   assets/...
-   demo/...
    ```
+   then creates the GitHub Release and rebuilds the website.
    The packages are also attached to the workflow run as an artifact.
 
 Testing the upload without R2: run any S3-compatible server locally and set

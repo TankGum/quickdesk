@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => ({
   server: { port: 1420, strictPort: true, watch: { ignored: ["**/src-tauri/**", "**/crates/**", "**/target/**"] } },
   build: { target: "es2021", sourcemap: false },
   // `vite build --mode demo`: the same UI against sample data, for the
-  // landing page (packaging/download). Tauri's API is swapped for src/demo.
+  // website (website/, quickdesk.click). Tauri's API is swapped for src/demo.
   ...(mode === "demo" && {
     base: "./",
     resolve: {

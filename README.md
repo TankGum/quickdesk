@@ -28,7 +28,7 @@ On GNOME Wayland the hotkeys are registered as GNOME custom shortcuts running
 
 ## Install (Linux)
 
-Download from [quickdesk.click](https://quickdesk.click):
+Download from [quickdesk.click](https://quickdesk.click/download) · [Docs](https://quickdesk.click/docs):
 
 | Distribution | File | Install |
 |---|---|---|

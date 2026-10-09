@@ -1,0 +1,8 @@
+---
+import Base from "../layouts/Base.astro";
+import Home from "../components/Home.astro";
+import { release } from "../data/release";
+---
+<Base lang="en" title="QuickDesk — Notes, clipboard, ports & AI limits. One shortcut away." description="QuickDesk is a free, open-source Linux desktop helper: end-to-end encrypted notes, clipboard history, a live port manager and your AI usage limits, summoned with Super + Alt + N, V or P." wide>
+  <Home lang="en" release={release} />
+</Base>

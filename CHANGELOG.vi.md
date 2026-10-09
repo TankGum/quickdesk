@@ -10,6 +10,7 @@ Mỗi bản là một mục `## <phiên bản> — <ngày>` với tối đa ba n
 
 ### Mới
 - QuickDesk có địa chỉ riêng: [quickdesk.click](https://quickdesk.click). Gói tải về và bản cập nhật đều lấy từ đây.
+- Trang web đầy đủ: trang tải về tự gợi ý gói phù hợp, trang tài liệu, nhật ký thay đổi và quyền riêng tư, có tiếng Anh và tiếng Việt.
 
 ### Cải thiện
 - Dữ liệu giờ nằm ở `~/.local/share/click.quickdesk`. QuickDesk tự chuyển dữ liệu sang đó ở lần mở đầu tiên; ghi chú, lịch sử clipboard và cài đặt vẫn giữ nguyên.

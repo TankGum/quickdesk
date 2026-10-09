@@ -1,0 +1,14 @@
+---
+import { privacy } from "../data/privacy";
+import type { Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const p = privacy[Astro.props.lang];
+---
+<div class="wrap wrap--narrow prose">
+  <h1>{p.title}</h1>
+  <p class="muted">{p.updated}</p>
+  <Fragment set:html={p.html} />
+</div>

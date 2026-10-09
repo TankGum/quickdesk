@@ -1,0 +1,5 @@
+# Packages and manifests live on the download host (Cloudflare R2).
+/update.json   https://dl.quickdesk.click/update.json   302
+/latest.json   https://dl.quickdesk.click/latest.json   302
+/releases/*    https://dl.quickdesk.click/releases/:splat 302
+/index.html    /   301

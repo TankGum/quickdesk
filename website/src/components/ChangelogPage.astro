@@ -1,0 +1,44 @@
+---
+import { changelog } from "../data/changelog";
+import { release } from "../data/release";
+import type { Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+// Unreleased sections (written ahead of a release) are not shown yet.
+const order = (v: string) => v.split(".").map(Number);
+const newer = (a: string, b: string) => {
+  const [x, y] = [order(a), order(b)];
+  for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] > y[i];
+  return false;
+};
+const entries = changelog(lang).filter((e) => !newer(e.version, release.version));
+const s =
+  lang === "vi"
+    ? { title: "Nhật ký thay đổi", lead: "Mỗi bản QuickDesk có gì mới, cải thiện và sửa lỗi.", latest: "Mới nhất", source: "Nguồn: CHANGELOG.vi.md trên GitHub" }
+    : { title: "Changelog", lead: "What is new, improved and fixed in each QuickDesk release.", latest: "Latest", source: "Source: CHANGELOG.md on GitHub" };
+const file = lang === "vi" ? "CHANGELOG.vi.md" : "CHANGELOG.md";
+---
+<div class="wrap wrap--narrow prose changelog">
+  <h1>{s.title}</h1>
+  <p class="lead">{s.lead}</p>
+  {
+    entries.map((e, i) => (
+      <section class="release" id={`v${e.version}`}>
+        <header>
+          <h2>
+            <a href={`#v${e.version}`}>{e.version}</a>
+          </h2>
+          {i === 0 && <span class="release__tag">{s.latest}</span>}
+          <time datetime={e.date}>{e.date}</time>
+        </header>
+        <div set:html={e.html} />
+      </section>
+    ))
+  }
+  <p class="muted">
+    <a href={`https://github.com/TankGum/quickdesk/blob/main/${file}`}>{s.source}</a>
+  </p>
+</div>

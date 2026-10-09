@@ -79,7 +79,7 @@ pub fn build(app: &App, clip_paused: bool) -> tauri::Result<()> {
                 windows::show(app, target, now_ms());
             },
         );
-    // The app icon (packaging/download/assets/img/favicon.svg, via `tauri icon`).
+    // The app icon (website/public/favicon.svg, via `tauri icon`).
     if let Some(icon) = app.default_window_icon() {
         tray = tray.icon(icon.clone());
     }

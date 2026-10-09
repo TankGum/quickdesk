@@ -1,30 +1,18 @@
 #!/usr/bin/env python3
-"""Publish the built Linux packages to a Cloudflare R2 (S3-compatible) bucket.
+"""Publish the built Linux packages to the download host (Cloudflare R2,
+served at https://dl.quickdesk.click).
 
 Bucket layout:
 
-    releases/<version>/QuickDesk_<version>_amd64.deb
-    releases/<version>/QuickDesk-<version>-1.x86_64.rpm
-    releases/<version>/QuickDesk_<version>_amd64.AppImage
+    releases/<version>/QuickDesk_<version>_amd64.deb      (+ .sig)
+    releases/<version>/QuickDesk-<version>-1.x86_64.rpm   (+ .sig)
+    releases/<version>/QuickDesk_<version>_amd64.AppImage (+ .sig)
     releases/<version>/SHA256SUMS
-    latest.json            what the newest version is and where to get it
+    latest.json            the newest version, its files and release notes (read by the website)
     update.json            signed manifest the app's updater reads (tauri-plugin-updater)
-    index.html             the download page, if packaging/download/index.html exists
-    assets/...             files the page uses (packaging/download/assets)
-    demo/...               the real UI on sample data (`npm run build:demo` → dist-demo)
 
-The download page template may use these placeholders:
-    {{VERSION}} {{DATE}}
-    {{DEB_URL}} {{RPM_URL}} {{APPIMAGE_URL}}         (relative to the bucket root)
-    {{DEB_SHA256}} {{RPM_SHA256}} {{APPIMAGE_SHA256}}
-    {{DEB_SIZE}} {{RPM_SIZE}} {{APPIMAGE_SIZE}}      (e.g. "9.2 MB")
-    {{NOTES_HTML}}                                    this version's CHANGELOG.md section
-    "{{NOTES_HTML_VI_JSON}}"                          CHANGELOG.vi.md's, as a JSON string
-
-`python3 scripts/publish_r2.py --preview DIR` builds the demo and renders the
-page into DIR instead of uploading; serve DIR over HTTP to check it (the demo
-is an ES module app, which browsers do not load from file://). Without a local
-`npx tauri build` the download links and sizes are placeholders.
+The website (website/, Cloudflare Pages) is built separately and reads
+latest.json; the Release workflow asks Pages to rebuild after this runs.
 
 Environment: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET, and
 R2_PUBLIC_URL (the bucket's public base URL; update.json needs absolute links).
@@ -46,9 +34,6 @@ import changelog
 
 ROOT = Path(__file__).resolve().parent.parent
 BUNDLE = ROOT / "target" / "release" / "bundle"
-TEMPLATE = ROOT / "packaging" / "download" / "index.html"
-PAGE_ASSETS = TEMPLATE.parent / "assets"
-DEMO = ROOT / "dist-demo"
 
 CONTENT_TYPES = {
     ".deb": "application/vnd.debian.binary-package",
@@ -56,14 +41,6 @@ CONTENT_TYPES = {
     ".AppImage": "application/octet-stream",
     ".json": "application/json",
     ".sig": "text/plain; charset=utf-8",
-    ".html": "text/html; charset=utf-8",
-    ".css": "text/css; charset=utf-8",
-    ".js": "text/javascript; charset=utf-8",
-    ".svg": "image/svg+xml",
-    ".png": "image/png",
-    ".jpg": "image/jpeg",
-    ".webp": "image/webp",
-    ".woff2": "font/woff2",
     "": "text/plain; charset=utf-8",
 }
 
@@ -75,10 +52,6 @@ def env(name: str) -> str:
     return value
 
 
-def human_size(n: int) -> str:
-    return f"{n / 1024 / 1024:.1f} MB"
-
-
 def sha256(path: Path) -> str:
     h = hashlib.sha256()
     with path.open("rb") as f:
@@ -87,34 +60,9 @@ def sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def page_files() -> list[tuple[Path, str]]:
-    """(source, published path) for everything the page loads besides index.html."""
-    files = []
-    for base, prefix in ((PAGE_ASSETS, "assets"), (DEMO, "demo")):
-        if base.is_dir():
-            files += [(p, f"{prefix}/{p.relative_to(base).as_posix()}") for p in sorted(base.rglob("*")) if p.is_file() and not p.name.startswith(".")]
-    return files
-
-
 def notes(version: str) -> dict:
-    """Release notes per language; empty only in --preview without a changelog entry."""
+    """Release notes per language (Markdown), from CHANGELOG.md / CHANGELOG.vi.md."""
     return {lang: changelog.section(lang, version) or "" for lang in changelog.FILES}
-
-
-def render_page(version: str, published: str, files: dict) -> str:
-    page = TEMPLATE.read_text()
-    n = notes(version)
-    # Inside the page's JSON block of translations, so it must stay valid JSON.
-    page = page.replace('"{{NOTES_HTML_VI_JSON}}"', json.dumps(changelog.to_html(n["vi"]), ensure_ascii=False))
-    values = {"VERSION": version, "DATE": published[:10], "NOTES_HTML": changelog.to_html(n["en"])}
-    for kind, f in files.items():
-        k = kind.upper()
-        values[f"{k}_URL"] = f["url"]
-        values[f"{k}_SHA256"] = f["sha256"]
-        values[f"{k}_SIZE"] = human_size(f["size"])
-    for name, value in values.items():
-        page = page.replace("{{" + name + "}}", value)
-    return page
 
 
 def updater_manifest(version: str, published: str, public: str, files: dict, sigs: dict) -> dict:
@@ -141,37 +89,24 @@ def main() -> None:
         "rpm": BUNDLE / "rpm" / f"QuickDesk-{version}-1.x86_64.rpm",
         "appimage": BUNDLE / "appimage" / f"QuickDesk_{version}_amd64.AppImage",
     }
-    preview = len(sys.argv) == 3 and sys.argv[1] == "--preview"
-    if not preview and not all(notes(version).values()):
+    if not all(notes(version).values()):
         sys.exit(f"no release notes for {version}: add a '## {version}' section to CHANGELOG.md and CHANGELOG.vi.md")
     missing = [str(p) for p in expected.values() if not p.is_file()]
-    if missing and not preview:
+    if missing:
         sys.exit("build output not found:\n  " + "\n  ".join(missing))
-    if TEMPLATE.is_file() and not (DEMO / "index.html").is_file() and not preview:
-        sys.exit("dist-demo not found: run `npm run build:demo` first")
+    # Updater signatures sit next to each package.
+    sigs = {kind: path.with_name(path.name + ".sig") for kind, path in expected.items()}
+    unsigned = [str(p) for p in sigs.values() if not p.is_file()]
+    if unsigned:
+        sys.exit("updater signatures not found (build with TAURI_SIGNING_PRIVATE_KEY and createUpdaterArtifacts):\n  " + "\n  ".join(unsigned))
+    public = env("R2_PUBLIC_URL").rstrip("/")
 
     prefix = f"releases/{version}"
-    files = {}
-    for kind, path in expected.items():
-        files[kind] = {
-            "name": path.name,
-            "url": f"{prefix}/{path.name}",
-            "sha256": sha256(path) if path.is_file() else "",
-            "size": path.stat().st_size if path.is_file() else 0,
-        }
+    files = {
+        kind: {"name": path.name, "url": f"{prefix}/{path.name}", "sha256": sha256(path), "size": path.stat().st_size}
+        for kind, path in expected.items()
+    }
     published = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
-
-    if preview:
-        subprocess.run(["npm", "run", "--silent", "build:demo"], cwd=ROOT, check=True)
-        out = Path(sys.argv[2]).resolve()
-        out.mkdir(parents=True, exist_ok=True)
-        (out / "index.html").write_text(render_page(version, published, files))
-        for src, dest in page_files():
-            target = out / dest
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(src.read_bytes())
-        print(f"preview written to {out}; view it with: python3 -m http.server -d {out} 8000")
-        return
 
     bucket = env("R2_BUCKET")
     endpoint = os.environ.get("R2_ENDPOINT") or f"https://{env('R2_ACCOUNT_ID')}.r2.cloudflarestorage.com"
@@ -199,13 +134,6 @@ def main() -> None:
     sums = out / "SHA256SUMS"
     sums.write_text("".join(f"{f['sha256']}  {f['name']}\n" for f in files.values()))
 
-    # Updater signatures sit next to each package.
-    sigs = {kind: path.with_name(path.name + ".sig") for kind, path in expected.items()}
-    unsigned = [str(p) for p in sigs.values() if not p.is_file()]
-    if unsigned:
-        sys.exit("updater signatures not found (build with TAURI_SIGNING_PRIVATE_KEY and createUpdaterArtifacts):\n  " + "\n  ".join(unsigned))
-    public = env("R2_PUBLIC_URL").rstrip("/")
-
     # Versioned files never change: cache them for a long time.
     immutable = "public, max-age=31536000, immutable"
     for kind, path in expected.items():
@@ -213,10 +141,10 @@ def main() -> None:
         upload(sigs[kind], files[kind]["url"] + ".sig", immutable)
     upload(sums, f"{prefix}/SHA256SUMS", immutable)
 
-    latest = out / "latest.json"
-    latest.write_text(json.dumps({"version": version, "publishedAt": published, "notes": notes(version), "files": files}, indent=2) + "\n")
     # Pointers to "the newest" must not be cached for long.
     fresh = "public, max-age=60"
+    latest = out / "latest.json"
+    latest.write_text(json.dumps({"version": version, "publishedAt": published, "notes": notes(version), "files": files}, indent=2) + "\n")
     upload(latest, "latest.json", fresh)
 
     # The app picks `linux-x86_64-<bundle type>`, so each install updates with
@@ -224,16 +152,6 @@ def main() -> None:
     update = out / "update.json"
     update.write_text(json.dumps(updater_manifest(version, published, public, files, sigs), indent=2) + "\n")
     upload(update, "update.json", fresh)
-
-    if TEMPLATE.is_file():
-        # Assets keep fixed names across releases, so they get a short cache too.
-        for src, dest in page_files():
-            upload(src, dest, "public, max-age=300")
-        index = out / "index.html"
-        index.write_text(render_page(version, published, files))
-        upload(index, "index.html", fresh)
-    else:
-        print(f"no download page template at {TEMPLATE.relative_to(ROOT)}; skipped index.html")
 
     print(f"published QuickDesk {version}")
 

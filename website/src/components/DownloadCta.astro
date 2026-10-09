@@ -1,0 +1,36 @@
+---
+// Home page: short call to action; the full download page is /download.
+import { href, type Lang } from "../i18n";
+import type { Release } from "../data/release";
+
+interface Props {
+  lang: Lang;
+  release: Release;
+}
+const { lang, release } = Astro.props;
+const s = {
+  en: {
+    title: "Ready when you are.",
+    lead: `QuickDesk ${release.version} for Linux · released ${release.date}. Free and open source.`,
+    download: "Download for Linux",
+    changes: "What’s new",
+  },
+  vi: {
+    title: "Sẵn sàng khi bạn cần.",
+    lead: `QuickDesk ${release.version} cho Linux · phát hành ${release.date}. Miễn phí và mã nguồn mở.`,
+    download: "Tải cho Linux",
+    changes: "Có gì mới",
+  },
+}[lang];
+---
+<section class="download" id="download">
+  <div class="wrap download__head">
+    <img src="/favicon.svg" alt="" width="88" height="88" class="download__logo" />
+    <h2 class="section-title center">{s.title}</h2>
+    <p class="lead center">{s.lead}</p>
+    <div class="hero__cta">
+      <a class="btn btn--primary btn--lg" href={href(lang, "/download")}>{s.download}</a>
+      <a class="btn btn--link" href={href(lang, "/changelog")}>{s.changes} <span aria-hidden="true">›</span></a>
+    </div>
+  </div>
+</section>

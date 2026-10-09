@@ -1,0 +1,135 @@
+---
+// /download: every package with size and checksum, install commands, and the
+// release notes. The browser marks the package that fits the visitor's distro.
+import { changelog } from "../data/changelog";
+import { release } from "../data/release";
+import { href, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const v = release.version;
+const notes = changelog(lang).find((e) => e.version === v);
+const f = release.files;
+const s = {
+  en: {
+    title: `Download QuickDesk ${v}`,
+    lead: `For Linux on x86_64 · released ${release.date}. Free and open source (MIT).`,
+    recommended: "Recommended for you",
+    deb: ["Ubuntu, Debian, Linux Mint, Pop!_OS", "Ubuntu 22.04 and newer, Debian 12 and newer."],
+    rpm: ["Fedora and other RPM-based distros", "Fedora 36 and newer, openSUSE Tumbleweed."],
+    appimage: ["Any other distribution", "Portable: no install needed. Needs FUSE 2 (libfuse2)."],
+    get: "Download",
+    install: "Install",
+    sha: "SHA-256",
+    all: "All checksums (SHA256SUMS)",
+    notes: `What’s new in ${v}`,
+    allChanges: "All changes",
+    after: "Then open QuickDesk from your app menu. It lives in the top bar and updates itself from now on.",
+    notLinux: "QuickDesk runs on Linux for now. Windows and macOS versions are planned.",
+    copy: "Copy",
+  },
+  vi: {
+    title: `Tải QuickDesk ${v}`,
+    lead: `Cho Linux x86_64 · phát hành ${release.date}. Miễn phí, mã nguồn mở (MIT).`,
+    recommended: "Phù hợp với máy bạn",
+    deb: ["Ubuntu, Debian, Linux Mint, Pop!_OS", "Ubuntu 22.04 trở lên, Debian 12 trở lên."],
+    rpm: ["Fedora và các distro dùng RPM", "Fedora 36 trở lên, openSUSE Tumbleweed."],
+    appimage: ["Mọi distro khác", "Chạy ngay, không cần cài. Cần FUSE 2 (libfuse2)."],
+    get: "Tải",
+    install: "Cài đặt",
+    sha: "SHA-256",
+    all: "Toàn bộ mã kiểm tra (SHA256SUMS)",
+    notes: `Có gì mới trong ${v}`,
+    allChanges: "Mọi thay đổi",
+    after: "Sau đó mở QuickDesk từ menu ứng dụng. App nằm trên thanh trên cùng và từ giờ sẽ tự cập nhật.",
+    notLinux: "Hiện QuickDesk chạy trên Linux. Bản cho Windows và macOS đang được lên kế hoạch.",
+    copy: "Copy",
+  },
+}[lang];
+const packages = [
+  { kind: "deb", label: ".deb", info: s.deb, file: f.deb, cmd: `sudo apt install ./${f.deb.name}` },
+  { kind: "rpm", label: ".rpm", info: s.rpm, file: f.rpm, cmd: `sudo dnf install ./${f.rpm.name}` },
+  {
+    kind: "appimage",
+    label: "AppImage",
+    info: s.appimage,
+    file: f.appimage,
+    cmd: `chmod +x ${f.appimage.name} && ./${f.appimage.name}`,
+  },
+] as const;
+---
+<section class="dlpage">
+  <div class="wrap">
+    <header class="dlpage__head">
+      <img src="/favicon.svg" alt="" width="72" height="72" />
+      <h1 class="section-title">{s.title}</h1>
+      <p class="lead">{s.lead}</p>
+      <p class="dlpage__notlinux" data-notlinux hidden>{s.notLinux}</p>
+    </header>
+
+    <div class="pkgs">
+      {
+        packages.map((p) => (
+          <article class="pkg" data-pkg={p.kind}>
+            <div class="pkg__main">
+              <span class="pkg__badge" data-badge hidden>{s.recommended}</span>
+              <h2>{p.label}</h2>
+              <p class="pkg__for">{p.info[0]}</p>
+              <p class="muted">{p.info[1]}</p>
+            </div>
+            <div class="pkg__get">
+              <a class="btn btn--primary" href={p.file.href} download>
+                {s.get} {p.label}
+              </a>
+              <span class="pkg__meta">v{v} · {p.file.sizeText}</span>
+            </div>
+            <div class="pkg__more">
+              <div class="pkg__cmd">
+                <code>{p.cmd}</code>
+                <button type="button" class="terminal__copy" data-copy={p.cmd}>{s.copy}</button>
+              </div>
+              <p class="pkg__sha">
+                {s.sha}: <code>{p.file.sha256}</code>
+              </p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+
+    <p class="dlpage__after">
+      {s.after} <a class="btn--link" href={release.checksums}>{s.all}</a>
+    </p>
+
+    {
+      notes && (
+        <div class="whatsnew">
+          <h3>{s.notes}</h3>
+          <div class="whatsnew__body" set:html={notes.html} />
+          <p class="whatsnew__all">
+            <a class="btn--link" href={href(lang, "/changelog")}>
+              {s.allChanges} <span aria-hidden="true">›</span>
+            </a>
+          </p>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<script is:inline>
+  // Mark the package for this distro. Firefox on Ubuntu and Fedora says so in
+  // its user agent; other browsers do not, and then nothing is marked.
+  (() => {
+    const ua = navigator.userAgent;
+    const kind = /Ubuntu|Debian|Mint|Pop!_OS/i.test(ua) ? "deb" : /Fedora|openSUSE|Red Hat/i.test(ua) ? "rpm" : null;
+    if (!/Linux|X11/.test(ua) || /Android/.test(ua)) document.querySelector("[data-notlinux]").hidden = false;
+    if (!kind) return;
+    const card = document.querySelector(`[data-pkg="${kind}"]`);
+    card.classList.add("is-recommended");
+    card.querySelector("[data-badge]").hidden = false;
+    card.parentElement.prepend(card);
+  })();
+</script>

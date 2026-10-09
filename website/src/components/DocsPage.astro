@@ -1,0 +1,44 @@
+---
+import { sections } from "../data/docs";
+import { href, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const title = lang === "vi" ? "Tài liệu" : "Documentation";
+const lead =
+  lang === "vi"
+    ? "Cài đặt, phím tắt, đồng bộ, clipboard, cổng, usage AI và cập nhật."
+    : "Installing, shortcuts, sync, clipboard, ports, AI usage and updates.";
+const contents = lang === "vi" ? "Nội dung" : "Contents";
+// Section HTML links to /download etc.; point them at this language.
+const local = (html: string) => (lang === "vi" ? html.replace(/href="\/(?!vi\/)([a-z]+)"/g, 'href="/vi/$1"') : html);
+---
+<div class="wrap docs">
+  <aside class="docs__toc" aria-label={contents}>
+    <p class="docs__toc-title">{contents}</p>
+    <ol>
+      {sections.map((s) => <li><a href={`#${s.id}`}>{s.title[lang]}</a></li>)}
+    </ol>
+  </aside>
+  <article class="prose">
+    <h1>{title}</h1>
+    <p class="lead">{lead}</p>
+    {
+      sections.map((s) => (
+        <section id={s.id}>
+          <h2>
+            <a href={`#${s.id}`}>{s.title[lang]}</a>
+          </h2>
+          <Fragment set:html={local(s.html[lang])} />
+        </section>
+      ))
+    }
+    <p class="muted docs__more">
+      {lang === "vi" ? "Còn thắc mắc?" : "Still stuck?"}{" "}
+      <a href="https://github.com/TankGum/quickdesk/issues">{lang === "vi" ? "Hỏi trên GitHub" : "Ask on GitHub"}</a> ·{" "}
+      <a href={href(lang, "/privacy")}>{lang === "vi" ? "Quyền riêng tư" : "Privacy"}</a>
+    </p>
+  </article>
+</div>
