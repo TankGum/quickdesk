@@ -318,7 +318,12 @@ const commands: Record<string, (a: Args) => unknown> = {
     autoCheck: true,
     status:
       params.get("update") === "available"
-        ? { state: "available", version: "0.2.2", notes: null }
+        ? {
+            state: "available",
+            version: "0.2.2",
+            notes: "### New\n- QuickDesk now updates itself.\n\n### Fixed\n- A sample fix.",
+            notesVi: "### Mới\n- QuickDesk giờ tự cập nhật.\n\n### Sửa lỗi\n- Một lỗi mẫu đã được sửa.",
+          }
         : { state: "upToDate", checkedAt: now - 20 * MIN },
   }),
   update_check: () => ({ currentVersion: "0.2.1", autoCheck: true, status: { state: "upToDate", checkedAt: Date.now() } }),

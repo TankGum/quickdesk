@@ -21,6 +21,13 @@ export const params = new URLSearchParams(location.search);
 /** Language the page asked for (?lang= or a "lang" message); the app follows it. */
 export let demoLang: "en" | "vi" = params.get("lang") === "vi" ? "vi" : "en";
 
+// The demo has no update history: never greet visitors with "updated to …".
+try {
+  localStorage.setItem("qd.whatsNewSeen", "0.2.1");
+} catch {
+  /* storage blocked: the notice may show, which is harmless */
+}
+
 // ?theme=dark|light forces a theme (the landing page is dark).
 const theme = params.get("theme");
 if (theme) document.documentElement.dataset.theme = theme;

@@ -330,6 +330,13 @@
         <p class="lead center" data-i18n="t69">QuickDesk {{VERSION}} for Linux · released {{DATE}}. Free and open source.</p>
       </div>
 
+      <!-- This release's CHANGELOG.md section, filled in by publish_r2.py -->
+      <div class="whatsnew">
+        <h3 data-i18n="wn-title">What’s new in {{VERSION}}</h3>
+        <div class="whatsnew__body" data-i18n="wn-body">{{NOTES_HTML}}</div>
+        <p class="whatsnew__all" data-i18n="wn-all"><a class="btn--link" href="https://github.com/TankGum/quickdesk/blob/main/CHANGELOG.md">All changes <span aria-hidden="true">›</span></a></p>
+      </div>
+
       <div class="dl-grid">
         <article class="dl-card dl-card--primary">
           <div class="dl-card__icon" aria-hidden="true">
@@ -572,7 +579,10 @@
 "gh-title": "Mã nguồn mở, giấy phép MIT.",
 "gh-lead": "Đọc từng dòng code, tự build, báo lỗi hoặc gửi pull request. QuickDesk được phát triển công khai trên GitHub.",
 "gh-star": "Star trên GitHub",
-"gh-issues": "Báo lỗi"
+"gh-issues": "Báo lỗi",
+"wn-title": "Có gì mới trong {{VERSION}}",
+"wn-body": "{{NOTES_HTML_VI_JSON}}",
+"wn-all": "<a class=\"btn--link\" href=\"https://github.com/TankGum/quickdesk/blob/main/CHANGELOG.vi.md\">Mọi thay đổi <span aria-hidden=\"true\">›</span></a>"
 }
 </script>
 <script src="assets/js/main.js" defer></script>

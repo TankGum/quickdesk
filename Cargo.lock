@@ -3532,7 +3532,7 @@ checksum = "d55d956fa96f5ec02be2e13af0e20391a5aa83d6a074e3ad368959d0fab299ea"
 
 [[package]]
 name = "qd-ai-usage"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "libc",
  "serde",
@@ -3543,7 +3543,7 @@ dependencies = [
 
 [[package]]
 name = "qd-clipboard"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "blake3",
  "data-encoding",
@@ -3556,7 +3556,7 @@ dependencies = [
 
 [[package]]
 name = "qd-core"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "rusqlite",
  "serde",
@@ -3568,7 +3568,7 @@ dependencies = [
 
 [[package]]
 name = "qd-notes"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "qd-core",
  "rusqlite",
@@ -3579,7 +3579,7 @@ dependencies = [
 
 [[package]]
 name = "qd-platform"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "arboard",
  "ashpd",
@@ -3594,7 +3594,7 @@ dependencies = [
 
 [[package]]
 name = "qd-ports"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "libc",
  "listeners",
@@ -3605,7 +3605,7 @@ dependencies = [
 
 [[package]]
 name = "qd-sync"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "argon2",
  "chacha20poly1305",
@@ -3639,7 +3639,7 @@ dependencies = [
 
 [[package]]
 name = "quickdesk"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "keyring",
  "qd-ai-usage",

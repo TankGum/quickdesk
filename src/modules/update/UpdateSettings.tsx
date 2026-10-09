@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { useI18n } from "../../shared/i18n";
 import { api, errorMessage } from "../../shared/ipc";
+import { pickNotes, ReleaseNotes } from "../../shared/ReleaseNotes";
 import { relativeTime } from "../../shared/time";
 import { pendingVersion, useUpdate } from "./useUpdate";
 
@@ -48,6 +49,7 @@ export function UpdateSettings() {
           {t("update.checkNow")}
         </button>
       </div>
+      {s.state === "available" && pickNotes(s.notes, s.notesVi) && <ReleaseNotes markdown={pickNotes(s.notes, s.notesVi)!} />}
       <label className="switch">
         <input type="checkbox" checked={info.autoCheck} onChange={(e) => void api.updateSetAuto(e.target.checked).then(setInfo, (x) => setError(errorMessage(x)))} />
         {t("update.auto")}

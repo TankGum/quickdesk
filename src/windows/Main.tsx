@@ -9,6 +9,7 @@ import { SyncSettings } from "../modules/sync/SyncSettings";
 import { HotkeySettings } from "../modules/settings/HotkeySettings";
 import { PasteSettings } from "../modules/settings/PasteSettings";
 import { UpdateBanner } from "../modules/update/UpdateBanner";
+import { WhatsNew } from "../modules/update/WhatsNew";
 import { UpdateSettings } from "../modules/update/UpdateSettings";
 import { LangPref, setLanguage, useI18n } from "../shared/i18n";
 import { api, AppInfo, currentWindow, errorMessage, FocusStats, hideWindow, useShown } from "../shared/ipc";
@@ -68,6 +69,7 @@ export function Main() {
         </div>
       </nav>
       <UpdateBanner />
+      <WhatsNew />
       <section className="content">
         {tab === "notes" && <NotesTab focusSignal={shownAt} />}
         {tab === "settings" && <Settings />}

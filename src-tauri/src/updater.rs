@@ -32,9 +32,11 @@ pub enum UpdateStatus {
     UpToDate {
         checked_at: i64,
     },
+    /// `notes` / `notes_vi`: this version's CHANGELOG section (update.json).
     Available {
         version: String,
         notes: Option<String>,
+        notes_vi: Option<String>,
     },
     Downloading {
         version: String,
@@ -132,7 +134,10 @@ pub async fn check(app: &AppHandle) {
     match result {
         Ok(Some(update)) => {
             tracing::info!(version = %update.version, "update available");
-            let status = UpdateStatus::Available { version: update.version.clone(), notes: update.body.clone() };
+            // notes_vi is QuickDesk's own field in update.json, next to the standard notes.
+            let notes_vi = update.raw_json.get("notes_vi").and_then(|v| v.as_str()).map(str::to_owned);
+            let status =
+                UpdateStatus::Available { version: update.version.clone(), notes: update.body.clone(), notes_vi };
             *app.state::<AppState>().updates.pending.lock().unwrap_or_else(|e| e.into_inner()) = Some(update);
             set(app, status);
         }

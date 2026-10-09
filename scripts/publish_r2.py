@@ -18,6 +18,8 @@ The download page template may use these placeholders:
     {{DEB_URL}} {{RPM_URL}} {{APPIMAGE_URL}}         (relative to the bucket root)
     {{DEB_SHA256}} {{RPM_SHA256}} {{APPIMAGE_SHA256}}
     {{DEB_SIZE}} {{RPM_SIZE}} {{APPIMAGE_SIZE}}      (e.g. "9.2 MB")
+    {{NOTES_HTML}}                                    this version's CHANGELOG.md section
+    "{{NOTES_HTML_VI_JSON}}"                          CHANGELOG.vi.md's, as a JSON string
 
 `python3 scripts/publish_r2.py --preview DIR` builds the demo and renders the
 page into DIR instead of uploading; serve DIR over HTTP to check it (the demo
@@ -39,6 +41,8 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+
+import changelog
 
 ROOT = Path(__file__).resolve().parent.parent
 BUNDLE = ROOT / "target" / "release" / "bundle"
@@ -92,9 +96,17 @@ def page_files() -> list[tuple[Path, str]]:
     return files
 
 
+def notes(version: str) -> dict:
+    """Release notes per language; empty only in --preview without a changelog entry."""
+    return {lang: changelog.section(lang, version) or "" for lang in changelog.FILES}
+
+
 def render_page(version: str, published: str, files: dict) -> str:
     page = TEMPLATE.read_text()
-    values = {"VERSION": version, "DATE": published[:10]}
+    n = notes(version)
+    # Inside the page's JSON block of translations, so it must stay valid JSON.
+    page = page.replace('"{{NOTES_HTML_VI_JSON}}"', json.dumps(changelog.to_html(n["vi"]), ensure_ascii=False))
+    values = {"VERSION": version, "DATE": published[:10], "NOTES_HTML": changelog.to_html(n["en"])}
     for kind, f in files.items():
         k = kind.upper()
         values[f"{k}_URL"] = f["url"]
@@ -106,11 +118,14 @@ def render_page(version: str, published: str, files: dict) -> str:
 
 
 def updater_manifest(version: str, published: str, public: str, files: dict, sigs: dict) -> dict:
-    """Static manifest in tauri-plugin-updater's format."""
+    """Static manifest in tauri-plugin-updater's format. `notes` is shown in
+    the app; `notes_vi` is QuickDesk's own extra field for Vietnamese."""
     platform = {"deb": "linux-x86_64-deb", "rpm": "linux-x86_64-rpm", "appimage": "linux-x86_64-appimage"}
+    n = notes(version)
     return {
         "version": version,
-        "notes": f"QuickDesk {version}",
+        "notes": n["en"],
+        "notes_vi": n["vi"],
         "pub_date": published,
         "platforms": {
             platform[kind]: {"signature": sigs[kind].read_text().strip(), "url": f"{public}/{f['url']}"}
@@ -127,6 +142,8 @@ def main() -> None:
         "appimage": BUNDLE / "appimage" / f"QuickDesk_{version}_amd64.AppImage",
     }
     preview = len(sys.argv) == 3 and sys.argv[1] == "--preview"
+    if not preview and not all(notes(version).values()):
+        sys.exit(f"no release notes for {version}: add a '## {version}' section to CHANGELOG.md and CHANGELOG.vi.md")
     missing = [str(p) for p in expected.values() if not p.is_file()]
     if missing and not preview:
         sys.exit("build output not found:\n  " + "\n  ".join(missing))
@@ -197,7 +214,7 @@ def main() -> None:
     upload(sums, f"{prefix}/SHA256SUMS", immutable)
 
     latest = out / "latest.json"
-    latest.write_text(json.dumps({"version": version, "publishedAt": published, "files": files}, indent=2) + "\n")
+    latest.write_text(json.dumps({"version": version, "publishedAt": published, "notes": notes(version), "files": files}, indent=2) + "\n")
     # Pointers to "the newest" must not be cached for long.
     fresh = "public, max-age=60"
     upload(latest, "latest.json", fresh)

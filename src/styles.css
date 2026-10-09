@@ -465,14 +465,23 @@ select option { color: var(--fg); background-color: var(--surface); }
 /* ---------- Update banner ---------- */
 
 .update-banner {
-  display: flex; gap: 10px; align-items: center;
+  display: flex; flex-direction: column; gap: 8px;
   margin: 10px 14px 0; padding: 8px 10px 8px 14px; border-radius: 10px;
   background: color-mix(in srgb, var(--clip) 12%, transparent);
   border: 1px solid color-mix(in srgb, var(--clip) 35%, transparent);
   color: var(--fg);
 }
-.update-banner .icon-svg { color: var(--clip); }
+.update-row > .icon-svg { color: var(--clip); }
+.update-row { display: flex; gap: 10px; align-items: center; }
 .update-banner .update-text { flex: 1; min-width: 0; }
+.whatsnew-banner { background: color-mix(in srgb, var(--ok) 10%, transparent); border-color: color-mix(in srgb, var(--ok) 35%, transparent); }
+.whatsnew-banner .update-row > .icon-svg { color: var(--ok); }
+.icon-svg.flip { transform: rotate(180deg); }
+.release-notes { padding: 2px 4px 4px 25px; font-size: 13px; color: var(--muted); }
+.release-notes h4 { margin: 8px 0 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--faint); }
+.release-notes ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
+.release-notes p { margin: 4px 0; }
+.update-settings .release-notes { padding-left: 0; margin-bottom: 8px; }
 .update-banner .btn.primary { background: var(--clip); color: #fff; }
 .update-banner.error { background: color-mix(in srgb, var(--danger) 10%, transparent); border-color: color-mix(in srgb, var(--danger) 35%, transparent); }
 .update-settings p { margin: 0 0 6px; }

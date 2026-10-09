@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { lang, setLanguage, useI18n } from "../shared/i18n";
+import { markSeen } from "../modules/update/WhatsNew";
 import { api, errorMessage, HotkeyConfig } from "../shared/ipc";
 
 /** First-run screen: shows the hotkeys and offers the one-time instant-paste opt-in. */
@@ -35,6 +36,9 @@ export function Welcome({ onDone }: { onDone: () => void }) {
       }
     }
     await api.onboardingFinish();
+    // A new install, not an update: no "what's new" for this version.
+    const { currentVersion } = await api.updateStatus();
+    markSeen(currentVersion);
     onDone();
   };
 

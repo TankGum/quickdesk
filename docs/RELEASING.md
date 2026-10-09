@@ -82,13 +82,18 @@ python3 -m http.server -d /tmp/qd-page 8000   # then open http://localhost:8000
 
 ## Each release
 
-1. Bump `version` in `src-tauri/tauri.conf.json`, `Cargo.toml` (workspace) and `package.json`.
-2. Commit, then tag and push:
+1. Write what changed for users in `CHANGELOG.md` **and** `CHANGELOG.vi.md`: a
+   `## <version> — <date>` section with `### New` / `### Improved` / `### Fixed`
+   (Vietnamese: `### Mới` / `### Cải thiện` / `### Sửa lỗi`). The release fails
+   without it. These notes appear in the app's update banner, in "what's new"
+   after updating, on the download page and on GitHub Releases.
+2. Bump `version` in `src-tauri/tauri.conf.json`, `Cargo.toml` (workspace) and `package.json`.
+3. Commit, then tag and push:
    ```sh
    git tag v0.2.0
    git push origin main v0.2.0
    ```
-3. The **Release** workflow checks the tag matches the version, builds on Ubuntu
+4. The **Release** workflow checks the tag matches the version and that release notes exist, builds on Ubuntu
    22.04 (packages then also install on newer distributions), and uploads:
    ```
    releases/<version>/QuickDesk_<version>_amd64.deb
