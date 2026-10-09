@@ -1,14 +1,15 @@
 use qd_core::settings;
+use qd_sync::cloud::{self, Account};
 use qd_sync::crypto::KdfParams;
 use qd_sync::engine::reset_local_state;
-use qd_sync::{create_keyring, fetch_keyring, unlock, BlobTransport, Layout, S3Config, S3Transport};
+use qd_sync::{create_keyring, fetch_keyring, unlock, BlobTransport};
 use serde::Serialize;
 use tauri::{AppHandle, Manager, State};
 
 use super::{blocking, CmdError, CmdResult};
 use crate::secrets;
 use crate::state::AppState;
-use crate::sync::{self, Setup, SyncStatus, Trigger, CONFIG_KEY};
+use crate::sync::{self, CloudConfig, Setup, SyncStatus, Trigger, CONFIG_KEY, NOTICE_KEY};
 
 #[tauri::command]
 pub fn sync_status(state: State<'_, AppState>) -> SyncStatus {
@@ -17,89 +18,104 @@ pub fn sync_status(state: State<'_, AppState>) -> SyncStatus {
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ConnectResult {
-    /// A keyring already exists there: unlock instead of creating one.
-    initialized: bool,
+pub struct Enabled {
+    /// What other devices enter to join; can be shown again later.
+    sync_code: String,
+    /// Shown once: unlocks the notes if the passphrase is forgotten.
+    recovery_key: String,
 }
 
-fn same_location(a: &S3Config, b: &S3Config) -> bool {
-    (a.endpoint.trim(), a.bucket.trim(), a.prefix.trim_matches('/'))
-        == (b.endpoint.trim(), b.bucket.trim(), b.prefix.trim_matches('/'))
+fn keyring_err(e: String) -> CmdError {
+    CmdError::new("keyring", e)
 }
 
-/// Test the storage credentials and remember them.
-#[tauri::command]
-pub async fn sync_connect(app: AppHandle, config: S3Config, secret: String) -> CmdResult<ConnectResult> {
-    blocking(move || {
-        for (name, v) in
-            [("endpoint", &config.endpoint), ("bucket", &config.bucket), ("access key id", &config.access_key_id)]
-        {
-            if v.trim().is_empty() {
-                return Err(CmdError::new("invalid", format!("{name} is required")));
-            }
-        }
-        if secret.trim().is_empty() {
-            return Err(CmdError::new("invalid", "secret access key is required"));
-        }
-        let transport = S3Transport::new(&config, &secret)?;
-        let layout = Layout::new(&config.prefix);
-        // Fails on bad credentials, a missing bucket or no network.
-        transport.list(&layout.keyring(), None)?;
-        let initialized = fetch_keyring(&transport, &layout)?.is_some();
-
-        let state = app.state::<AppState>();
-        {
-            let conn = state.db.conn()?;
-            let previous: Option<S3Config> = settings::get(&conn, CONFIG_KEY)?;
-            if !previous.is_some_and(|p| same_location(&p, &config)) {
-                reset_local_state(&conn)?;
-                secrets::delete(secrets::SYNC_DEK).map_err(|e| CmdError::new("keyring", e))?;
-            }
-            settings::set(&conn, CONFIG_KEY, &config)?;
-        }
-        secrets::set(secrets::S3_SECRET, &secret).map_err(|e| CmdError::new("keyring", e))?;
-        sync::refresh_status(&app);
-        Ok(ConnectResult { initialized })
-    })
-    .await
-}
-
-fn locked_transport(app: &AppHandle) -> CmdResult<(S3Config, S3Transport)> {
-    match sync::load(app).map_err(|e| CmdError::new("internal", e))? {
-        Setup::Disabled => Err(CmdError::new("invalid", "connect storage first")),
-        Setup::Locked { config, transport } | Setup::Unlocked { config, transport, .. } => Ok((config, transport)),
-    }
+/// Remember the account on this device (token in the OS keyring).
+fn remember(app: &AppHandle, endpoint: &str, account: &Account) -> CmdResult<()> {
+    secrets::set(secrets::SYNC_TOKEN, &account.token).map_err(keyring_err)?;
+    let state = app.state::<AppState>();
+    let conn = state.db.conn()?;
+    settings::set(&conn, CONFIG_KEY, &CloudConfig { account: account.account.clone(), endpoint: endpoint.to_owned() })?;
+    conn.execute("DELETE FROM settings WHERE key = ?1", [NOTICE_KEY]).map_err(qd_core::Error::from)?;
+    Ok(())
 }
 
 fn store_key(app: &AppHandle, dek: &qd_sync::crypto::Dek) -> CmdResult<()> {
-    secrets::set(secrets::SYNC_DEK, &dek.to_base64()).map_err(|e| CmdError::new("keyring", e))?;
+    secrets::set(secrets::SYNC_DEK, &dek.to_base64()).map_err(keyring_err)?;
     sync::refresh_status(app);
     app.state::<AppState>().sync.trigger(Trigger::Now);
     Ok(())
 }
 
-/// First device: create the encryption keys. Returns the recovery key to show once.
+/// First device: create a sync account in QuickDesk Cloud and its encryption
+/// keys. Returns the sync code and the recovery key.
 #[tauri::command]
-pub async fn sync_create(app: AppHandle, passphrase: String) -> CmdResult<String> {
+pub async fn sync_enable(app: AppHandle, passphrase: String) -> CmdResult<Enabled> {
     blocking(move || {
-        let (config, transport) = locked_transport(&app)?;
-        let (dek, recovery) =
-            create_keyring(&transport, &Layout::new(&config.prefix), &passphrase, KdfParams::default())?;
+        // Check before creating the account, so a short passphrase leaves nothing behind.
+        if passphrase.chars().count() < qd_sync::crypto::MIN_PASSPHRASE_CHARS {
+            return Err(CmdError::new(
+                "invalid",
+                format!("passphrase must be at least {} characters", qd_sync::crypto::MIN_PASSPHRASE_CHARS),
+            ));
+        }
+        let endpoint = cloud::endpoint();
+        let account = cloud::create_account(&endpoint)?;
+        let transport = qd_sync::CloudTransport::new(&endpoint, &account);
+        let (dek, recovery) = match create_keyring(&transport, &sync::layout(), &passphrase, KdfParams::default()) {
+            Ok(keys) => keys,
+            Err(e) => {
+                // Do not leave an empty account behind.
+                let _ = cloud::delete_account(&endpoint, &account);
+                return Err(e.into());
+            }
+        };
+        reset_local_state(&*app.state::<AppState>().db.conn()?)?;
+        remember(&app, &endpoint, &account)?;
         store_key(&app, &dek)?;
-        Ok(recovery.display())
+        Ok(Enabled { sync_code: account.sync_code(), recovery_key: recovery.display() })
     })
     .await
 }
 
-/// Further devices: unlock with the passphrase or recovery key.
+/// Another device: join with the sync code and the passphrase (or recovery key).
 #[tauri::command]
-pub async fn sync_unlock(app: AppHandle, secret: String) -> CmdResult<()> {
+pub async fn sync_join(app: AppHandle, code: String, secret: String) -> CmdResult<()> {
     blocking(move || {
-        let (config, transport) = locked_transport(&app)?;
-        let dek = unlock(&transport, &Layout::new(&config.prefix), &secret)?;
+        let account = Account::from_sync_code(&code)?;
+        let endpoint = cloud::endpoint();
+        let transport = qd_sync::CloudTransport::new(&endpoint, &account);
+        // Wrong or deleted codes fail here, before anything is stored.
+        if fetch_keyring(&transport, &sync::layout())?.is_none() {
+            return Err(CmdError::new("not_initialized", "this sync code has no data yet"));
+        }
+        let dek = unlock(&transport, &sync::layout(), &secret)?;
+        reset_local_state(&*app.state::<AppState>().db.conn()?)?;
+        remember(&app, &endpoint, &account)?;
         store_key(&app, &dek)
     })
     .await
+}
+
+/// This device knows the account but lost its key (e.g. the OS keyring was reset).
+#[tauri::command]
+pub async fn sync_unlock(app: AppHandle, secret: String) -> CmdResult<()> {
+    blocking(move || {
+        let Setup::Locked { config, account } = sync::load(&app).map_err(|e| CmdError::new("internal", e))? else {
+            return Err(CmdError::new("invalid", "sync is not waiting to be unlocked"));
+        };
+        let dek = unlock(&Setup::transport(&config, &account), &sync::layout(), &secret)?;
+        store_key(&app, &dek)
+    })
+    .await
+}
+
+/// The sync code, to add another device.
+#[tauri::command]
+pub fn sync_code(app: AppHandle) -> CmdResult<String> {
+    match sync::load(&app).map_err(|e| CmdError::new("internal", e))? {
+        Setup::Disabled => Err(CmdError::new("invalid", "sync is off")),
+        Setup::Locked { account, .. } | Setup::Unlocked { account, .. } => Ok(account.sync_code()),
+    }
 }
 
 #[tauri::command]
@@ -107,20 +123,40 @@ pub fn sync_now(state: State<'_, AppState>) {
     state.sync.trigger(Trigger::Now);
 }
 
-/// Stop syncing and forget credentials. Local notes are kept.
+/// Stop syncing on this device. Local notes are kept. With `delete_cloud`, the
+/// sync account and everything in it are deleted for every device.
 #[tauri::command]
-pub async fn sync_disconnect(app: AppHandle) -> CmdResult<()> {
+pub async fn sync_disconnect(app: AppHandle, delete_cloud: bool) -> CmdResult<()> {
     blocking(move || {
+        if delete_cloud {
+            if let Setup::Locked { config, account } | Setup::Unlocked { config, account, .. } =
+                sync::load(&app).map_err(|e| CmdError::new("internal", e))?
+            {
+                cloud::delete_account(&config.endpoint, &account)?;
+            }
+        }
         let state = app.state::<AppState>();
         {
             let conn = state.db.conn()?;
             conn.execute("DELETE FROM settings WHERE key = ?1", [CONFIG_KEY]).map_err(qd_core::Error::from)?;
             reset_local_state(&conn)?;
         }
-        for name in [secrets::S3_SECRET, secrets::SYNC_DEK] {
-            secrets::delete(name).map_err(|e| CmdError::new("keyring", e))?;
+        for name in [secrets::SYNC_TOKEN, secrets::SYNC_DEK] {
+            secrets::delete(name).map_err(keyring_err)?;
         }
         sync::refresh_status(&app);
+        Ok(())
+    })
+    .await
+}
+
+/// Probe used by the UI before joining: is this a valid code with data?
+#[tauri::command]
+pub async fn sync_check_code(code: String) -> CmdResult<()> {
+    blocking(move || {
+        let account = Account::from_sync_code(&code)?;
+        let transport = qd_sync::CloudTransport::new(&cloud::endpoint(), &account);
+        transport.list(&sync::layout().keyring(), None)?;
         Ok(())
     })
     .await

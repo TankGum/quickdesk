@@ -8,6 +8,19 @@ Each release is a `## <version> — <date>` section with up to three groups:
 a version that has no section here, and shows the section in the app, on the
 download page and on GitHub Releases.
 
+## 0.3.1 — 2026-10-09
+
+### New
+- Sync is now built in: turn it on in Settings → Sync and join your other computers with a sync code. No account, email or storage setup. Notes are still encrypted on your computer before they leave it; QuickDesk Cloud only stores ciphertext.
+
+### Fixed
+- Notes, clipboard history and settings from earlier versions are back. Updating to 0.2.0 and to 0.3.0 started with an empty folder instead of moving your data; QuickDesk now brings it over by itself, and keeps the old folders as a backup.
+- Opening Settings no longer turns the coloured dots of the other tabs grey.
+
+### Improved
+- Syncing through your own S3 or R2 bucket is no longer offered. If you used it, sync is turned off once with a note in Settings → Sync; your notes stay on your computer.
+- The AI usage menu in the top bar shows only the tool you track, with a green, yellow or red bar for each limit and the reset time under it. Pick another tool under Track.
+
 ## 0.3.0 — 2026-10-09
 
 ### New

@@ -5,6 +5,9 @@
 /// changing it would orphan secrets users already stored.
 const SERVICE: &str = "dev.quickdesk.app";
 
+/// QuickDesk Cloud sync account token (with the account id, it is the sync code).
+pub const SYNC_TOKEN: &str = "sync-cloud-token";
+/// Secret of the own-bucket setup of 0.3.0 and earlier; only ever deleted now.
 pub const S3_SECRET: &str = "sync-s3-secret";
 pub const SYNC_DEK: &str = "sync-dek";
 

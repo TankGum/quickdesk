@@ -27,10 +27,11 @@ only when the user clicks Update Now.
 | Thing | Where | Notes |
 |---|---|---|
 | Website | `quickdesk.click`, Cloudflare Pages, source `website/` | Rebuilds on every push to `main` and after every release |
+| Sync server | `sync.quickdesk.click`, Cloudflare Worker + R2 bucket `quickdesk-sync`, source `sync-server/` | Deployed by hand: `cd sync-server && npx wrangler deploy`. Stores only ciphertext |
 | Download host | `dl.quickdesk.click`, R2 bucket `quickdesk-downloads` | **Keep the `r2.dev` public URL on**: 0.2.2 only knows that address |
 | Old links | `quickdesk.click/update.json`, `/latest.json`, `/releases/*` | Redirected to `dl.` by `website/public/_redirects` |
 | Updater signing key | `~/.tauri/quickdesk.key` + GitHub secrets | Public half in `src-tauri/tauri.conf.json`. **Back it up**: losing it means installed apps can never update again |
-| App identifier | `click.quickdesk` | Data in `~/.local/share/click.quickdesk`; older data dirs are migrated in `src-tauri/src/lib.rs` |
+| App identifier | `click.quickdesk` | Data in `~/.local/share/click.quickdesk`; data from older identifiers is merged in by `src-tauri/src/legacy.rs` (old folders kept, marked `IMPORTED-INTO-QUICKDESK.txt`) |
 
 ## 1. Changing the app
 
@@ -108,6 +109,16 @@ cd website && nvm use && npm install && npm run dev   # http://localhost:4321
 
 The notes show up in the app (update banner and "what's new" after updating), on the
 website, and on GitHub Releases. Versions only go up; the tag must match the version.
+
+## 4. Changing sync
+
+- The engine (`crates/qd-sync`) talks to storage only through `BlobTransport`;
+  QuickDesk Cloud is `cloud::CloudTransport`. Keep the encryption on the client.
+- Server changes (`sync-server/src/index.ts`): test with `npx wrangler dev` and the
+  `cloud_live` test (see RELEASING.md), then `npx wrangler deploy`. Deploy server
+  changes **before** releasing an app that needs them, and keep the API
+  backwards compatible: installed apps keep calling it.
+- Anything new the server stores or sees goes into `website/src/data/privacy.ts`.
 
 ## Gotchas
 

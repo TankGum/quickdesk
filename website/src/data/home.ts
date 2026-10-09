@@ -69,24 +69,24 @@ export const home = {
     "vi": "Thoát QuickDesk"
   },
   "t21": {
-    "en": "5-hour: 42% · resets in 2h 10m",
-    "vi": "5 giờ: 42% · đặt lại sau 2 giờ 10 phút"
+    "en": "🟩🟩🟩🟩⬛⬛⬛⬛⬛⬛&nbsp;&nbsp;42%&nbsp;&nbsp;5-hour",
+    "vi": "🟩🟩🟩🟩⬛⬛⬛⬛⬛⬛&nbsp;&nbsp;42%&nbsp;&nbsp;5 giờ"
+  },
+  "t21b": {
+    "en": "resets in 2h 10m",
+    "vi": "đặt lại sau 2 giờ 10 phút"
   },
   "t22": {
-    "en": "Weekly: 18% · resets in 4d 6h",
-    "vi": "Tuần: 18% · đặt lại sau 4 ngày 6 giờ"
+    "en": "🟨🟨🟨🟨🟨🟨🟨⬛⬛⬛&nbsp;&nbsp;71%&nbsp;&nbsp;Weekly",
+    "vi": "🟨🟨🟨🟨🟨🟨🟨⬛⬛⬛&nbsp;&nbsp;71%&nbsp;&nbsp;Tuần"
   },
-  "t23": {
-    "en": "5-hour: 81% · resets in 38m",
-    "vi": "5 giờ: 81% · đặt lại sau 38 phút"
-  },
-  "t24": {
-    "en": "Weekly: 27% · resets in 5d 2h",
-    "vi": "Tuần: 27% · đặt lại sau 5 ngày 2 giờ"
+  "t22b": {
+    "en": "resets in 4d 6h",
+    "vi": "đặt lại sau 4 ngày 6 giờ"
   },
   "t25": {
-    "en": "Ring Shows",
-    "vi": "Vòng tròn hiển thị"
+    "en": "Track",
+    "vi": "Theo dõi"
   },
   "t26": {
     "en": "Refresh Now",
@@ -101,8 +101,8 @@ export const home = {
     "vi": "Viết ở đây.<br>Đọc ở mọi nơi."
   },
   "t29": {
-    "en": "Jot something down on your desktop and pick it up on your laptop. Notes sync through a storage bucket you own, encrypted on your device before they leave it — no account, no QuickDesk server.",
-    "vi": "Ghi nhanh trên máy bàn, mở lại trên laptop. Ghi chú đồng bộ qua bucket lưu trữ của chính bạn và được mã hoá ngay trên máy trước khi gửi đi — không tài khoản, không server QuickDesk."
+    "en": "Jot something down on your desktop and pick it up on your laptop. Turn on sync once, join your other computers with a sync code, and your notes follow you — encrypted on your device before they leave it.",
+    "vi": "Ghi nhanh trên máy bàn, mở lại trên laptop. Bật đồng bộ một lần, cho các máy khác tham gia bằng mã đồng bộ, và ghi chú đi theo bạn — đã được mã hoá ngay trên máy trước khi gửi đi."
   },
   "t33": {
     "en": "Copy now.<br>Paste whenever.",
@@ -209,16 +209,16 @@ export const home = {
     "vi": "Ghi chú đồng bộ giữa các máy thế nào?"
   },
   "t88": {
-    "en": "There is no QuickDesk account or server. You connect each machine to the same S3-compatible bucket you own — Cloudflare R2’s free tier is plenty — and enter the same passphrase. The first machine also gives you a recovery key. After that notes sync in the background, offline edits catch up when you reconnect, and if a note was edited on two machines at once, the other version is kept as a copy.",
-    "vi": "Không có tài khoản hay server QuickDesk. Bạn kết nối mỗi máy vào cùng một bucket tương thích S3 của mình — gói miễn phí của Cloudflare R2 là đủ — và nhập cùng một passphrase. Máy đầu tiên còn cho bạn một recovery key. Sau đó ghi chú tự đồng bộ trong nền, chỉnh sửa lúc mất mạng sẽ được gửi khi có mạng lại, và nếu một ghi chú bị sửa cùng lúc trên hai máy thì bản còn lại được giữ thành bản sao."
+    "en": "Turn on sync in Settings → Sync on one computer: QuickDesk gives you a sync code and a recovery key. On your other computers choose “I have a sync code” and enter the code with the same passphrase. There is no account or email. Notes sync in the background, offline edits catch up when you reconnect, and if a note was edited on two computers at once, both versions are kept.",
+    "vi": "Bật đồng bộ trong Cài đặt → Đồng bộ trên một máy: QuickDesk cho bạn một mã đồng bộ và một recovery key. Trên các máy khác, chọn “Tôi đã có mã đồng bộ” rồi nhập mã cùng passphrase. Không cần tài khoản hay email. Ghi chú tự đồng bộ trong nền, chỉnh sửa lúc mất mạng sẽ được gửi khi có mạng lại, và nếu một ghi chú bị sửa cùng lúc trên hai máy thì cả hai bản đều được giữ."
   },
   "t89": {
     "en": "Is my data encrypted?",
     "vi": "Dữ liệu có được mã hoá không?"
   },
   "t90": {
-    "en": "Notes are encrypted on your device (XChaCha20-Poly1305, with a key derived from your passphrase using Argon2id) before upload, so the storage provider only ever sees ciphertext. The bucket’s secret key is kept in your system keyring. Clipboard history and port data never leave your machine.",
-    "vi": "Ghi chú được mã hoá ngay trên máy (XChaCha20-Poly1305, khoá sinh từ passphrase bằng Argon2id) trước khi tải lên, nên nhà cung cấp lưu trữ chỉ thấy dữ liệu đã mã hoá. Secret key của bucket được giữ trong keyring của hệ thống. Lịch sử clipboard và dữ liệu cổng không bao giờ rời khỏi máy."
+    "en": "Notes are encrypted on your device (XChaCha20-Poly1305, with a key derived from your passphrase using Argon2id) before upload, so QuickDesk Cloud only ever stores ciphertext and cannot read your notes. Your sync code and encryption key are kept in your system keyring. Clipboard history and port data never leave your machine.",
+    "vi": "Ghi chú được mã hoá ngay trên máy (XChaCha20-Poly1305, khoá sinh từ passphrase bằng Argon2id) trước khi tải lên, nên QuickDesk Cloud chỉ lưu dữ liệu đã mã hoá và không đọc được ghi chú của bạn. Mã đồng bộ và khoá mã hoá được giữ trong keyring của hệ thống. Lịch sử clipboard và dữ liệu cổng không bao giờ rời khỏi máy."
   },
   "t91": {
     "en": "Is my clipboard history uploaded anywhere?",

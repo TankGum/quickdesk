@@ -185,12 +185,14 @@ const usage: UsageSnapshot = {
 
 const hotkeys: HotkeyConfig = { notes: "Super+Alt+N", quickNote: "", clipboard: "Super+Alt+V", ports: "Super+Alt+P" };
 
+// ?sync=off shows the "turn on sync" screen.
 const sync: SyncStatus = {
-  state: "idle",
+  state: params.get("sync") === "off" ? "disabled" : "idle",
   lastSyncAt: now - 40_000,
   lastError: null,
   lastReport: { pulled: 1, pushed: 2, conflicts: 0, compacted: false },
-  config: { endpoint: "https://<account>.r2.cloudflarestorage.com", bucket: "my-notes", region: "auto", accessKeyId: "••••••••", prefix: "" },
+  account: "demo0demo0demo00",
+  notice: null,
 };
 
 // ---------- Commands ----------
@@ -305,6 +307,7 @@ const commands: Record<string, (a: Args) => unknown> = {
   },
 
   sync_status: () => sync,
+  sync_code: () => "QD1-DEMO0D-EMO0DE-MO00AA-AAAAAA-AAAAAA-AAAAAA-AA",
   sync_now: () => {
     sync.lastSyncAt = Date.now();
     emit("sync://status", sync);

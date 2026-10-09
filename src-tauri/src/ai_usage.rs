@@ -257,37 +257,57 @@ fn update_tray(app: &AppHandle, snap: &UsageSnapshot) {
     }
 }
 
-/// macOS-style menu: each tool is a section under a greyed title ("Claude
-/// Pro"), one line per limit, then the actions. Clicking a limit opens the
-/// AI tab. GNOME draws this menu, so it stays plain text.
+/// The tool being tracked: the one the user picked (even while it has no
+/// numbers), else the one the automatic ring shows, else the first with a
+/// percentage.
+fn tracked(snap: &UsageSnapshot) -> Option<(usize, &ProviderUsage)> {
+    let by_id = |id: &str| snap.providers.iter().enumerate().find(|(_, p)| p.provider == id);
+    snap.ring
+        .as_ref()
+        .and_then(|c| by_id(&c.provider))
+        .or_else(|| snap.ring_shows.as_ref().and_then(|c| by_id(&c.provider)))
+        .or_else(|| snap.providers.iter().enumerate().find(|(_, p)| p.windows.iter().any(|w| w.used_percent.is_some())))
+}
+
+/// `🟩🟩🟩🟩⬛⬛⬛⬛⬛⬛`: GNOME draws this menu as plain text (no colours,
+/// no font sizes), so the bar is coloured emoji, green/yellow/red like the ring.
+fn bar(percent: f64) -> String {
+    const CELLS: usize = 10;
+    let filled = ((percent.clamp(0.0, 100.0) / 100.0) * CELLS as f64).round() as usize;
+    let cell = match crate::ring::level(percent) {
+        crate::ring::Level::Ok => "🟩",
+        crate::ring::Level::Warn => "🟨",
+        crate::ring::Level::High => "🟥",
+    };
+    format!("{}{}", cell.repeat(filled), "⬛".repeat(CELLS - filled))
+}
+
+/// The tracked tool under a greyed title ("Claude Pro"); per limit a line
+/// with a bar and, greyed below it, when it resets; then the actions. Other
+/// tools are picked in "Track". Clicking a limit opens the AI tab.
 fn build_menu(app: &AppHandle, lang: Lang, snap: &UsageSnapshot) -> tauri::Result<Menu<Wry>> {
     let menu = Menu::new(app)?;
     let mut any = false;
-    for (i, p) in snap.providers.iter().enumerate() {
-        let lines: Vec<_> = p.windows.iter().enumerate().filter(|(_, w)| w.used_percent.is_some()).collect();
-        if lines.is_empty() {
-            continue;
-        }
-        if any {
-            menu.append(&PredefinedMenuItem::separator(app)?)?;
-        }
-        any = true;
+    if let Some((i, p)) = tracked(snap) {
         let title = match &p.plan {
             Some(plan) => format!("{} {plan}", p.name),
             None => p.name.clone(),
         };
         menu.append(&MenuItem::with_id(app, format!("ai-h{i}"), title, false, None::<&str>)?)?;
-        for (j, w) in lines {
+        for (j, w) in p.windows.iter().enumerate() {
+            let Some(pct) = w.used_percent else { continue };
+            any = true;
             let label = match tx(lang, &w.id) {
                 "" => w.label.clone(),
                 l => l.to_owned(),
             };
-            let mut text = format!("{label}: {:.0}%", w.used_percent.unwrap_or(0.0));
-            if let Some(r) = w.resets_at {
-                text.push_str(" · ");
-                text.push_str(&tx(lang, "resets_in").replace("{left}", &fmt_duration(lang, r - now_ms() as i64)));
-            }
+            let text = format!("{}  {pct:.0}%  {label}", bar(pct));
             menu.append(&MenuItem::with_id(app, format!("ai-p{i}-w{j}"), text, true, None::<&str>)?)?;
+            if let Some(r) = w.resets_at {
+                // Disabled = greyed: the closest GNOME's menu gets to small print.
+                let left = tx(lang, "resets_in").replace("{left}", &fmt_duration(lang, r - now_ms() as i64));
+                menu.append(&MenuItem::with_id(app, format!("ai-r{i}-w{j}"), left, false, None::<&str>)?)?;
+            }
         }
     }
     if !any {
@@ -438,9 +458,9 @@ fn tx(lang: Lang, key: &str) -> &'static str {
         }
         "ring" => {
             if vi {
-                "Vòng tròn hiển thị"
+                "Theo dõi"
             } else {
-                "Ring Shows"
+                "Track"
             }
         }
         "ring_auto" => {
@@ -521,5 +541,27 @@ mod tests {
         // A choice that has no number right now falls back to automatic.
         assert_eq!(pick(&ps, Some(&choice("gemini", "five_hour"))).0, Some(80.0));
         assert_eq!(pick(&[provider("codex", &[("monthly", Some(76.0))])], None), (None, None));
+    }
+
+    #[test]
+    fn menu_shows_only_the_tracked_tool() {
+        let ps = vec![
+            provider("claude", &[("five_hour", Some(64.0))]),
+            provider("codex", &[("five_hour", Some(80.0))]),
+            provider("gemini", &[("quota_hit", None)]),
+        ];
+        let choice = |p: &str| Some(RingChoice { provider: p.into(), window: "five_hour".into() });
+        let snap = |ring: Option<RingChoice>| {
+            let (headline, ring_shows) = pick(&ps, ring.as_ref());
+            UsageSnapshot { providers: ps.clone(), headline, ring_shows, ring, ..Default::default() }
+        };
+        let id = |s: &UsageSnapshot| tracked(s).map(|(_, p)| p.provider.clone());
+        assert_eq!(id(&snap(None)).as_deref(), Some("codex"), "automatic: what the ring shows");
+        assert_eq!(id(&snap(choice("claude"))).as_deref(), Some("claude"));
+        assert_eq!(id(&snap(choice("gemini"))).as_deref(), Some("gemini"), "picked, even without numbers");
+        assert_eq!(bar(42.0), "🟩🟩🟩🟩⬛⬛⬛⬛⬛⬛");
+        assert_eq!(bar(70.0), "🟨🟨🟨🟨🟨🟨🟨⬛⬛⬛");
+        assert_eq!(bar(0.0), "⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛");
+        assert_eq!(bar(130.0), "🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥");
     }
 }

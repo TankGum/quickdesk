@@ -126,11 +126,9 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
           <ul data-tray>
             <li class="head">Claude Pro</li>
             <li data-limit><Fragment set:html={t("t21")} /></li>
+            <li class="note"><Fragment set:html={t("t21b")} /></li>
             <li data-limit><Fragment set:html={t("t22")} /></li>
-            <li class="sep"></li>
-            <li class="head">Codex Plus</li>
-            <li data-limit><Fragment set:html={t("t23")} /></li>
-            <li data-limit><Fragment set:html={t("t24")} /></li>
+            <li class="note"><Fragment set:html={t("t22b")} /></li>
             <li class="sep"></li>
             <li class="sub"><Fragment set:html={t("t25")} /></li>
             <li data-refresh><Fragment set:html={t("t26")} /></li>

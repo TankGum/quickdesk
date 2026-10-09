@@ -27,12 +27,14 @@ const SEQ_KEY: &str = "sync.seq";
 const CURSORS_KEY: &str = "sync.cursors";
 const SNAPSHOT_KEY: &str = "sync.snapshot";
 const LAST_COMPACTION_KEY: &str = "sync.last_compaction";
+/// The store's revision when the last full round started.
+const REVISION_KEY: &str = "sync.revision";
 
 /// Forget all sync progress (used when sync is disabled or re-pointed).
 pub fn reset_local_state(conn: &rusqlite::Connection) -> Result<()> {
     conn.execute(
-        "DELETE FROM settings WHERE key IN (?1, ?2, ?3, ?4)",
-        [SEQ_KEY, CURSORS_KEY, SNAPSHOT_KEY, LAST_COMPACTION_KEY],
+        "DELETE FROM settings WHERE key IN (?1, ?2, ?3, ?4, ?5)",
+        [SEQ_KEY, CURSORS_KEY, SNAPSHOT_KEY, LAST_COMPACTION_KEY, REVISION_KEY],
     )?;
     // Everything must be pushed again to whatever bucket comes next.
     conn.execute("UPDATE notes SET dirty = 1", [])?;
@@ -188,12 +190,29 @@ impl SyncEngine<'_> {
         Ok(Some(serde_json::from_slice(&plain)?))
     }
 
-    /// One full round: pull, push, and occasionally compact.
+    /// One round: pull, push, and occasionally compact. Costs a single call
+    /// when the store's revision is the one seen at the last round and
+    /// nothing local is waiting.
     pub fn sync_once(&self, db: &Db, clock: &Clock) -> Result<SyncReport> {
+        // Read before pulling: a write that lands during the round changes the
+        // revision again, so the next round still looks.
+        let revision = self.transport.revision()?;
+        if let Some(rev) = &revision {
+            let conn = db.conn()?;
+            let seen: Option<String> = settings::get(&conn, REVISION_KEY)?;
+            let pending: bool =
+                conn.query_row("SELECT EXISTS(SELECT 1 FROM notes WHERE dirty = 1)", [], |r| r.get(0))?;
+            if seen.as_deref() == Some(rev.as_str()) && !pending {
+                return Ok(SyncReport::default());
+            }
+        }
         let mut report = SyncReport::default();
         self.pull(db, clock, &mut report)?;
         self.push(db, &mut report)?;
         report.compacted = self.maybe_compact(db, clock)?;
+        if let Some(rev) = revision {
+            settings::set(&*db.conn()?, REVISION_KEY, &rev)?;
+        }
         Ok(report)
     }
 
@@ -257,14 +276,17 @@ impl SyncEngine<'_> {
         }
 
         let cursors = if newer.is_empty() { cursors } else { Self::cursors(&*db.conn()?)? };
-        let devices: Vec<String> = self
+        let mut devices: Vec<String> = self
             .transport
             .list(&self.layout.devices(), None)?
             .into_iter()
             .filter_map(|o| o.key.strip_prefix(&self.layout.devices())?.strip_suffix(".bin").map(str::to_owned))
             .collect();
         // Include ourselves: recovers our own changes if the local DB was restored from a backup.
-        for dev in devices.iter().map(String::as_str).chain(std::iter::once(self.device_id)) {
+        if !devices.iter().any(|d| d == self.device_id) {
+            devices.push(self.device_id.to_owned());
+        }
+        for dev in devices.iter().map(String::as_str) {
             let after = cursors.get(dev).map(String::as_str);
             for obj in self.transport.list(&self.layout.log_prefix(dev), after)? {
                 let Some(batch) = self.read::<Batch>(&obj.key)? else { continue };

@@ -71,22 +71,56 @@ export const sections: Section[] = [
     id: "sync",
     title: { en: "Sync notes between computers", vi: "Đồng bộ ghi chú giữa các máy" },
     html: {
-      en: `<p>There is no QuickDesk account or server. Notes sync through a storage bucket <strong>you</strong> own: Cloudflare R2 (its free tier is plenty), AWS S3 or MinIO.</p>
+      en: `<p>Notes sync through <strong>QuickDesk Cloud</strong>. There is no account or email: a computer gets a <strong>sync code</strong>, and your other computers join with it. Only notes sync; clipboard history and settings stay on each computer.</p>
+<h3>Set it up</h3>
 <ol>
-<li>Create a bucket and an API token limited to that bucket (R2: <em>R2 → Manage R2 API Tokens → Object Read &amp; Write</em>).</li>
-<li>In <strong>Settings → Sync</strong>, enter the endpoint (R2: <code>https://&lt;account-id&gt;.r2.cloudflarestorage.com</code>), bucket, region (<code>auto</code> for R2), access key and secret.</li>
-<li>On the first computer, choose a passphrase. QuickDesk shows a <strong>recovery key</strong>: store it somewhere safe.</li>
-<li>On every other computer, connect to the same bucket and enter the same passphrase (or the recovery key).</li>
+<li>On the first computer: <strong>Settings → Sync → Turn on sync</strong>, and choose a passphrase (at least 8 characters).</li>
+<li>QuickDesk shows your <strong>sync code</strong> (<code>QD1-…</code>) and a <strong>recovery key</strong>. Save the recovery key somewhere safe; it is shown only once.</li>
+<li>On every other computer: <strong>Settings → Sync → I have a sync code</strong>, then enter the code and the same passphrase (or the recovery key).</li>
 </ol>
-<p>Notes are encrypted on your computer before upload (XChaCha20-Poly1305, key from your passphrase via Argon2id); the bucket only ever holds ciphertext. The bucket's secret key stays in your system keyring. Edits made offline sync when you are back online; if a note changed on two computers at once, both versions are kept.</p>`,
-      vi: `<p>Không có tài khoản hay server QuickDesk. Ghi chú đồng bộ qua một bucket lưu trữ do <strong>chính bạn</strong> sở hữu: Cloudflare R2 (gói miễn phí là đủ), AWS S3 hoặc MinIO.</p>
+<p>The sync code can be shown again any time with <strong>Show sync code</strong> under Settings → Sync.</p>
+<h3>When it syncs</h3>
+<ul>
+<li>A couple of seconds after you edit a note, and when you open a QuickDesk window.</li>
+<li>Otherwise QuickDesk checks for changes every minute while a window is open, and every 5 minutes while it sits in the tray. A check is a single small request; notes only travel when something changed.</li>
+<li><strong>Sync now</strong> checks straight away. Edits made offline are sent when you are back online.</li>
+<li>If a note changed on two computers at once, both versions are kept: the newer one stays, the other becomes a copy next to it. An edit wins over a delete.</li>
+</ul>
+<h3>Privacy and keys</h3>
+<ul>
+<li>Notes are encrypted on your computer before upload (XChaCha20-Poly1305, key from your passphrase via Argon2id). QuickDesk Cloud only holds ciphertext under a random account id and cannot read your notes.</li>
+<li>It takes <strong>both</strong> the sync code (to reach the data) and the passphrase (to decrypt it). Treat the sync code like a password: with it alone, someone could still delete your synced notes.</li>
+<li>Forgot the passphrase? Enter the recovery key instead. Without either, the copy in QuickDesk Cloud cannot be opened, but the notes on each computer are untouched.</li>
+<li>If QuickDesk asks to <strong>Unlock sync</strong> (for example after the system keyring was reset), enter the passphrase again.</li>
+</ul>
+<h3>Turning it off</h3>
+<p><strong>Turn off sync…</strong> stops syncing on one computer and keeps its notes. Tick <em>Also delete my notes from QuickDesk Cloud</em> to remove the synced copy for every computer.</p>
+<p>Limits per sync code: 256 MB and 20,000 stored objects, far more than notes need.</p>`,
+      vi: `<p>Ghi chú đồng bộ qua <strong>QuickDesk Cloud</strong>. Không cần tài khoản hay email: một máy nhận <strong>mã đồng bộ</strong>, các máy khác nhập mã đó để tham gia. Chỉ ghi chú được đồng bộ; lịch sử clipboard và cài đặt ở lại trên từng máy.</p>
+<h3>Thiết lập</h3>
 <ol>
-<li>Tạo bucket và một API token chỉ có quyền trên bucket đó (R2: <em>R2 → Manage R2 API Tokens → Object Read &amp; Write</em>).</li>
-<li>Trong <strong>Cài đặt → Đồng bộ</strong>, nhập endpoint (R2: <code>https://&lt;account-id&gt;.r2.cloudflarestorage.com</code>), bucket, region (<code>auto</code> với R2), access key và secret.</li>
-<li>Trên máy đầu tiên, đặt một passphrase. QuickDesk sẽ hiện <strong>recovery key</strong>: hãy cất ở nơi an toàn.</li>
-<li>Trên các máy khác, kết nối vào cùng bucket và nhập cùng passphrase (hoặc recovery key).</li>
+<li>Trên máy đầu tiên: <strong>Cài đặt → Đồng bộ → Bật đồng bộ</strong>, rồi đặt passphrase (ít nhất 8 ký tự).</li>
+<li>QuickDesk hiện <strong>mã đồng bộ</strong> (<code>QD1-…</code>) và <strong>recovery key</strong>. Hãy cất recovery key ở nơi an toàn; nó chỉ hiện một lần.</li>
+<li>Trên mỗi máy khác: <strong>Cài đặt → Đồng bộ → Tôi đã có mã đồng bộ</strong>, rồi nhập mã và cùng passphrase (hoặc recovery key).</li>
 </ol>
-<p>Ghi chú được mã hoá trên máy trước khi tải lên (XChaCha20-Poly1305, khoá sinh từ passphrase bằng Argon2id); bucket chỉ chứa dữ liệu đã mã hoá. Secret key của bucket nằm trong keyring của hệ thống. Chỉnh sửa lúc mất mạng sẽ đồng bộ khi có mạng lại; nếu một ghi chú bị sửa cùng lúc trên hai máy, cả hai bản đều được giữ.</p>`,
+<p>Mã đồng bộ có thể xem lại bất cứ lúc nào bằng <strong>Hiện mã đồng bộ</strong> trong Cài đặt → Đồng bộ.</p>
+<h3>Khi nào đồng bộ</h3>
+<ul>
+<li>Vài giây sau khi bạn sửa ghi chú, và khi bạn mở một cửa sổ QuickDesk.</li>
+<li>Ngoài ra QuickDesk kiểm tra thay đổi mỗi phút khi có cửa sổ đang mở, và mỗi 5 phút khi chỉ chạy ở khay hệ thống. Mỗi lần kiểm tra chỉ là một request nhỏ; ghi chú chỉ được gửi hoặc tải khi có thay đổi.</li>
+<li><strong>Đồng bộ ngay</strong> kiểm tra luôn. Chỉnh sửa lúc mất mạng sẽ được gửi khi có mạng lại.</li>
+<li>Nếu một ghi chú bị sửa cùng lúc trên hai máy, cả hai bản đều được giữ: bản mới hơn giữ chỗ, bản còn lại thành một bản sao bên cạnh. Sửa thắng xoá.</li>
+</ul>
+<h3>Quyền riêng tư và khoá</h3>
+<ul>
+<li>Ghi chú được mã hoá trên máy trước khi tải lên (XChaCha20-Poly1305, khoá sinh từ passphrase bằng Argon2id). QuickDesk Cloud chỉ giữ dữ liệu đã mã hoá theo một mã tài khoản ngẫu nhiên và không đọc được ghi chú của bạn.</li>
+<li>Cần <strong>cả hai</strong>: mã đồng bộ (để tới được dữ liệu) và passphrase (để giải mã). Hãy giữ mã đồng bộ như mật khẩu: chỉ có mã thôi, người khác vẫn có thể xoá ghi chú đã đồng bộ.</li>
+<li>Quên passphrase? Nhập recovery key thay thế. Mất cả hai thì bản trên QuickDesk Cloud không mở được nữa, nhưng ghi chú trên từng máy vẫn nguyên vẹn.</li>
+<li>Nếu QuickDesk yêu cầu <strong>Mở khoá đồng bộ</strong> (ví dụ sau khi keyring của hệ thống bị đặt lại), hãy nhập lại passphrase.</li>
+</ul>
+<h3>Tắt đồng bộ</h3>
+<p><strong>Tắt đồng bộ…</strong> ngừng đồng bộ trên một máy và giữ nguyên ghi chú trên máy đó. Tích <em>Xoá luôn ghi chú trên QuickDesk Cloud</em> để xoá bản đồng bộ cho mọi máy.</p>
+<p>Giới hạn cho mỗi mã đồng bộ: 256 MB và 20.000 object, dư sức cho ghi chú.</p>`,
     },
   },
   {
@@ -151,20 +185,20 @@ export const sections: Section[] = [
     id: "ai",
     title: { en: "AI usage", vi: "Usage AI" },
     html: {
-      en: `<p>A ring in the top bar shows how much of your AI limits you have used, coloured green, amber or red. Its menu lists every limit and when it resets; the AI tab shows the details.</p>
+      en: `<p>A ring in the top bar shows how much of your AI limits you have used, coloured green, amber or red. Its menu shows the tool you track, with a bar for each limit and when it resets; the AI tab shows every tool.</p>
 <ul>
 <li><strong>Claude Code:</strong> QuickDesk reads the login Claude Code already saved on this computer and asks Anthropic for your usage, at most every 5 minutes. The token is only read: never stored, refreshed or sent anywhere except Anthropic.</li>
 <li><strong>Codex:</strong> read from the session logs Codex keeps in <code>~/.codex</code>.</li>
 <li><strong>Gemini (Antigravity):</strong> it reports no percentage, so QuickDesk shows when you last ran out of quota, from its logs.</li>
 </ul>
-<p>Choose which limit the ring follows under <em>Ring Shows</em>, or hide the ring in the AI tab.</p>`,
-      vi: `<p>Một vòng tròn trên thanh trên cùng cho biết bạn đã dùng bao nhiêu hạn mức AI, đổi màu xanh, cam hoặc đỏ. Menu của nó liệt kê từng hạn mức và lúc đặt lại; tab AI có chi tiết.</p>
+<p>Choose which tool and limit to follow under <em>Track</em>, or hide the ring in the AI tab.</p>`,
+      vi: `<p>Một vòng tròn trên thanh trên cùng cho biết bạn đã dùng bao nhiêu hạn mức AI, đổi màu xanh, cam hoặc đỏ. Menu của nó hiện công cụ bạn đang theo dõi, mỗi hạn mức có một thanh tiến trình và lúc đặt lại; tab AI hiện mọi công cụ.</p>
 <ul>
 <li><strong>Claude Code:</strong> QuickDesk đọc phiên đăng nhập Claude Code đã lưu trên máy và hỏi Anthropic số liệu usage, tối đa mỗi 5 phút một lần. Token chỉ được đọc: không lưu lại, không làm mới và không gửi đi đâu ngoài Anthropic.</li>
 <li><strong>Codex:</strong> đọc từ log phiên làm việc Codex lưu trong <code>~/.codex</code>.</li>
 <li><strong>Gemini (Antigravity):</strong> không báo phần trăm, nên QuickDesk hiện lần cuối bạn hết quota, lấy từ log của nó.</li>
 </ul>
-<p>Chọn hạn mức mà vòng tròn theo dõi trong <em>Vòng tròn hiển thị</em>, hoặc ẩn vòng tròn trong tab AI.</p>`,
+<p>Chọn công cụ và hạn mức cần theo dõi trong <em>Theo dõi</em>, hoặc ẩn vòng tròn trong tab AI.</p>`,
     },
   },
   {

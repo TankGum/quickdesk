@@ -5,20 +5,20 @@ import type { Lang } from "../i18n";
 export const privacy: Record<Lang, { title: string; updated: string; html: string }> = {
   en: {
     title: "Privacy",
-    updated: "Last updated 9 October 2026",
+    updated: "Last updated 9 October 2026 (QuickDesk Cloud sync)",
     html: `<p class="lead">QuickDesk has no accounts, no analytics and no telemetry. Your notes and clipboard history live on your computer. This page lists everything that leaves it.</p>
 <h2>What stays on your computer</h2>
 <ul>
 <li><strong>Notes, clipboard history (text, images, file lists), settings and logs</strong> in <code>~/.local/share/click.quickdesk</code>.</li>
 <li><strong>Clipboard history never leaves your computer</strong>, not even with sync on. Copies that password managers mark as secret are not saved, and you can pause saving at any time.</li>
 <li><strong>Ports</strong> are read from <code>/proc</code> and Docker on your machine and are not stored.</li>
-<li>The secret key of your sync bucket is kept in your system keyring.</li>
+<li>Your sync code and encryption key are kept in your system keyring.</li>
 </ul>
 <h2>What QuickDesk sends, and where</h2>
 <table>
 <tr><th>When</th><th>To</th><th>What</th></tr>
 <tr><td data-label="When">Checking for updates (30 s after start, then every 6 hours; can be turned off)</td><td data-label="To"><code>dl.quickdesk.click</code> (Cloudflare)</td><td data-label="What">A request for <code>update.json</code>, and the package when you choose to update. Your IP address is visible to Cloudflare, as with any download.</td></tr>
-<tr><td data-label="When">Note sync, only if you set it up</td><td data-label="To">The storage bucket <strong>you</strong> chose</td><td data-label="What">Your notes, encrypted on your computer (XChaCha20-Poly1305) with a key derived from your passphrase. The bucket owner, you, cannot read them without the passphrase or recovery key; neither can anyone else.</td></tr>
+<tr><td data-label="When">Note sync, only if you turn it on</td><td data-label="To">QuickDesk Cloud, <code>sync.quickdesk.click</code> (Cloudflare)</td><td data-label="What">Your notes, encrypted on your computer (XChaCha20-Poly1305) with a key derived from your passphrase; QuickDesk Cloud cannot read them. It stores them under a random sync account id, with their sizes and upload times, and sees your IP address. No email, name or other personal data. You can delete everything from Settings → Sync.</td></tr>
 <tr><td data-label="When">AI usage, only if Claude Code is signed in on this computer</td><td data-label="To"><code>api.anthropic.com</code></td><td data-label="What">A usage request authorised with Claude Code's existing login, at most every 5 minutes. The token is read, never stored, refreshed or sent anywhere else.</td></tr>
 <tr><td data-label="When">Auto-paste through the desktop portal</td><td data-label="To">Your own desktop (GNOME), not the network</td><td data-label="What">A Shift + Insert key press.</td></tr>
 </table>
@@ -37,13 +37,13 @@ export const privacy: Record<Lang, { title: string; updated: string; html: strin
 <li><strong>Ghi chú, lịch sử clipboard (chữ, ảnh, danh sách file), cài đặt và log</strong> trong <code>~/.local/share/click.quickdesk</code>.</li>
 <li><strong>Lịch sử clipboard không bao giờ rời khỏi máy</strong>, kể cả khi bật đồng bộ. Mục copy được trình quản lý mật khẩu đánh dấu bí mật sẽ không được lưu, và bạn có thể tạm dừng lưu bất cứ lúc nào.</li>
 <li><strong>Cổng</strong> được đọc từ <code>/proc</code> và Docker trên máy bạn, không lưu lại.</li>
-<li>Secret key của bucket đồng bộ được giữ trong keyring của hệ thống.</li>
+<li>Mã đồng bộ và khoá mã hoá được giữ trong keyring của hệ thống.</li>
 </ul>
 <h2>QuickDesk gửi gì, và gửi tới đâu</h2>
 <table>
 <tr><th>Khi nào</th><th>Tới đâu</th><th>Nội dung</th></tr>
 <tr><td data-label="Khi nào">Kiểm tra bản mới (30 giây sau khi mở, rồi mỗi 6 giờ; có thể tắt)</td><td data-label="Tới đâu"><code>dl.quickdesk.click</code> (Cloudflare)</td><td data-label="Nội dung">Một yêu cầu tải <code>update.json</code>, và gói cài khi bạn chọn cập nhật. Cloudflare thấy địa chỉ IP của bạn, như mọi lần tải file.</td></tr>
-<tr><td data-label="Khi nào">Đồng bộ ghi chú, chỉ khi bạn cài đặt</td><td data-label="Tới đâu">Bucket lưu trữ do <strong>bạn</strong> chọn</td><td data-label="Nội dung">Ghi chú đã được mã hoá trên máy (XChaCha20-Poly1305) bằng khoá sinh từ passphrase của bạn. Không ai đọc được nếu không có passphrase hoặc recovery key.</td></tr>
+<tr><td data-label="Khi nào">Đồng bộ ghi chú, chỉ khi bạn bật</td><td data-label="Tới đâu">QuickDesk Cloud, <code>sync.quickdesk.click</code> (Cloudflare)</td><td data-label="Nội dung">Ghi chú đã được mã hoá trên máy (XChaCha20-Poly1305) bằng khoá sinh từ passphrase của bạn; QuickDesk Cloud không đọc được. Dữ liệu được lưu theo một mã tài khoản ngẫu nhiên, kèm dung lượng và thời điểm tải lên, và máy chủ thấy địa chỉ IP của bạn. Không có email, tên hay dữ liệu cá nhân nào khác. Bạn có thể xoá tất cả trong Cài đặt → Đồng bộ.</td></tr>
 <tr><td data-label="Khi nào">Usage AI, chỉ khi Claude Code đã đăng nhập trên máy</td><td data-label="Tới đâu"><code>api.anthropic.com</code></td><td data-label="Nội dung">Một yêu cầu usage dùng phiên đăng nhập sẵn có của Claude Code, tối đa mỗi 5 phút. Token chỉ được đọc: không lưu, không làm mới, không gửi đi đâu khác.</td></tr>
 <tr><td data-label="Khi nào">Tự động dán qua portal của desktop</td><td data-label="Tới đâu">Chính desktop của bạn (GNOME), không qua mạng</td><td data-label="Nội dung">Một lần bấm Shift + Insert.</td></tr>
 </table>

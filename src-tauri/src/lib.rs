@@ -5,6 +5,7 @@ mod commands;
 mod hotkeys;
 mod i18n;
 pub mod ipc;
+mod legacy;
 mod ring;
 mod secrets;
 mod state;
@@ -92,9 +93,11 @@ pub fn run(args: Vec<String>) {
             commands::ports::ports_stop_container,
             commands::ports::ports_open,
             commands::sync::sync_status,
-            commands::sync::sync_connect,
-            commands::sync::sync_create,
+            commands::sync::sync_enable,
+            commands::sync::sync_join,
             commands::sync::sync_unlock,
+            commands::sync::sync_code,
+            commands::sync::sync_check_code,
             commands::sync::sync_now,
             commands::sync::sync_disconnect,
             commands::notes::notes_create,
@@ -111,12 +114,12 @@ pub fn run(args: Vec<String>) {
         .on_window_event(windows::on_window_event)
         .setup(move |app| {
             let data_dir = app.path().app_data_dir()?;
-            // Before logging: the log directory lives inside the data directory.
-            migrate_legacy_data_dir(&data_dir);
             init_logging(app.path().app_log_dir()?);
             std::fs::create_dir_all(&data_dir)?;
-            let db =
-                Db::open(&data_dir.join("quickdesk.db"), &[&qd_notes::NotesModule, &qd_clipboard::ClipboardModule])?;
+            let modules: &[&dyn qd_core::Module] = &[&qd_notes::NotesModule, &qd_clipboard::ClipboardModule];
+            // Notes, clipboard history and settings from earlier app identifiers.
+            legacy::import_all(&data_dir, modules);
+            let db = Db::open(&data_dir.join("quickdesk.db"), modules)?;
             let (device_id, hotkeys, clip, lang_pref, ai, updates) = {
                 let conn = db.conn()?;
                 (
@@ -178,26 +181,6 @@ pub fn run(args: Vec<String>) {
     });
 }
 
-/// Earlier identifiers, newest first: 0.2.x used io.github.tankgum.quickdesk,
-/// 0.1.x dev.quickdesk.app. Their data moves to the current location.
-const LEGACY_IDENTIFIERS: [&str; 2] = ["io.github.tankgum.quickdesk", "dev.quickdesk.app"];
-
-/// Move the newest earlier data directory to the current one once, so notes,
-/// history and settings survive identifier changes. Never overwrites.
-fn migrate_legacy_data_dir(data_dir: &std::path::Path) {
-    let Some(root) = data_dir.parent() else { return };
-    if data_dir.exists() {
-        return;
-    }
-    let Some(old) = LEGACY_IDENTIFIERS.iter().map(|id| root.join(id)).find(|p| p != data_dir && p.is_dir()) else {
-        return;
-    };
-    match std::fs::rename(&old, data_dir) {
-        Ok(()) => eprintln!("quickdesk: moved data from {} to {}", old.display(), data_dir.display()),
-        Err(e) => eprintln!("quickdesk: could not move {} ({e}); starting with a new data directory", old.display()),
-    }
-}
-
 fn init_logging(dir: std::path::PathBuf) {
     let file = tracing_appender::rolling::daily(dir, "quickdesk.log");
     let (writer, guard) = tracing_appender::non_blocking(file);
@@ -235,43 +218,4 @@ fn shutdown<R: Runtime>(app: &AppHandle<R>) {
     }
     ipc::cleanup();
     tracing::info!("stopped");
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn legacy_data_dir_moves_once_and_never_overwrites() {
-        let root = std::env::temp_dir().join(format!("qd-migrate-{}", qd_core::ids::new_id()));
-        let (old, new) = (root.join(LEGACY_IDENTIFIERS[0]), root.join("click.quickdesk"));
-        std::fs::create_dir_all(&old).unwrap();
-        std::fs::write(old.join("quickdesk.db"), b"notes").unwrap();
-
-        migrate_legacy_data_dir(&new);
-        assert_eq!(std::fs::read(new.join("quickdesk.db")).unwrap(), b"notes");
-        assert!(!old.exists());
-
-        // A stale old directory never replaces existing data.
-        std::fs::create_dir_all(&old).unwrap();
-        std::fs::write(old.join("quickdesk.db"), b"older").unwrap();
-        migrate_legacy_data_dir(&new);
-        assert_eq!(std::fs::read(new.join("quickdesk.db")).unwrap(), b"notes");
-        std::fs::remove_dir_all(root).unwrap();
-    }
-
-    #[test]
-    fn newest_legacy_dir_wins() {
-        let root = std::env::temp_dir().join(format!("qd-migrate-{}", qd_core::ids::new_id()));
-        for (id, body) in [(LEGACY_IDENTIFIERS[0], b"0.2"), (LEGACY_IDENTIFIERS[1], b"0.1")] {
-            std::fs::create_dir_all(root.join(id)).unwrap();
-            std::fs::write(root.join(id).join("quickdesk.db"), body).unwrap();
-        }
-        let new = root.join("click.quickdesk");
-        migrate_legacy_data_dir(&new);
-        assert_eq!(std::fs::read(new.join("quickdesk.db")).unwrap(), b"0.2");
-        // 0.1 data is left alone rather than merged.
-        assert!(root.join(LEGACY_IDENTIFIERS[1]).exists());
-        std::fs::remove_dir_all(root).unwrap();
-    }
 }

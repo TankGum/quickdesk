@@ -1,10 +1,11 @@
-use std::sync::atomic::Ordering;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use qd_core::{settings, Clock, Db};
 use qd_notes::{repo, NotesModule};
 use qd_sync::crypto::{Dek, KdfParams};
 use qd_sync::engine::reset_local_state;
-use qd_sync::{create_keyring, unlock, EngineConfig, Error, Layout, MemoryTransport, SyncEngine};
+use qd_sync::transport::{ObjectInfo, PutOutcome};
+use qd_sync::{create_keyring, unlock, BlobTransport, EngineConfig, Error, Layout, MemoryTransport, SyncEngine};
 
 const KDF: KdfParams = KdfParams { memory_kib: 64, iterations: 1, parallelism: 1 };
 
@@ -78,6 +79,93 @@ fn notes_propagate_and_bucket_holds_only_ciphertext() {
     // Nothing new: a second round transfers nothing.
     assert_eq!(a.sync(&t, &dek), Default::default());
     assert_eq!(b.sync(&t, &dek), Default::default());
+}
+
+/// Counts calls, to check what an idle round costs.
+struct Counting<'a> {
+    inner: &'a MemoryTransport,
+    calls: AtomicUsize,
+}
+
+impl Counting<'_> {
+    fn take(&self) -> usize {
+        self.calls.swap(0, Ordering::Relaxed)
+    }
+    fn hit(&self) {
+        self.calls.fetch_add(1, Ordering::Relaxed);
+    }
+}
+
+impl BlobTransport for Counting<'_> {
+    fn put_if_absent(&self, key: &str, bytes: &[u8]) -> qd_sync::Result<PutOutcome> {
+        self.hit();
+        self.inner.put_if_absent(key, bytes)
+    }
+    fn put(&self, key: &str, bytes: &[u8]) -> qd_sync::Result<()> {
+        self.hit();
+        self.inner.put(key, bytes)
+    }
+    fn get(&self, key: &str) -> qd_sync::Result<Option<Vec<u8>>> {
+        self.hit();
+        self.inner.get(key)
+    }
+    fn list(&self, prefix: &str, start_after: Option<&str>) -> qd_sync::Result<Vec<ObjectInfo>> {
+        self.hit();
+        self.inner.list(prefix, start_after)
+    }
+    fn delete(&self, key: &str) -> qd_sync::Result<()> {
+        self.hit();
+        self.inner.delete(key)
+    }
+    fn revision(&self) -> qd_sync::Result<Option<String>> {
+        self.hit();
+        self.inner.revision()
+    }
+}
+
+#[test]
+fn idle_rounds_cost_one_call_and_still_see_changes() {
+    let (t, dek) = setup();
+    let (a, b) = (device("a"), device("b"));
+    let counted = Counting { inner: &t, calls: AtomicUsize::new(0) };
+    let a_sync = || {
+        SyncEngine {
+            transport: &counted,
+            dek: &dek,
+            layout: Layout::new("qd"),
+            device_id: &a.id,
+            device_name: "test",
+            config: no_compaction(),
+        }
+        .sync_once(&a.db, &a.clock)
+        .unwrap()
+    };
+    a.create("first");
+    assert_eq!(a_sync().pushed, 1);
+    // Its own push changed the revision: one more full round, then idle.
+    a_sync();
+    counted.take();
+    assert_eq!(a_sync(), Default::default());
+    assert_eq!(counted.take(), 1, "an idle round only reads the revision");
+
+    // Another device writes: the next round looks again.
+    b.create("from b");
+    b.sync(&t, &dek);
+    assert_eq!(a_sync().pulled, 1);
+    counted.take();
+    assert_eq!(a_sync(), Default::default());
+    assert_eq!(counted.take(), 1);
+
+    // A local change is pushed even though the store did not change.
+    a.create("second");
+    assert_eq!(a_sync().pushed, 1);
+
+    // Forgetting sync state forces a full round.
+    a_sync();
+    reset_local_state(&a.db.conn().unwrap()).unwrap();
+    counted.take();
+    a_sync();
+    assert!(counted.take() > 1);
 }
 
 #[test]

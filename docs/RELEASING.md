@@ -1,6 +1,7 @@
 # Releasing QuickDesk
 
-Linux packages (`.deb`, `.rpm`, `.AppImage`) are built by GitHub Actions and
+Notes sync through QuickDesk Cloud (`sync-server/`, a Worker on
+`sync.quickdesk.click`). Linux packages (`.deb`, `.rpm`, `.AppImage`) are built by GitHub Actions and
 published to a Cloudflare R2 bucket served at `https://dl.quickdesk.click`.
 The website `https://quickdesk.click` (`website/`) is a separate Astro site on
 Cloudflare Pages that reads the newest release from the bucket's `latest.json`.
@@ -66,7 +67,31 @@ with the same kind of package it came from. A .deb or .rpm is installed with
 app then restarts. The endpoint is `plugins.updater.endpoints`; keep the old
 URL listed there if the bucket ever moves to a custom domain.
 
-### 4. Website (Cloudflare Pages)
+### 4. Sync server (QuickDesk Cloud)
+
+`sync-server/` is a Cloudflare Worker on `https://sync.quickdesk.click` in front
+of its own R2 bucket. It stores only what the app uploads, which is already
+end-to-end encrypted; accounts are anonymous (random id + token = the sync
+code). The app's endpoint is `qd_sync::cloud::DEFAULT_ENDPOINT`; `QD_SYNC_URL`
+overrides it for testing.
+
+Once (Node 22):
+
+```sh
+cd sync-server && npm install
+npx wrangler login                        # opens the browser
+npx wrangler r2 bucket create quickdesk-sync
+npx wrangler deploy                       # also creates the sync.quickdesk.click record
+curl https://sync.quickdesk.click/        # {"service":"QuickDesk Cloud sync","api":"v1"}
+```
+
+Redeploy with `npx wrangler deploy` after changing `sync-server/`. Locally:
+`npx wrangler dev` (http://127.0.0.1:8787), then
+`QD_SYNC_URL=http://127.0.0.1:8787 cargo test -p qd-sync --test cloud_live -- --ignored`.
+Limits per account (object size, total size, object count) are at the top of
+`sync-server/src/index.ts`; account creation is rate-limited per IP.
+
+### 5. Website (Cloudflare Pages)
 
 The site lives in `website/` (Astro): home (with the demo), `/download`,
 `/docs`, `/changelog`, `/privacy`, each also under `/vi/` in Vietnamese. It

@@ -113,14 +113,6 @@ export interface ClipStatus {
   autoPaste: boolean;
 }
 
-export interface S3Config {
-  endpoint: string;
-  bucket: string;
-  region: string;
-  accessKeyId: string;
-  prefix: string;
-}
-
 export interface SyncReport {
   pulled: number;
   pushed: number;
@@ -133,7 +125,10 @@ export interface SyncStatus {
   lastSyncAt: number | null;
   lastError: string | null;
   lastReport: SyncReport | null;
-  config: S3Config | null;
+  /** The QuickDesk Cloud sync account this device uses. */
+  account: string | null;
+  /** "bucket_removed": the old own-bucket setup was dropped (0.3.1). */
+  notice: string | null;
 }
 
 export type PasteMethod = "auto" | "uinput" | "portal";
@@ -243,11 +238,12 @@ export const api = {
   clipStatus: () => invoke<ClipStatus>("clip_status"),
   clipSetPaused: (paused: boolean, minutes?: number) => invoke<void>("clip_set_paused", { paused, minutes }),
   syncStatus: () => invoke<SyncStatus>("sync_status"),
-  syncConnect: (config: S3Config, secret: string) => invoke<{ initialized: boolean }>("sync_connect", { config, secret }),
-  syncCreate: (passphrase: string) => invoke<string>("sync_create", { passphrase }),
+  syncEnable: (passphrase: string) => invoke<{ syncCode: string; recoveryKey: string }>("sync_enable", { passphrase }),
+  syncJoin: (code: string, secret: string) => invoke<void>("sync_join", { code, secret }),
+  syncCode: () => invoke<string>("sync_code"),
   syncUnlock: (secret: string) => invoke<void>("sync_unlock", { secret }),
   syncNow: () => invoke<void>("sync_now"),
-  syncDisconnect: () => invoke<void>("sync_disconnect"),
+  syncDisconnect: (deleteCloud: boolean) => invoke<void>("sync_disconnect", { deleteCloud }),
   aiUsage: () => invoke<UsageSnapshot>("ai_usage_get"),
   aiUsageRefresh: () => invoke<UsageSnapshot>("ai_usage_refresh"),
   aiSetTray: (enabled: boolean) => invoke<void>("ai_set_tray", { enabled }),

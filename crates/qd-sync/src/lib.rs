@@ -1,11 +1,13 @@
-//! End-to-end encrypted sync of Quick Notes through S3-compatible storage.
+//! End-to-end encrypted sync of Quick Notes through QuickDesk Cloud (`cloud`).
 
+pub mod cloud;
 pub mod crypto;
 pub mod engine;
 pub mod transport;
 
+pub use cloud::{Account, CloudTransport};
 pub use engine::{create_keyring, fetch_keyring, unlock, EngineConfig, Layout, SyncEngine, SyncReport};
-pub use transport::{BlobTransport, MemoryTransport, S3Config, S3Transport};
+pub use transport::{BlobTransport, MemoryTransport};
 
 use thiserror::Error;
 

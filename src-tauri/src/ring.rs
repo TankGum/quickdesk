@@ -8,13 +8,29 @@ type Rgba = [u8; 4];
 const TRACK: Rgba = [255, 255, 255, 70];
 const NO_DATA: Rgba = [160, 160, 160, 200];
 
-pub fn color_for(percent: f64) -> Rgba {
+/// How close a limit is; the ring and the menu bars share these thresholds.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Level {
+    Ok,
+    Warn,
+    High,
+}
+
+pub fn level(percent: f64) -> Level {
     if percent >= 85.0 {
-        [239, 68, 68, 255] // red
+        Level::High
     } else if percent >= 60.0 {
-        [245, 158, 11, 255] // amber
+        Level::Warn
     } else {
-        [34, 197, 94, 255] // green
+        Level::Ok
+    }
+}
+
+pub fn color_for(percent: f64) -> Rgba {
+    match level(percent) {
+        Level::High => [239, 68, 68, 255],  // red
+        Level::Warn => [245, 158, 11, 255], // amber
+        Level::Ok => [34, 197, 94, 255],    // green
     }
 }
 

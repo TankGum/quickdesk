@@ -1,18 +1,18 @@
 import { useState } from "react";
 
-import { Key, t, useI18n } from "../../shared/i18n";
-import { api, errorMessage, S3Config } from "../../shared/ipc";
+import { t, useI18n } from "../../shared/i18n";
+import { api, errorMessage } from "../../shared/ipc";
 import { relativeTime } from "../../shared/time";
 import { useSyncStatus } from "./useSyncStatus";
 
-const EMPTY: S3Config = { endpoint: "", bucket: "", region: "auto", accessKeyId: "", prefix: "quickdesk" };
+type Step = "start" | "enable" | "join" | "done";
 
-/** Connect storage → create keys (first device) or unlock (others) → syncing. */
+/** QuickDesk Cloud: turn sync on (first device) or join with a sync code. */
 export function SyncSettings() {
   useI18n();
   const status = useSyncStatus();
-  const [step, setStep] = useState<"form" | "create" | "unlock" | "recovery">("form");
-  const [recoveryKey, setRecoveryKey] = useState("");
+  const [step, setStep] = useState<Step>("start");
+  const [created, setCreated] = useState<{ syncCode: string; recoveryKey: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -27,44 +27,58 @@ export function SyncSettings() {
       setBusy(false);
     }
   };
+  const go = (s: Step) => {
+    setError(null);
+    setStep(s);
+  };
 
   if (!status) return null;
 
-  // The recovery key screen must stay up even though the backend already moved on.
-  if (step === "recovery") {
-    return <RecoveryKeyNotice recoveryKey={recoveryKey} onDone={() => setStep("form")} />;
+  // Stays up after the backend has moved on: the codes are shown only here.
+  if (step === "done" && created) {
+    return <SavedCodes {...created} onDone={() => go("start")} />;
   }
 
-  if (status.state === "disabled" || step === "create" || step === "unlock") {
-    if (step === "create") {
+  if (status.state === "disabled") {
+    if (step === "enable") {
       return (
-        <CreateKeys
+        <EnableForm
           busy={busy}
           error={error}
-          onCancel={() => setStep("form")}
-          onCreate={(pass) =>
+          onCancel={() => go("start")}
+          onEnable={(pass) =>
             act(async () => {
-              setRecoveryKey(await api.syncCreate(pass));
-              setStep("recovery");
+              setCreated(await api.syncEnable(pass));
+              setStep("done");
             })
           }
         />
       );
     }
-    if (step === "unlock") {
-      return <Unlock busy={busy} error={error} onUnlock={(s) => act(async () => { await api.syncUnlock(s); setStep("form"); })} />;
+    if (step === "join") {
+      return (
+        <JoinForm
+          busy={busy}
+          error={error}
+          onCancel={() => go("start")}
+          onJoin={(code, secret) => act(async () => { await api.syncJoin(code, secret); go("start"); })}
+        />
+      );
     }
     return (
-      <ConnectForm
-        busy={busy}
-        error={error}
-        onConnect={(cfg, secret) =>
-          act(async () => {
-            const { initialized } = await api.syncConnect(cfg, secret);
-            setStep(initialized ? "unlock" : "create");
-          })
-        }
-      />
+      <div className="sync-form">
+        {status.notice === "bucket_removed" && <div className="banner info">{t("sync.notice.bucketRemoved")}</div>}
+        <p>{t("sync.cloud.intro")}</p>
+        <div className="row">
+          <button className="btn primary" onClick={() => go("enable")}>
+            {t("sync.cloud.enable")}
+          </button>
+          <button className="btn" onClick={() => go("join")}>
+            {t("sync.cloud.haveCode")}
+          </button>
+        </div>
+        <p className="muted small">{t("sync.e2e")}</p>
+      </div>
     );
   }
 
@@ -96,10 +110,9 @@ export function SyncSettings() {
             </dd>
           </>
         )}
-        <dt>{t("sync.storage")}</dt>
+        <dt>{t("sync.cloud.code")}</dt>
         <dd>
-          <code>{status.config?.endpoint}</code> / <code>{status.config?.bucket}</code>
-          {status.config?.prefix && <> / <code>{status.config.prefix}</code></>}
+          <ShowCode />
         </dd>
       </dl>
       {error && <div className="banner error">{error}</div>}
@@ -107,51 +120,46 @@ export function SyncSettings() {
         <button className="btn" disabled={busy} onClick={() => void api.syncNow()}>
           {t("sync.now")}
         </button>
-        <DisconnectButton onConfirm={() => act(api.syncDisconnect)} busy={busy} />
+        <DisconnectButton busy={busy} onConfirm={(deleteCloud) => act(() => api.syncDisconnect(deleteCloud))} />
       </div>
       <p className="muted small">{t("sync.e2e")}</p>
     </div>
   );
 }
 
-function ConnectForm({ busy, error, onConnect }: { busy: boolean; error: string | null; onConnect: (c: S3Config, secret: string) => void }) {
-  const [cfg, setCfg] = useState<S3Config>(EMPTY);
-  const [secret, setSecret] = useState("");
-  const field = (key: keyof S3Config, label: Key, placeholder: string, hint?: Key) => (
-    <label className="field">
-      <span>{t(label)}</span>
-      <input value={cfg[key]} placeholder={placeholder} onChange={(e) => setCfg({ ...cfg, [key]: e.target.value })} spellCheck={false} />
-      {hint && <small className="muted">{t(hint)}</small>}
-    </label>
-  );
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
   return (
-    <form
-      className="sync-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        onConnect(cfg, secret);
-      }}
-    >
-      <p className="muted">{t("sync.intro")}</p>
-      {field("endpoint", "sync.endpoint", "https://<account-id>.r2.cloudflarestorage.com", "sync.endpointHint")}
-      {field("bucket", "sync.bucket", "my-quickdesk")}
-      {field("region", "sync.region", "auto", "sync.regionHint")}
-      {field("accessKeyId", "sync.accessKey", "")}
-      <label className="field">
-        <span>{t("sync.secret")}</span>
-        <input type="password" value={secret} onChange={(e) => setSecret(e.target.value)} autoComplete="off" />
-        <small className="muted">{t("sync.secretHint")}</small>
-      </label>
-      {field("prefix", "sync.prefix", "quickdesk", "sync.prefixHint")}
-      {error && <div className="banner error">{error}</div>}
-      <button className="btn primary" type="submit" disabled={busy}>
-        {busy ? t("sync.connecting") : t("sync.connect")}
-      </button>
-    </form>
+    <button className="btn" type="button" onClick={() => void api.clipboardWrite(text).then(() => setCopied(true))}>
+      {copied ? t("common.copied") : t("common.copy")}
+    </button>
   );
 }
 
-function CreateKeys({ busy, error, onCreate, onCancel }: { busy: boolean; error: string | null; onCreate: (p: string) => void; onCancel: () => void }) {
+/** The sync code on demand, to add another device. */
+function ShowCode() {
+  const [code, setCode] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  if (!code) {
+    return (
+      <>
+        <button className="btn" onClick={() => void api.syncCode().then(setCode, (e) => setError(errorMessage(e)))}>
+          {t("sync.cloud.showCode")}
+        </button>
+        {error && <span className="error-text small"> {error}</span>}
+      </>
+    );
+  }
+  return (
+    <div className="sync-code-row">
+      <code className="sync-code">{code}</code>
+      <CopyButton text={code} />
+      <span className="muted small">{t("sync.cloud.codeHint")}</span>
+    </div>
+  );
+}
+
+function EnableForm({ busy, error, onEnable, onCancel }: { busy: boolean; error: string | null; onEnable: (p: string) => void; onCancel: () => void }) {
   const [p1, setP1] = useState("");
   const [p2, setP2] = useState("");
   const mismatch = p2.length > 0 && p1 !== p2;
@@ -160,7 +168,7 @@ function CreateKeys({ busy, error, onCreate, onCancel }: { busy: boolean; error:
       className="sync-form"
       onSubmit={(e) => {
         e.preventDefault();
-        if (!mismatch) onCreate(p1);
+        if (!mismatch) onEnable(p1);
       }}
     >
       <h3>{t("sync.create.title")}</h3>
@@ -177,7 +185,41 @@ function CreateKeys({ busy, error, onCreate, onCancel }: { busy: boolean; error:
       {error && <div className="banner error">{error}</div>}
       <div className="row">
         <button className="btn primary" type="submit" disabled={busy || p1.length < 8 || p1 !== p2}>
-          {busy ? t("sync.create.busy") : t("sync.create.button")}
+          {busy ? t("sync.cloud.enabling") : t("sync.cloud.enable")}
+        </button>
+        <button className="btn" type="button" onClick={onCancel}>
+          {t("sync.back")}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function JoinForm({ busy, error, onJoin, onCancel }: { busy: boolean; error: string | null; onJoin: (code: string, secret: string) => void; onCancel: () => void }) {
+  const [code, setCode] = useState("");
+  const [secret, setSecret] = useState("");
+  return (
+    <form
+      className="sync-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        onJoin(code, secret);
+      }}
+    >
+      <h3>{t("sync.join.title")}</h3>
+      <p className="muted">{t("sync.join.intro")}</p>
+      <label className="field">
+        <span>{t("sync.cloud.code")}</span>
+        <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="QD1-XXXXXX-XXXXXX-…" spellCheck={false} autoFocus />
+      </label>
+      <label className="field">
+        <span>{t("sync.unlock.label")}</span>
+        <input type="password" value={secret} onChange={(e) => setSecret(e.target.value)} />
+      </label>
+      {error && <div className="banner error">{error}</div>}
+      <div className="row">
+        <button className="btn primary" type="submit" disabled={busy || !code.trim() || !secret}>
+          {busy ? t("sync.join.busy") : t("sync.join.button")}
         </button>
         <button className="btn" type="button" onClick={onCancel}>
           {t("sync.back")}
@@ -211,18 +253,21 @@ function Unlock({ busy, error, onUnlock }: { busy: boolean; error: string | null
   );
 }
 
-function RecoveryKeyNotice({ recoveryKey, onDone }: { recoveryKey: string; onDone: () => void }) {
+/** After turning sync on: the sync code (for other devices) and the recovery key. */
+function SavedCodes({ syncCode, recoveryKey, onDone }: { syncCode: string; recoveryKey: string; onDone: () => void }) {
   const [saved, setSaved] = useState(false);
-  const [copied, setCopied] = useState(false);
   return (
     <div className="sync-form">
-      <h3>{t("sync.recovery.title")}</h3>
+      <h3>{t("sync.done.title")}</h3>
+      <p>{t("sync.done.code")}</p>
+      <div className="sync-code-row">
+        <code className="sync-code">{syncCode}</code>
+        <CopyButton text={syncCode} />
+      </div>
       <p>{t("sync.recovery.intro")}</p>
       <pre className="recovery-key">{recoveryKey}</pre>
       <div className="row">
-        <button className="btn" onClick={() => void api.clipboardWrite(recoveryKey).then(() => setCopied(true))}>
-          {copied ? t("common.copied") : t("common.copy")}
-        </button>
+        <CopyButton text={recoveryKey} />
       </div>
       <label className="switch">
         <input type="checkbox" checked={saved} onChange={(e) => setSaved(e.target.checked)} /> {t("sync.recovery.saved")}
@@ -234,18 +279,24 @@ function RecoveryKeyNotice({ recoveryKey, onDone }: { recoveryKey: string; onDon
   );
 }
 
-function DisconnectButton({ onConfirm, busy }: { onConfirm: () => void; busy: boolean }) {
+function DisconnectButton({ onConfirm, busy }: { onConfirm: (deleteCloud: boolean) => void; busy: boolean }) {
   const [confirm, setConfirm] = useState(false);
+  const [deleteCloud, setDeleteCloud] = useState(false);
   return confirm ? (
-    <>
+    <div className="disconnect-box">
       <span className="muted">{t("sync.disconnect.confirm")}</span>
-      <button className="btn danger" disabled={busy} onClick={onConfirm}>
-        {t("sync.disconnect.button")}
-      </button>
-      <button className="btn" onClick={() => setConfirm(false)}>
-        {t("common.cancel")}
-      </button>
-    </>
+      <label className="switch">
+        <input type="checkbox" checked={deleteCloud} onChange={(e) => setDeleteCloud(e.target.checked)} /> {t("sync.disconnect.deleteCloud")}
+      </label>
+      <div className="row tight">
+        <button className="btn danger" disabled={busy} onClick={() => onConfirm(deleteCloud)}>
+          {deleteCloud ? t("sync.disconnect.deleteButton") : t("sync.disconnect.button")}
+        </button>
+        <button className="btn" onClick={() => setConfirm(false)}>
+          {t("common.cancel")}
+        </button>
+      </div>
+    </div>
   ) : (
     <button className="btn" onClick={() => setConfirm(true)}>
       {t("sync.disconnect")}

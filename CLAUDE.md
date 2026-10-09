@@ -18,5 +18,7 @@ Rules that are easy to break:
   `website/src/data/privacy.ts`.
 - Claude Code's OAuth token (`~/.claude/.credentials.json`) may only be read and sent to
   `api.anthropic.com`; never print, store or refresh it.
+- Sync goes through QuickDesk Cloud (`sync-server/`, `crates/qd-sync/src/cloud.rs`); notes stay
+  end-to-end encrypted on the client. Deploying the Worker affects every installed app.
 - Never read `~/.tauri/quickdesk.key` (the updater's private signing key); the `.pub` file is fine.
 - Release notes go in both `CHANGELOG.md` and `CHANGELOG.vi.md`; then `npm run release <version>`.

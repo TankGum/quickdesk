@@ -6,6 +6,19 @@ Mỗi bản phát hành QuickDesk có gì mới. Bản tiếng Anh là
 Mỗi bản là một mục `## <phiên bản> — <ngày>` với tối đa ba nhóm:
 `### Mới`, `### Cải thiện`, `### Sửa lỗi`.
 
+## 0.3.1 — 2026-10-09
+
+### Mới
+- Đồng bộ có sẵn trong app: bật trong Cài đặt → Đồng bộ và cho các máy khác tham gia bằng mã đồng bộ. Không cần tài khoản, email hay tự cài bucket. Ghi chú vẫn được mã hoá trên máy trước khi gửi đi; QuickDesk Cloud chỉ lưu dữ liệu đã mã hoá.
+
+### Sửa lỗi
+- Ghi chú, lịch sử clipboard và cài đặt của các bản trước đã trở lại. Khi cập nhật lên 0.2.0 và 0.3.0, app bắt đầu với thư mục trống thay vì chuyển dữ liệu sang; giờ QuickDesk tự gộp dữ liệu cũ vào, và giữ nguyên các thư mục cũ làm bản dự phòng.
+- Mở Cài đặt không còn làm chấm màu của các tab khác chuyển sang xám.
+
+### Cải thiện
+- Không còn hỗ trợ đồng bộ qua bucket S3/R2 riêng. Nếu bạn đang dùng, đồng bộ sẽ tự tắt một lần kèm thông báo trong Cài đặt → Đồng bộ; ghi chú vẫn giữ nguyên trên máy.
+- Menu usage AI trên thanh trên cùng chỉ hiện công cụ bạn đang theo dõi, mỗi hạn mức có một thanh tiến trình xanh, vàng hoặc đỏ và thời điểm đặt lại ở dòng dưới. Chọn công cụ khác trong mục Theo dõi.
+
 ## 0.3.0 — 2026-10-09
 
 ### Mới
