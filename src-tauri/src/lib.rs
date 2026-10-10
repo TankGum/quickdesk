@@ -31,6 +31,16 @@ use crate::state::AppState;
 
 static LOG_GUARD: OnceLock<WorkerGuard> = OnceLock::new();
 
+/// Tell the user QuickDesk could not start (Windows has no console to print to).
+#[cfg(windows)]
+pub fn crash_dialog(message: &str) {
+    use windows_sys::Win32::UI::WindowsAndMessaging::{MessageBoxW, MB_ICONERROR, MB_OK};
+    let wide = |s: &str| s.encode_utf16().chain(std::iter::once(0)).collect::<Vec<u16>>();
+    let (text, title) = (wide(message), wide("QuickDesk could not start"));
+    // SAFETY: two NUL-terminated UTF-16 strings that outlive the call.
+    unsafe { MessageBoxW(std::ptr::null_mut(), text.as_ptr(), title.as_ptr(), MB_OK | MB_ICONERROR) };
+}
+
 pub fn run(args: Vec<String>) {
     let initial = match CliCommand::parse(&args) {
         Ok(CliCommand::Quit) => return, // nothing running to quit
@@ -179,6 +189,14 @@ pub fn run(args: Vec<String>) {
                 updates,
                 runtimes: Default::default(),
             });
+
+            // The windows come only now (`"create": false` in tauri.conf.json):
+            // WebView2 runs the UI while a window is being created, and its
+            // first commands need AppState. Created before setup, on Windows
+            // they panicked inside a WebView2 callback and the app aborted.
+            for config in app.config().app.windows.clone() {
+                tauri::WebviewWindowBuilder::from_config(app.handle(), &config)?.build()?;
+            }
 
             tray::build(app, clip_paused)?;
             clipboard::start(app.handle());

@@ -13,6 +13,7 @@
     "windows": [
       {
         "label": "main",
+        "create": false,
         "title": "QuickDesk",
         "width": 900,
         "height": 600,
@@ -21,6 +22,7 @@
       },
       {
         "label": "note-popup",
+        "create": false,
         "title": "Quick note",
         "width": 480,
         "height": 140,
@@ -33,6 +35,7 @@
       },
       {
         "label": "clip-popup",
+        "create": false,
         "title": "Clipboard",
         "width": 520,
         "height": 420,
