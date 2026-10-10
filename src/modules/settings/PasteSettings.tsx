@@ -37,6 +37,15 @@ export function PasteSettings() {
 
   if (!info) return null;
 
+  // Windows: SendInput needs no setup and there is nothing to choose.
+  if (info.native) {
+    return (
+      <div className="paste-settings">
+        <p className="muted small">{t("paste.windows")}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="paste-settings">
       <p className="muted small">

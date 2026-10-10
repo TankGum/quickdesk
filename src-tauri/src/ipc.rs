@@ -5,7 +5,6 @@
 //! a few milliseconds. `tauri-plugin-single-instance` remains as a fallback
 //! (and is the only mechanism on Windows).
 
-use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -21,11 +20,14 @@ pub fn now_ms() -> u64 {
     SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_millis() as u64).unwrap_or(0)
 }
 
+// The socket exists on unix only; Windows forwards through the single-instance plugin.
+#[cfg_attr(not(unix), allow(dead_code))]
 fn encode(f: &Forwarded) -> String {
     // Args are joined with \x1f (unit separator), which cannot appear in our verbs.
     format!("{}\x1e{}\n", f.sent_at_ms, f.args.join("\x1f"))
 }
 
+#[cfg_attr(not(unix), allow(dead_code))]
 fn decode(line: &str) -> Option<Forwarded> {
     let (ts, args) = line.trim_end_matches('\n').split_once('\x1e')?;
     let args = if args.is_empty() { vec![] } else { args.split('\x1f').map(str::to_owned).collect() };
@@ -41,6 +43,7 @@ pub fn socket_path() -> PathBuf {
 #[cfg(unix)]
 mod imp {
     use super::*;
+    use std::io::{BufRead, BufReader, Write};
     use std::os::unix::net::{UnixListener, UnixStream};
 
     /// Returns true if a running instance accepted the args (caller should exit).

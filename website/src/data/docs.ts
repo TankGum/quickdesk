@@ -22,6 +22,7 @@ export const sections: Section[] = [
 <li><strong>Anything else:</strong> make the AppImage executable and run it. It needs FUSE 2 (<code>libfuse2</code>, on Ubuntu 24.04 <code>libfuse2t64</code>).</li>
 </ul>
 <p>QuickDesk needs an x86_64 system from the last few years (glibc 2.34 or newer). It works best on GNOME, on both Wayland and X11.</p>
+<p><strong>Windows 10 and 11 (64-bit):</strong> in PowerShell, run <code>irm https://quickdesk.click/install.ps1 | iex</code>, or download the installer from the <a href="/download">download page</a>. It installs for your user only, without administrator rights. The installer is not signed yet, so Windows may say it protected your PC: choose <em>More info → Run anyway</em>. On Windows the shortcuts are <kbd>Win</kbd> <kbd>Alt</kbd> <kbd>N</kbd> / <kbd>V</kbd> / <kbd>P</kbd>, QuickDesk lives in the system tray, and auto-paste needs no setup. The Runtimes tab is not on Windows yet.</p>
 <p>On first start a welcome screen lists the shortcuts and offers two options: <strong>start when you log in</strong> (needed for clipboard history and the AI ring to work all the time) and <strong>instant paste</strong> (see <a href="#auto-paste">Auto-paste</a>). After that QuickDesk lives in the top bar.</p>`,
       vi: `<p>Cách nhanh nhất, trên mọi distro:</p>
 <pre><code>curl -fsSL https://quickdesk.click/install.sh | bash</code></pre>
@@ -32,6 +33,7 @@ export const sections: Section[] = [
 <li><strong>Distro khác:</strong> cho file AppImage quyền chạy rồi mở nó. Cần FUSE 2 (<code>libfuse2</code>, trên Ubuntu 24.04 là <code>libfuse2t64</code>).</li>
 </ul>
 <p>QuickDesk cần máy x86_64 đời vài năm gần đây (glibc 2.34 trở lên). Chạy tốt nhất trên GNOME, cả Wayland lẫn X11.</p>
+<p><strong>Windows 10 và 11 (64-bit):</strong> trong PowerShell, chạy <code>irm https://quickdesk.click/install.ps1 | iex</code>, hoặc tải bộ cài ở <a href="/download">trang tải về</a>. Bộ cài chỉ cài cho tài khoản của bạn, không cần quyền quản trị. Bộ cài chưa được ký số nên Windows có thể báo đã chặn để bảo vệ máy: chọn <em>More info → Run anyway</em>. Trên Windows, phím tắt là <kbd>Win</kbd> <kbd>Alt</kbd> <kbd>N</kbd> / <kbd>V</kbd> / <kbd>P</kbd>, QuickDesk nằm ở khay hệ thống, và tự động dán không cần cài đặt gì. Tab Runtime chưa có trên Windows.</p>
 <p>Lần mở đầu tiên, màn hình chào hiện danh sách phím tắt và hai lựa chọn: <strong>tự chạy khi đăng nhập</strong> (cần để lịch sử clipboard và vòng tròn AI luôn hoạt động) và <strong>dán tức thì</strong> (xem <a href="#auto-paste">Tự động dán</a>). Sau đó QuickDesk nằm trên thanh trên cùng.</p>`,
     },
   },
@@ -254,12 +256,14 @@ export const sections: Section[] = [
 <li>Remove the package: <code>sudo apt remove quick-desk</code> (Debian/Ubuntu) or <code>sudo dnf remove QuickDesk</code> (Fedora), or delete the AppImage.</li>
 <li>Your data stays in <code>~/.local/share/click.quickdesk</code> until you delete that folder.</li>
 </ol>
+<p><strong>Windows:</strong> Settings → Apps → Installed apps → QuickDesk → Uninstall. Your data stays in <code>%APPDATA%\\click.quickdesk</code> until you delete that folder.</p>
 <p>Removing the package also removes the instant-paste permission if you enabled it.</p>`,
       vi: `<ol>
 <li>Tắt <em>Tự chạy QuickDesk khi đăng nhập</em> trong Cài đặt, rồi thoát app từ khay hệ thống.</li>
 <li>Gỡ gói: <code>sudo apt remove quick-desk</code> (Debian/Ubuntu) hoặc <code>sudo dnf remove QuickDesk</code> (Fedora), hoặc xoá file AppImage.</li>
 <li>Dữ liệu vẫn nằm trong <code>~/.local/share/click.quickdesk</code> cho tới khi bạn xoá thư mục đó.</li>
 </ol>
+<p><strong>Windows:</strong> Settings → Apps → Installed apps → QuickDesk → Uninstall. Dữ liệu vẫn nằm trong <code>%APPDATA%\\click.quickdesk</code> cho tới khi bạn xoá thư mục đó.</p>
 <p>Gỡ gói cũng gỡ luôn quyền dán tức thì nếu bạn đã bật.</p>`,
     },
   },

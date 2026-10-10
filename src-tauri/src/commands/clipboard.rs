@@ -133,6 +133,8 @@ pub struct PasteInfo {
     can_enable: bool,
     /// Manual fallback that grants /dev/uinput (Linux).
     setup_command: Option<&'static str>,
+    /// Windows: pasted with the system's own key input; nothing to set up.
+    native: bool,
 }
 
 #[tauri::command]
@@ -152,6 +154,7 @@ pub fn clip_paste_info(state: State<'_, AppState>) -> PasteInfo {
         rule_installed: installed,
         can_enable,
         setup_command: setup,
+        native: cfg!(windows),
     }
 }
 

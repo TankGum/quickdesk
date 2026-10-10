@@ -1,7 +1,8 @@
 name: Release
 
 # Push a tag like v0.2.0 (matching "version" in src-tauri/tauri.conf.json) to
-# build the Linux packages and publish them to the Cloudflare R2 bucket.
+# build the Linux packages and the Windows installer, then publish them all to
+# the Cloudflare R2 bucket (publish runs only once both builds succeeded).
 on:
   push:
     tags: ["v*"]
@@ -61,15 +62,62 @@ jobs:
           npx tauri build --bundles deb,rpm,appimage
           --config '{"bundle":{"createUpdaterArtifacts":true}}'
 
-      - name: Keep a copy on the workflow run
+      - name: Keep the packages for the publish job
         uses: actions/upload-artifact@v4
         with:
           name: quickdesk-linux
           path: |
             target/release/bundle/deb/*.deb
+            target/release/bundle/deb/*.sig
             target/release/bundle/rpm/*.rpm
+            target/release/bundle/rpm/*.sig
             target/release/bundle/appimage/*.AppImage
-            target/release/bundle/*/*.sig
+            target/release/bundle/appimage/*.sig
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # The NSIS installer doubles as the update package (<installer>.sig).
+      - name: Build the installer
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        # bash (Git Bash on the runner) so the JSON quoting matches the Linux job.
+        shell: bash
+        run: npx tauri build --bundles nsis --config '{"bundle":{"createUpdaterArtifacts":true}}'
+
+      - name: Keep the installer for the publish job
+        uses: actions/upload-artifact@v4
+        with:
+          name: quickdesk-windows
+          path: |
+            target/release/bundle/nsis/*.exe
+            target/release/bundle/nsis/*.sig
+
+  publish:
+    needs: [linux, windows]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # Back where each build left them, so the paths below stay the same.
+      - uses: actions/download-artifact@v4
+        with:
+          name: quickdesk-linux
+          path: target/release/bundle
+      - uses: actions/download-artifact@v4
+        with:
+          name: quickdesk-windows
+          path: target/release/bundle/nsis
 
       - name: Publish to Cloudflare R2
         env:
@@ -92,8 +140,8 @@ jobs:
           echo "Download: https://quickdesk.click/download" >> release-notes.md
           gh release create "$GITHUB_REF_NAME" --title "QuickDesk $version" --notes-file release-notes.md \
             target/release/bundle/deb/*.deb target/release/bundle/rpm/*.rpm \
-            target/release/bundle/appimage/*.AppImage target/release/bundle/*/*.sig \
-            target/release/publish/SHA256SUMS
+            target/release/bundle/appimage/*.AppImage target/release/bundle/nsis/*.exe \
+            target/release/bundle/*/*.sig target/release/publish/SHA256SUMS
 
       # The website (Cloudflare Pages) shows the newest release from
       # latest.json; rebuild it now that there is a new one.

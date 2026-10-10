@@ -14,10 +14,13 @@ import { WhatsNew } from "../modules/update/WhatsNew";
 import { UpdateSettings } from "../modules/update/UpdateSettings";
 import { LangPref, setLanguage, useI18n } from "../shared/i18n";
 import { api, AppInfo, currentWindow, errorMessage, FocusStats, hideWindow, useShown } from "../shared/ipc";
+import { isWindows } from "../shared/platform";
 import { Welcome } from "./Welcome";
 
-const TABS = ["notes", "clipboard", "ports", "versions", "ai", "settings"] as const;
-type Tab = (typeof TABS)[number];
+const ALL_TABS = ["notes", "clipboard", "ports", "versions", "ai", "settings"] as const;
+type Tab = (typeof ALL_TABS)[number];
+// The Runtimes tab knows Linux shells and managers only, for now.
+const TABS: readonly Tab[] = isWindows ? ALL_TABS.filter((t) => t !== "versions") : ALL_TABS;
 
 export function Main() {
   const { t } = useI18n();

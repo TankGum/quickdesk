@@ -308,7 +308,8 @@ mod tests {
         assert!(cmd.env.contains(&("MISE_YES".into(), "1".into())));
         assert_eq!(go.command(Action::Uninstall, "1.22.12").args, ["uninstall", "go@1.22.12"]);
         let p = go.project_command(Path::new("/work/api"), "1.23.4").unwrap();
-        assert_eq!(p.args, ["use", "--path", "/work/api/mise.toml", "go@1.23.4"]);
+        let file = Path::new("/work/api").join("mise.toml").display().to_string();
+        assert_eq!(p.args, ["use", "--path", file.as_str(), "go@1.23.4"]);
         assert_eq!(go.init_lines(), ["eval \"$(\"$HOME/.local/bin/mise\" activate bash)\""]);
     }
 

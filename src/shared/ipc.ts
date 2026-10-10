@@ -140,6 +140,8 @@ export interface PasteInfo {
   ruleInstalled: boolean;
   canEnable: boolean;
   setupCommand: string | null;
+  /** Windows: pasted with the system's own key input; nothing to set up. */
+  native: boolean;
 }
 
 export interface UsageWindow {

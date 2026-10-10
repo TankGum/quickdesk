@@ -35,6 +35,13 @@ const s = {
     oneLead: "Picks the right package for your distribution (.deb, .rpm or AppImage), checks its SHA-256 and installs it. It asks for your password only for the install step.",
     oneScript: "Read the script",
     orPick: "Or pick a package",
+    leadWin: `For Linux and Windows on x86_64 · released ${date}. Free and open source (MIT).`,
+    notSupported: "QuickDesk runs on Linux and Windows. A macOS version is planned.",
+    windows: ["Windows 10 and 11", "64-bit. Installs for your user only: no administrator rights needed."],
+    oneLinux: "Linux (terminal)",
+    oneWindows: "Windows (PowerShell)",
+    oneLeadWin: "Picks the right package (.deb, .rpm or AppImage on Linux, the installer on Windows), checks its SHA-256 and installs it.",
+    smartscreen: "Windows may say it protected your PC: the installer is not signed yet. Choose More info → Run anyway.",
   },
   vi: {
     title: `Tải QuickDesk ${v}`,
@@ -52,6 +59,13 @@ const s = {
     after: "Sau đó mở QuickDesk từ menu ứng dụng. App nằm trên thanh trên cùng và từ giờ sẽ tự cập nhật.",
     notLinux: "Hiện QuickDesk chạy trên Linux. Bản cho Windows và macOS đang được lên kế hoạch.",
     copy: "Copy",
+    leadWin: `Cho Linux và Windows x86_64 · phát hành ${date}. Miễn phí, mã nguồn mở (MIT).`,
+    notSupported: "QuickDesk chạy trên Linux và Windows. Bản macOS đang được lên kế hoạch.",
+    windows: ["Windows 10 và 11", "64-bit. Chỉ cài cho tài khoản của bạn: không cần quyền quản trị."],
+    oneLinux: "Linux (terminal)",
+    oneWindows: "Windows (PowerShell)",
+    oneLeadWin: "Tự chọn gói phù hợp (.deb, .rpm hoặc AppImage trên Linux, bộ cài trên Windows), kiểm tra SHA-256 rồi cài.",
+    smartscreen: "Windows có thể báo đã chặn để bảo vệ máy: bộ cài chưa được ký số. Chọn More info → Run anyway.",
     oneTitle: "Cài bằng một lệnh",
     oneLead: "Tự chọn gói hợp với distro của bạn (.deb, .rpm hoặc AppImage), kiểm tra SHA-256 rồi cài. Chỉ hỏi mật khẩu ở bước cài đặt.",
     oneScript: "Xem script",
@@ -59,6 +73,8 @@ const s = {
   },
 }[lang];
 const oneLine = "curl -fsSL https://quickdesk.click/install.sh | bash";
+const oneLineWin = "irm https://quickdesk.click/install.ps1 | iex";
+const win = f.windows;
 // Download and install from a terminal: one step per line, copied as one command.
 const packages = [
   {
@@ -82,25 +98,49 @@ const packages = [
     file: f.appimage,
     steps: [`curl -fLO ${f.appimage.href}`, `chmod +x ${f.appimage.name} && ./${f.appimage.name}`],
   },
-] as const;
+  ...(win
+    ? [
+        {
+          kind: "windows",
+          label: "Windows",
+          info: s.windows,
+          file: win,
+          steps: [oneLineWin],
+        },
+      ]
+    : []),
+];
 ---
 <section class="dlpage">
   <div class="wrap">
     <header class="dlpage__head">
       <img src="/favicon.svg" alt="" width="72" height="72" />
       <h1 class="section-title">{s.title}</h1>
-      <p class="lead">{s.lead}</p>
-      <p class="dlpage__notlinux" data-notlinux hidden>{s.notLinux}</p>
+      <p class="lead">{win ? s.leadWin : s.lead}</p>
+      <p class="dlpage__notlinux" data-notlinux hidden>{win ? s.notSupported : s.notLinux}</p>
     </header>
 
     <div class="oneline">
       <h2>{s.oneTitle}</h2>
-      <div class="pkg__cmd">
+      {win && <p class="oneline__os">{s.oneLinux}</p>}
+      <div class="pkg__cmd" data-one="linux">
         <code>{oneLine}</code>
         <button type="button" class="terminal__copy" data-copy={oneLine}>{s.copy}</button>
       </div>
+      {
+        win && (
+          <>
+            <p class="oneline__os">{s.oneWindows}</p>
+            <div class="pkg__cmd" data-one="windows">
+              <code>{oneLineWin}</code>
+              <button type="button" class="terminal__copy" data-copy={oneLineWin}>{s.copy}</button>
+            </div>
+          </>
+        )
+      }
       <p class="muted">
-        {s.oneLead} <a class="btn--link" href="/install.sh">{s.oneScript}</a>
+        {win ? s.oneLeadWin : s.oneLead} <a class="btn--link" href="/install.sh">{s.oneScript}</a>
+        {win && <> · <a class="btn--link" href="/install.ps1">install.ps1</a></>}
       </p>
     </div>
 
@@ -129,6 +169,7 @@ const packages = [
               <p class="pkg__sha">
                 {s.sha}: <code>{p.file.sha256}</code>
               </p>
+              {p.kind === "windows" && <p class="pkg__note">{s.smartscreen}</p>}
             </div>
           </article>
         ))
@@ -160,8 +201,18 @@ const packages = [
   // its user agent; other browsers do not, and then nothing is marked.
   (() => {
     const ua = navigator.userAgent;
-    const kind = /Ubuntu|Debian|Mint|Pop!_OS/i.test(ua) ? "deb" : /Fedora|openSUSE|Red Hat/i.test(ua) ? "rpm" : null;
-    if (!/Linux|X11/.test(ua) || /Android/.test(ua)) document.querySelector("[data-notlinux]").hidden = false;
+    const windows = /Windows/.test(ua) && document.querySelector('[data-pkg="windows"]');
+    const kind = windows ? "windows" : /Ubuntu|Debian|Mint|Pop!_OS/i.test(ua) ? "deb" : /Fedora|openSUSE|Red Hat/i.test(ua) ? "rpm" : null;
+    if (!windows && (!/Linux|X11/.test(ua) || /Android/.test(ua))) document.querySelector("[data-notlinux]").hidden = false;
+    // On Windows the PowerShell line comes first.
+    if (windows) {
+      const box = document.querySelector('[data-one="windows"]');
+      const label = box?.previousElementSibling;
+      const first = document.querySelector('[data-one="linux"]')?.previousElementSibling;
+      if (box && label && first) {
+        first.before(label, box);
+      }
+    }
     if (!kind) return;
     const card = document.querySelector(`[data-pkg="${kind}"]`);
     card.classList.add("is-recommended");

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Key, t, useI18n } from "../../shared/i18n";
 import { api, errorMessage, HotkeyCheck, HotkeyConfig, HotkeyTarget } from "../../shared/ipc";
+import { keyLabel } from "../../shared/platform";
 
 const ROWS: { target: HotkeyTarget; key: keyof HotkeyConfig; label: Key; hint: Key }[] = [
   { target: "notes", key: "notes", label: "hk.notes", hint: "hk.notes.hint" },
@@ -144,7 +145,7 @@ export function HotkeySettings() {
                   {rec ? (
                     <RecordingCell rec={rec} onSave={(accel) => void stop({ target: row.target, accel })} onCancel={() => void stop()} />
                   ) : value ? (
-                    <kbd>{value}</kbd>
+                    <kbd>{keyLabel(value)}</kbd>
                   ) : (
                     <span className="muted">{t("hk.notSet")}</span>
                   )}
@@ -206,7 +207,7 @@ function RecordingCell({ rec, onSave, onCancel }: { rec: Recording; onSave: (acc
   }
   return (
     <div className="hk-check">
-      <kbd>{c.normalized}</kbd>
+      <kbd>{keyLabel(c.normalized)}</kbd>
       {c.error ? (
         <div className="error-text small">{t("hk.tryAnother", { error: c.error })}</div>
       ) : (

@@ -18,7 +18,9 @@ export interface Release {
   version: string;
   date: string;
   /** Absolute download URLs, sizes and checksums per package type. */
-  files: Record<"deb" | "rpm" | "appimage", ReleaseFile & { href: string; sizeText: string }>;
+  files: Record<"deb" | "rpm" | "appimage", ReleaseFile & { href: string; sizeText: string }> &
+    /** From the first release with a Windows build on. */
+    Partial<Record<"windows", ReleaseFile & { href: string; sizeText: string }>>;
   checksums: string;
 }
 

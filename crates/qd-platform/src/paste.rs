@@ -244,14 +244,118 @@ mod imp {
     }
 }
 
-#[cfg(not(target_os = "linux"))]
+/// Windows: the window to paste into is the one in front before our popup
+/// opens; we bring it back and type the chord with `SendInput`.
+#[cfg(windows)]
+mod imp {
+    use std::sync::atomic::{AtomicIsize, Ordering};
+    use std::time::{Duration, Instant};
+
+    use windows_sys::Win32::UI::Input::KeyboardAndMouse::{
+        SendInput, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP, VK_CONTROL,
+        VK_INSERT, VK_SHIFT,
+    };
+    use windows_sys::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, IsWindow, SetForegroundWindow};
+
+    use super::{Chord, PasteMethod};
+
+    /// The window that was in front when the popup opened (an HWND).
+    static TARGET: AtomicIsize = AtomicIsize::new(0);
+    const VK_V: u16 = 0x56;
+
+    /// Call right before showing the popup.
+    pub fn remember_target() {
+        // SAFETY: plain query.
+        let hwnd = unsafe { GetForegroundWindow() };
+        TARGET.store(hwnd as isize, Ordering::SeqCst);
+    }
+
+    fn key(vk: u16, up: bool) -> INPUT {
+        // Insert is an extended key; without the flag it can arrive as numpad 0.
+        let extended = if vk == VK_INSERT { KEYEVENTF_EXTENDEDKEY } else { 0 };
+        INPUT {
+            r#type: INPUT_KEYBOARD,
+            Anonymous: INPUT_0 {
+                ki: KEYBDINPUT {
+                    wVk: vk,
+                    wScan: 0,
+                    dwFlags: extended | if up { KEYEVENTF_KEYUP } else { 0 },
+                    time: 0,
+                    dwExtraInfo: 0,
+                },
+            },
+        }
+    }
+
+    /// Fields kept private so every platform builds it the same way: `default()`.
+    #[derive(Default)]
+    pub struct AutoPaster {
+        _private: (),
+    }
+
+    impl AutoPaster {
+        pub fn resolve(_method: PasteMethod) -> PasteMethod {
+            PasteMethod::Auto
+        }
+
+        pub async fn paste(
+            &self,
+            _method: PasteMethod,
+            _restore_token: Option<&str>,
+            chord: Chord,
+        ) -> Result<Option<String>, String> {
+            // Kept as a number: a raw HWND held across `.await` would make
+            // this future unusable from Tauri's (multi-threaded) commands.
+            let target = TARGET.load(Ordering::SeqCst);
+            // SAFETY (all blocks below): plain calls on a window handle that
+            // may have closed meanwhile; Windows checks it.
+            let front = || unsafe { GetForegroundWindow() } as isize;
+            if target == 0 || unsafe { IsWindow(target as _) } == 0 {
+                return Err("the window to paste into is gone".into());
+            }
+            // We just handled the user's key press, so Windows lets us hand
+            // the foreground back.
+            unsafe { SetForegroundWindow(target as _) };
+            let started = Instant::now();
+            while front() != target && started.elapsed() < Duration::from_millis(400) {
+                tokio_sleep(15).await;
+            }
+            if front() != target {
+                return Err("could not bring the window back to the front".into());
+            }
+            tokio_sleep(40).await;
+            let [modifier, k] = match chord {
+                Chord::ShiftInsert => [VK_SHIFT, VK_INSERT],
+                Chord::CtrlV => [VK_CONTROL, VK_V],
+            };
+            let inputs = [key(modifier, false), key(k, false), key(k, true), key(modifier, true)];
+            // SAFETY: a valid array of keyboard inputs.
+            let sent = unsafe { SendInput(inputs.len() as u32, inputs.as_ptr(), std::mem::size_of::<INPUT>() as i32) };
+            if sent as usize != inputs.len() {
+                return Err("Windows refused the key presses".into());
+            }
+            Ok(None)
+        }
+
+        pub async fn close_if_idle(&self, _idle: Duration) {}
+    }
+
+    async fn tokio_sleep(ms: u64) {
+        tokio::time::sleep(Duration::from_millis(ms)).await;
+    }
+}
+
+#[cfg(not(any(target_os = "linux", windows)))]
 mod imp {
     use std::time::Duration;
 
     use super::{Chord, PasteMethod};
 
+    /// Fields kept private so every platform builds it the same way: `default()`.
     #[derive(Default)]
-    pub struct AutoPaster;
+    pub struct AutoPaster {
+        _private: (),
+    }
 
     impl AutoPaster {
         pub fn resolve(method: PasteMethod) -> PasteMethod {
@@ -270,3 +374,10 @@ mod imp {
 }
 
 pub use imp::AutoPaster;
+
+/// Remember the window to paste into; call right before showing the popup.
+/// Only Windows needs it: elsewhere hiding the popup refocuses that window.
+pub fn remember_target() {
+    #[cfg(windows)]
+    imp::remember_target();
+}

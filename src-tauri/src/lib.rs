@@ -5,6 +5,7 @@ mod commands;
 mod hotkeys;
 mod i18n;
 pub mod ipc;
+#[cfg(target_os = "linux")]
 mod legacy;
 mod ring;
 mod runtimes;
@@ -134,7 +135,9 @@ pub fn run(args: Vec<String>) {
             init_logging(app.path().app_log_dir()?);
             std::fs::create_dir_all(&data_dir)?;
             let modules: &[&dyn qd_core::Module] = &[&qd_notes::NotesModule, &qd_clipboard::ClipboardModule];
-            // Notes, clipboard history and settings from earlier app identifiers.
+            // Notes, clipboard history and settings from earlier app identifiers
+            // (Linux only: QuickDesk had no other builds before).
+            #[cfg(target_os = "linux")]
             legacy::import_all(&data_dir, modules);
             let db = Db::open(&data_dir.join("quickdesk.db"), modules)?;
             let (device_id, hotkeys, clip, lang_pref, ai, updates) = {

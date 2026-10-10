@@ -419,7 +419,7 @@ const commands: Record<string, (a: Args) => unknown> = {
     clipStatus.pausedUntil = a.paused && a.minutes ? Date.now() + a.minutes * MIN : null;
     changed("clipboard://changed");
   },
-  clip_paste_info: () => ({ method: "auto", effective: "portal", uinputAvailable: true, ruleInstalled: false, canEnable: true, setupCommand: null }),
+  clip_paste_info: () => ({ method: "auto", effective: "portal", uinputAvailable: true, ruleInstalled: false, canEnable: true, setupCommand: null, native: false }),
   clipboard_write: () => undefined,
 
   ports_scan: () => ports.filter((p) => p.pid === null || !dead.has(p.pid)),

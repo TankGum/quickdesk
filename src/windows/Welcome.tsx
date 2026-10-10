@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { lang, setLanguage, useI18n } from "../shared/i18n";
 import { markSeen } from "../modules/update/WhatsNew";
 import { api, errorMessage, HotkeyConfig } from "../shared/ipc";
+import { keyLabel } from "../shared/platform";
 
 /** First-run screen: shows the hotkeys and offers the one-time instant-paste opt-in. */
 export function Welcome({ onDone }: { onDone: () => void }) {
@@ -66,11 +67,11 @@ export function Welcome({ onDone }: { onDone: () => void }) {
       <p className="muted">{t("welcome.intro")}</p>
       {hotkeys && (
         <dl className="welcome-keys">
-          <dt><kbd>{hotkeys.notes}</kbd></dt>
+          <dt><kbd>{keyLabel(hotkeys.notes)}</kbd></dt>
           <dd>{t("welcome.notes")}</dd>
-          <dt><kbd>{hotkeys.clipboard}</kbd></dt>
+          <dt><kbd>{keyLabel(hotkeys.clipboard)}</kbd></dt>
           <dd>{t("welcome.clipboard")}</dd>
-          <dt><kbd>{hotkeys.ports}</kbd></dt>
+          <dt><kbd>{keyLabel(hotkeys.ports)}</kbd></dt>
           <dd>{t("welcome.ports")}</dd>
         </dl>
       )}

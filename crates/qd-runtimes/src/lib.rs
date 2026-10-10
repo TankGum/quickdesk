@@ -553,7 +553,10 @@ pub(crate) fn version_key(v: &str) -> Vec<u64> {
 /// `$HOME/...` in rc lines when the path is under home, so the file stays portable.
 pub(crate) fn home_relative(probe: &Probe, path: &Path) -> String {
     match path.strip_prefix(&probe.home) {
-        Ok(rest) if !probe.home.as_os_str().is_empty() => format!("$HOME/{}", rest.display()),
+        // Shell syntax: always `/`, whatever the platform joined with.
+        Ok(rest) if !probe.home.as_os_str().is_empty() => {
+            format!("$HOME/{}", rest.display().to_string().replace('\\', "/"))
+        }
         _ => path.display().to_string(),
     }
 }

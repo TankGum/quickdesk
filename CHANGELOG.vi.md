@@ -6,6 +6,11 @@ Mỗi bản phát hành QuickDesk có gì mới. Bản tiếng Anh là
 Mỗi bản là một mục `## <phiên bản> — <ngày>` với tối đa ba nhóm:
 `### Mới`, `### Cải thiện`, `### Sửa lỗi`.
 
+## Unreleased
+
+### Mới
+- QuickDesk cho Windows 10 và 11 (64-bit): ghi chú có đồng bộ, lịch sử clipboard gồm chữ, ảnh và file, tự dán vào ứng dụng bạn đang dùng, cổng và usage AI, với cùng phím tắt Win+Alt+N / V / P. Cài từ PowerShell bằng `irm https://quickdesk.click/install.ps1 | iex` hoặc từ trang tải về; bộ cài chỉ cài cho tài khoản của bạn, không cần quyền quản trị, và tự cập nhật. Tab Runtime sẽ có trên Windows ở bản sau.
+
 ## 0.4.0 — 2026-10-10
 
 ### Mới

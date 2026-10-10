@@ -74,8 +74,9 @@ impl ProviderUsage {
     }
 }
 
+/// `~`: `HOME`, or `USERPROFILE` on Windows (where tools keep `.claude`, `.codex`…).
 pub(crate) fn home() -> Option<PathBuf> {
-    std::env::var_os("HOME").map(PathBuf::from)
+    std::env::var_os("HOME").or_else(|| std::env::var_os("USERPROFILE")).filter(|h| !h.is_empty()).map(PathBuf::from)
 }
 
 pub(crate) fn now_ms() -> i64 {

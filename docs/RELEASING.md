@@ -1,8 +1,9 @@
 # Releasing QuickDesk
 
 Notes sync through QuickDesk Cloud (`sync-server/`, a Worker on
-`sync.quickdesk.click`). Linux packages (`.deb`, `.rpm`, `.AppImage`) are built by GitHub Actions and
-published to a Cloudflare R2 bucket served at `https://dl.quickdesk.click`.
+`sync.quickdesk.click`). Linux packages (`.deb`, `.rpm`, `.AppImage`) and the Windows installer
+(NSIS `.exe`) are built by GitHub Actions and published to a Cloudflare R2 bucket served at
+`https://dl.quickdesk.click`.
 The website `https://quickdesk.click` (`website/`) is a separate Astro site on
 Cloudflare Pages that reads the newest release from the bucket's `latest.json`.
 
@@ -136,12 +137,14 @@ Run it locally (Node 22): `npm run build:demo && cd website && npm install && np
    It refuses to run with other uncommitted changes, a version that is not
    newer, an existing tag, or missing release notes (`-- --dry-run` checks only).
 3. Wait for the **Release** workflow (about 15 minutes).
-4. The workflow checks the tag matches the version and that release notes exist, builds on Ubuntu
-   22.04 (packages then also install on newer distributions), and uploads:
+4. The workflow checks the tag matches the version and that release notes exist, builds the Linux
+   packages on Ubuntu 22.04 (they then also install on newer distributions) and the Windows
+   installer on `windows-latest`, and once **both** built, uploads:
    ```
    releases/<version>/QuickDesk_<version>_amd64.deb
    releases/<version>/QuickDesk-<version>-1.x86_64.rpm
    releases/<version>/QuickDesk_<version>_amd64.AppImage
+   releases/<version>/QuickDesk_<version>_x64-setup.exe   Windows (also its update package)
    releases/<version>/SHA256SUMS
    releases/<version>/*.sig      updater signatures
    latest.json                   read by the website
@@ -155,6 +158,7 @@ Testing the upload without R2: run any S3-compatible server locally and set
 
 ## Not yet
 
-- Windows / macOS builds (untested; no auto-paste, clipboard images/files on those platforms;
-  unsigned builds trigger SmartScreen / Gatekeeper warnings).
-- Auto-update inside the app.
+- Code signing for Windows: the installer is unsigned, so SmartScreen warns ("More info → Run
+  anyway"). The updater's own signatures still protect updates.
+- The Runtimes tab on Windows (hidden there for now).
+- macOS builds.

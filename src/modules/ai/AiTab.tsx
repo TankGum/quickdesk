@@ -4,6 +4,7 @@ import { t, useI18n } from "../../shared/i18n";
 import { api, errorMessage, UsageSnapshot, useBackendEvent } from "../../shared/ipc";
 import { ProviderCard } from "./ProviderCard";
 import { STALE_MS, windowLabel } from "./usage";
+import { isWindows } from "../../shared/platform";
 
 export function AiTab({ focusSignal }: { focusSignal: number }) {
   useI18n();
@@ -60,7 +61,7 @@ export function AiTab({ focusSignal }: { focusSignal: number }) {
             checked={snap.trayEnabled}
             onChange={(e) => void api.aiSetTray(e.target.checked).catch((x) => setError(errorMessage(x)))}
           />
-          {t("ai.tray")}
+          {t(isWindows ? "ai.tray.win" : "ai.tray")}
         </label>
         {snap.trayEnabled && (
           <label className="ai-ring-pick">

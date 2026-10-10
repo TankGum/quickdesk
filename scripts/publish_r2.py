@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Publish the built Linux packages to the download host (Cloudflare R2,
-served at https://dl.quickdesk.click).
+"""Publish the built Linux and Windows packages to the download host
+(Cloudflare R2, served at https://dl.quickdesk.click).
 
 Bucket layout:
 
     releases/<version>/QuickDesk_<version>_amd64.deb      (+ .sig)
     releases/<version>/QuickDesk-<version>-1.x86_64.rpm   (+ .sig)
     releases/<version>/QuickDesk_<version>_amd64.AppImage (+ .sig)
+    releases/<version>/QuickDesk_<version>_x64-setup.exe  (+ .sig, Windows)
     releases/<version>/SHA256SUMS
     latest.json            the newest version, its files and release notes (read by the website)
     update.json            signed manifest the app's updater reads (tauri-plugin-updater)
@@ -39,6 +40,7 @@ CONTENT_TYPES = {
     ".deb": "application/vnd.debian.binary-package",
     ".rpm": "application/x-rpm",
     ".AppImage": "application/octet-stream",
+    ".exe": "application/vnd.microsoft.portable-executable",
     ".json": "application/json",
     ".sig": "text/plain; charset=utf-8",
     "": "text/plain; charset=utf-8",
@@ -68,7 +70,13 @@ def notes(version: str) -> dict:
 def updater_manifest(version: str, published: str, public: str, files: dict, sigs: dict) -> dict:
     """Static manifest in tauri-plugin-updater's format. `notes` is shown in
     the app; `notes_vi` is QuickDesk's own extra field for Vietnamese."""
-    platform = {"deb": "linux-x86_64-deb", "rpm": "linux-x86_64-rpm", "appimage": "linux-x86_64-appimage"}
+    # The updater asks for `<os>-<arch>-<installer>` first, then `<os>-<arch>`.
+    platform = {
+        "deb": ["linux-x86_64-deb"],
+        "rpm": ["linux-x86_64-rpm"],
+        "appimage": ["linux-x86_64-appimage"],
+        "windows": ["windows-x86_64-nsis", "windows-x86_64"],
+    }
     n = notes(version)
     return {
         "version": version,
@@ -76,8 +84,9 @@ def updater_manifest(version: str, published: str, public: str, files: dict, sig
         "notes_vi": n["vi"],
         "pub_date": published,
         "platforms": {
-            platform[kind]: {"signature": sigs[kind].read_text().strip(), "url": f"{public}/{f['url']}"}
+            key: {"signature": sigs[kind].read_text().strip(), "url": f"{public}/{f['url']}"}
             for kind, f in files.items()
+            for key in platform[kind]
         },
     }
 
@@ -88,6 +97,7 @@ def main() -> None:
         "deb": BUNDLE / "deb" / f"QuickDesk_{version}_amd64.deb",
         "rpm": BUNDLE / "rpm" / f"QuickDesk-{version}-1.x86_64.rpm",
         "appimage": BUNDLE / "appimage" / f"QuickDesk_{version}_amd64.AppImage",
+        "windows": BUNDLE / "nsis" / f"QuickDesk_{version}_x64-setup.exe",
     }
     if not all(notes(version).values()):
         sys.exit(f"no release notes for {version}: add a '## {version}' section to CHANGELOG.md and CHANGELOG.vi.md")
@@ -147,7 +157,7 @@ def main() -> None:
     latest.write_text(json.dumps({"version": version, "publishedAt": published, "notes": notes(version), "files": files}, indent=2) + "\n")
     upload(latest, "latest.json", fresh)
 
-    # The app picks `linux-x86_64-<bundle type>`, so each install updates with
+    # The app picks `<os>-x86_64-<bundle type>`, so each install updates with
     # the same kind of package it was installed from.
     update = out / "update.json"
     update.write_text(json.dumps(updater_manifest(version, published, public, files, sigs), indent=2) + "\n")

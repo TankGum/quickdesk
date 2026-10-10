@@ -151,10 +151,15 @@ mod imp {
 #[cfg(windows)]
 mod imp {
     use super::*;
+    use std::os::windows::process::CommandExt;
     use std::process::Command;
+
+    /// Console tools started from a GUI app would flash a window otherwise.
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
     pub fn kill(pid: u32, force: bool) -> Result<()> {
         let mut cmd = Command::new("taskkill");
+        cmd.creation_flags(CREATE_NO_WINDOW);
         cmd.args(["/PID", &pid.to_string()]);
         if force {
             cmd.arg("/F");
@@ -169,6 +174,7 @@ mod imp {
 
     pub fn is_alive(pid: u32) -> bool {
         Command::new("tasklist")
+            .creation_flags(CREATE_NO_WINDOW)
             .args(["/FI", &format!("PID eq {pid}"), "/NH"])
             .output()
             .map(|o| String::from_utf8_lossy(&o.stdout).contains(&pid.to_string()))

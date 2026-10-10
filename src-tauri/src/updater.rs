@@ -2,9 +2,10 @@
 //! site (`update.json`, written by scripts/publish_r2.py) says what the newest
 //! version is; packages are verified against the public key in
 //! tauri.conf.json before anything is installed. QuickDesk checks on its own,
-//! but only installs when the user says so: a .deb or .rpm is installed with
-//! pkexec, so the system asks for the administrator password, then the app
-//! restarts into the new version.
+//! but only installs when the user says so. On Linux a .deb or .rpm is
+//! installed with pkexec, so the system asks for the administrator password,
+//! then the app restarts into the new version. On Windows the plugin runs the
+//! NSIS installer (passive, current user), which closes and reopens the app.
 
 use std::sync::Mutex;
 use std::time::Duration;

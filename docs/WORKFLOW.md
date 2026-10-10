@@ -46,6 +46,16 @@ git commit … && git push origin main     # CI checks it; users get nothing yet
 
 Pushing to `main` does **not** reach users. To ship, release (section 3).
 
+**Windows.** CI also runs clippy and the tests on `windows-latest`. To try a Windows build
+before releasing, run **Actions → Windows preview → Run workflow** and download the installer
+from the run's artifacts. Locally, `cargo check --target x86_64-pc-windows-msvc -p <crate>`
+works for crates without C code; for the whole app use Zig as the cross compiler:
+`cargo zigbuild --workspace --target x86_64-pc-windows-gnu` (`cargo install cargo-zigbuild`,
+plus `zig` on PATH, e.g. `pip install ziglang`). Windows-only code lives behind `cfg(windows)`:
+the clipboard watcher (`crates/qd-platform/src/clipboard/windows.rs`), SendInput paste
+(`paste.rs`), the NSIS config (`src-tauri/tauri.windows.conf.json`). The Runtimes tab is
+hidden on Windows (`src/windows/Main.tsx`).
+
 While working, also:
 
 - **New or changed Tauri command?** Give it an answer in `src/demo/core.ts`, or the

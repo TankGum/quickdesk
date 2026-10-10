@@ -46,8 +46,10 @@ pub(crate) fn remove(probe: &Probe) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(unix)]
     use crate::testutil::TempDir;
 
+    #[cfg(unix)]
     /// Run `body` in `shell` after loading the hook (twice), with `nvm`
     /// replaced by a function that logs. `None` when the shell is missing.
     fn in_shell(shell: &str, t: &TempDir, body: &str) -> Option<String> {

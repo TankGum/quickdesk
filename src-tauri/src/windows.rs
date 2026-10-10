@@ -39,6 +39,10 @@ pub fn show<R: Runtime>(app: &AppHandle<R>, target: Target, sent_at_ms: u64) {
         tracing::error!(label, "window missing");
         return;
     };
+    // Windows: remember where to paste before the popup takes the focus.
+    if label == CLIP_POPUP && !w.is_visible().unwrap_or(false) {
+        qd_platform::paste::remember_target();
+    }
     if let Err(e) = w.show().and_then(|_| w.unminimize()).and_then(|_| w.set_focus()) {
         tracing::warn!(label, error = %e, "failed to show window");
     }

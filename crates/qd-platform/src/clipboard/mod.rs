@@ -1,8 +1,13 @@
 //! Background clipboard watchers. Each backend runs on its own thread and
 //! reports every new selection (text, image or copied files) through a callback.
 
-#[cfg(not(target_os = "linux"))]
+// Windows images arrive as DIBs; the conversion is plain code, tested everywhere.
+#[cfg_attr(not(windows), allow(dead_code))]
+mod dib;
+#[cfg(not(any(target_os = "linux", windows)))]
 mod poll;
+#[cfg(windows)]
+mod windows;
 #[cfg(target_os = "linux")]
 mod x11;
 
@@ -66,7 +71,9 @@ pub fn spawn_watcher(on_event: impl Fn(ClipEvent) + Send + 'static) -> WatcherHa
     let state = Arc::new(Mutex::new(WatcherState::Starting));
     #[cfg(target_os = "linux")]
     let backend = x11::spawn(on_event, state.clone());
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(windows)]
+    let backend = windows::spawn(on_event, state.clone());
+    #[cfg(not(any(target_os = "linux", windows)))]
     let backend = poll::spawn(on_event, state.clone());
     WatcherHandle { backend, state }
 }

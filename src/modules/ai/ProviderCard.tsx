@@ -3,6 +3,7 @@ import { ProviderUsage, RingChoice } from "../../shared/ipc";
 import { absoluteTime } from "../../shared/time";
 import { Gauge } from "./Gauge";
 import { duration, errorText, sameChoice, when, windowLabel } from "./usage";
+import { isWindows } from "../../shared/platform";
 
 /** One AI tool: gauges for every limit with a percentage, then the rest. */
 export function ProviderCard({ p, ringShows }: { p: ProviderUsage; ringShows: RingChoice | null }) {
@@ -31,7 +32,7 @@ export function ProviderCard({ p, ringShows }: { p: ProviderUsage; ringShows: Ri
       {gauges.length > 0 && (
         <div className="gauges">
           {gauges.map((w) => (
-            <div key={w.id} className={`gauge-cell ${sameChoice(ringShows, p.provider, w.id) ? "on-bar" : ""}`} title={sameChoice(ringShows, p.provider, w.id) ? t("ai.onTopBar") : undefined}>
+            <div key={w.id} className={`gauge-cell ${sameChoice(ringShows, p.provider, w.id) ? "on-bar" : ""}`} title={sameChoice(ringShows, p.provider, w.id) ? t(isWindows ? "ai.onTopBar.win" : "ai.onTopBar") : undefined}>
               <Gauge percent={w.usedPercent} size={80} />
               <div className="gauge-label">{windowLabel(w)}</div>
               {w.resetsAt && <div className="gauge-sub">{t("ai.resetsIn", { left: duration(w.resetsAt - Date.now()) })}</div>}
