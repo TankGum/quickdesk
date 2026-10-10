@@ -43,10 +43,10 @@ export function toHtml(md: string): string {
   return out.join("");
 }
 
-/** Every release, newest first. */
+/** Every release, newest first. `## Unreleased` (notes for the next release) is left out. */
 export function changelog(lang: Lang): Entry[] {
   const text = SOURCES[lang];
-  const parts = text.split(/^## /m).slice(1);
+  const parts = text.split(/^## /m).slice(1).filter((p) => !/^Unreleased\s*$/m.test(p.split("\n")[0]));
   return parts.map((part) => {
     const [head, ...body] = part.split("\n");
     const m = head.match(/^v?(\S+)\s*(?:—|-)?\s*(.*)$/);

@@ -28,6 +28,7 @@ fn label_and_tab(target: Target) -> (&'static str, Option<&'static str>) {
         Target::Clipboard => (CLIP_POPUP, None),
         Target::Ports => (MAIN, Some("ports")),
         Target::Ai => (MAIN, Some("ai")),
+        Target::Versions => (MAIN, Some("versions")),
         Target::Main => (MAIN, None),
     }
 }

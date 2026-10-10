@@ -99,6 +99,10 @@ cd website && nvm use && npm install && npm run dev   # http://localhost:4321
    - What the user notices, in plain words.
    ```
 
+   While features land before a release is decided, collect them under `## Unreleased`
+   (in both files). The changelog page leaves that section out, and `npm run release <v>`
+   renames it to `## <v> — <today>`.
+
 2. `npm run release 0.3.1 -- --push` bumps the version (tauri.conf.json, Cargo.toml,
    package.json and the lock files), commits "Release 0.3.1", tags `v0.3.1` and pushes.
    Without `-- --push` it stops before pushing; `-- --dry-run` only checks.

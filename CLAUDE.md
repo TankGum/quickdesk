@@ -21,4 +21,5 @@ Rules that are easy to break:
 - Sync goes through QuickDesk Cloud (`sync-server/`, `crates/qd-sync/src/cloud.rs`); notes stay
   end-to-end encrypted on the client. Deploying the Worker affects every installed app.
 - Never read `~/.tauri/quickdesk.key` (the updater's private signing key); the `.pub` file is fine.
-- Release notes go in both `CHANGELOG.md` and `CHANGELOG.vi.md`; then `npm run release <version>`.
+- Release notes go in both `CHANGELOG.md` and `CHANGELOG.vi.md` (a `## Unreleased` section is fine until the
+  version is known; the release script dates it); then `npm run release <version>`.

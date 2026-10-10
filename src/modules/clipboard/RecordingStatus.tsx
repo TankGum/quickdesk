@@ -72,7 +72,6 @@ export function RecordingStatus({ status, compact = false, onError }: { status: 
       <span className="dot" />
       <div className="recording-text">
         <b>{t("rec.saving")}</b>
-        <span className="muted">{t("rec.local")}</span>
       </div>
       <div className="menu-anchor">
         <button className="btn" onClick={() => setMenu((m) => !m)} title={t("rec.pauseTitle")}>

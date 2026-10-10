@@ -6,11 +6,13 @@
     npm run release 0.2.3 -- --dry-run
 
 Before running it, write the release notes: a `## 0.2.3 — <date>` section in
-both CHANGELOG.md and CHANGELOG.vi.md. They may be uncommitted; they go into
+both CHANGELOG.md and CHANGELOG.vi.md, or a `## Unreleased` section that the
+script renames to `## 0.2.3 — <today>`. They may be uncommitted; they go into
 the release commit. Any other uncommitted change stops the script, so a
 release is exactly what is on the branch.
 """
 
+import datetime
 import json
 import re
 import subprocess
@@ -61,9 +63,19 @@ def main() -> None:
         fail("commit or stash these first:\n  " + "\n  ".join(dirty))
     if run("git", "tag", "--list", f"v{version}"):
         fail(f"tag v{version} already exists")
-    for lang in changelog.FILES:
-        if not changelog.section(lang, version):
-            fail(f"no '## {version}' section in {changelog.FILES[lang].name}: write the release notes first")
+    unreleased = re.compile(r"^## Unreleased[ \t]*$", re.M)
+    today = datetime.date.today().isoformat()
+    for lang, path in changelog.FILES.items():
+        if changelog.section(lang, version):
+            continue
+        text = path.read_text()
+        if not unreleased.search(text):
+            fail(f"no '## {version}' or '## Unreleased' section in {path.name}: write the release notes first")
+        if dry:
+            print(f"would rename '## Unreleased' to '## {version} — {today}' in {path.name}")
+        else:
+            path.write_text(unreleased.sub(f"## {version} — {today}", text, count=1))
+            print(f"{path.name}: '## Unreleased' is now '## {version} — {today}'")
     branch = run("git", "rev-parse", "--abbrev-ref", "HEAD")
     if branch != "main":
         print(f"note: releasing from branch '{branch}', not main")

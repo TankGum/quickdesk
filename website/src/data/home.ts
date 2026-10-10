@@ -152,6 +152,22 @@ export const home = {
     "en": "AI usage",
     "vi": "Usage AI"
   },
+  "rt-eyebrow": {
+    "en": "Runtimes",
+    "vi": "Runtime"
+  },
+  "rt-keys": {
+    "en": "<kbd>nvm</kbd><kbd>uv</kbd><kbd>rustup</kbd><kbd>mise</kbd>",
+    "vi": "<kbd>nvm</kbd><kbd>uv</kbd><kbd>rustup</kbd><kbd>mise</kbd>"
+  },
+  "rt-title": {
+    "en": "Every language version.<br>One place to switch.",
+    "vi": "Version mọi ngôn ngữ.<br>Đổi ở một chỗ."
+  },
+  "rt-lead": {
+    "en": "See which Node.js, Python, Rust or Go a new terminal really runs, install or remove versions, pick the default and pin one per project, through nvm, uv, rustup and mise. When something in PATH gets in the way, QuickDesk says why and offers the fix.",
+    "vi": "Xem terminal mới thật sự chạy Node.js, Python, Rust hay Go bản nào, cài hoặc gỡ version, chọn bản mặc định và ghim version cho từng project, qua nvm, uv, rustup và mise. Khi PATH chen ngang, QuickDesk nói rõ lý do và đề xuất cách sửa."
+  },
   "t50": {
     "en": "Know your AI limits.<br>Before you hit them.",
     "vi": "Biết hạn mức AI.<br>Trước khi chạm trần."

@@ -176,6 +176,96 @@ export interface UsageSnapshot {
   trayEnabled: boolean;
 }
 
+/** One language on this computer (crates/qd-runtimes). */
+export interface Runtime {
+  id: string;
+  name: string;
+  /** nvm | rustup | uv; null: read-only (system or unsupported manager). */
+  manager: string | null;
+  managerVersion: string | null;
+  /** What a new terminal runs. */
+  active: { version: string; path: string; managed: boolean } | null;
+  /** An InstalledVersion.id. */
+  default: string | null;
+  installed: InstalledVersion[];
+  issue: RuntimeIssue | null;
+  /** Versions are typed (rustup), not picked from a list. */
+  freeInput: boolean;
+  projectFile: string | null;
+  /** No manager yet; this one ("mise") can be installed to manage it. */
+  installManager: string | null;
+}
+
+export interface InstalledVersion {
+  id: string;
+  version: string;
+  path: string;
+  bytes: number;
+  isDefault: boolean;
+}
+
+export interface RuntimeIssue {
+  kind: "not_loaded" | "shadowed" | "other";
+  expected: string;
+  /** Lines that fix it in the shell's rc file (empty: no automatic fix). */
+  fix: string[];
+}
+
+export interface AvailableVersion {
+  id: string;
+  version: string;
+  tag: string | null;
+  /** Release line (`22`, `3.12`); empty when the tool has none. */
+  line: string;
+  installed: boolean;
+}
+
+/** A newer release in the same line as an installed version. */
+export interface RuntimeUpdate {
+  lang: string;
+  from: string;
+  fromVersion: string;
+  to: string;
+  toVersion: string;
+}
+
+export interface AvailableList {
+  versions: AvailableVersion[];
+  fetchedAt: number;
+  /** Offline: these are from fetchedAt. */
+  stale: boolean;
+}
+
+export type RuntimeAction = "install" | "uninstall" | "set_default" | "install_manager" | "upgrade";
+
+export interface RuntimeJob {
+  lang: string;
+  action: RuntimeAction;
+  version: string;
+  running: boolean;
+  percent: number | null;
+  line: string;
+  error: string | null;
+  cancelled: boolean;
+  startedAt: number;
+  /** upgrade: the version being replaced (it stays installed). */
+  from: string | null;
+}
+
+/** "Apply right away in open terminals": QuickDesk's prompt hook. */
+export interface AutoApplyState {
+  on: boolean;
+  file: string;
+  line: string;
+  script: string;
+}
+
+export interface ShellFix {
+  file: string;
+  lines: string[];
+  current: string[];
+}
+
 /** Self-update state (src-tauri/src/updater.rs). */
 export type UpdateStatus =
   | { state: "idle" }
@@ -217,6 +307,21 @@ export const api = {
   portsIsAlive: (pid: number) => invoke<boolean>("ports_is_alive", { pid }),
   portsStopContainer: (id: string) => invoke<void>("ports_stop_container", { id }),
   portsOpen: (port: number) => invoke<void>("ports_open", { port }),
+  runtimesScan: (force: boolean) => invoke<Runtime[]>("runtimes_scan", { force }),
+  runtimesAvailable: (lang: string) => invoke<AvailableList>("runtimes_available", { lang }),
+  runtimesRun: (lang: string, action: RuntimeAction, version: string) => invoke<void>("runtimes_run", { lang, action, version }),
+  runtimesCancel: () => invoke<void>("runtimes_cancel"),
+  runtimesUpgrade: (lang: string, from: string, to: string) => invoke<void>("runtimes_upgrade", { lang, from, to }),
+  runtimesUpdates: () => invoke<RuntimeUpdate[]>("runtimes_updates"),
+  runtimesJob: () => invoke<RuntimeJob | null>("runtimes_job"),
+  runtimesShellFix: (lang: string) => invoke<ShellFix>("runtimes_shell_fix", { lang }),
+  runtimesShellApply: (lang: string) => invoke<{ file: string; backup: string | null }>("runtimes_shell_apply", { lang }),
+  runtimesShellUndo: () => invoke<boolean>("runtimes_shell_undo"),
+  runtimesPickFolder: () => invoke<string | null>("runtimes_pick_folder"),
+  runtimesAutoApply: () => invoke<AutoApplyState>("runtimes_auto_apply"),
+  runtimesSetAutoApply: (on: boolean) => invoke<{ file: string; backup: string | null }>("runtimes_set_auto_apply", { on }),
+  runtimesProjectGet: (dir: string, lang: string) => invoke<{ file: string; content: string | null }>("runtimes_project_get", { dir, lang }),
+  runtimesProjectSet: (dir: string, lang: string, version: string) => invoke<string>("runtimes_project_set", { dir, lang, version }),
   clipboardWrite: (text: string) => invoke<void>("clipboard_write", { text }),
   clipList: (limit?: number, kind?: ClipKind) => invoke<ClipEntry[]>("clip_list", { limit, kind }),
   clipSearch: (query: string, limit?: number, kind?: ClipKind) =>

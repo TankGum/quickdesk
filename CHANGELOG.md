@@ -8,6 +8,18 @@ Each release is a `## <version> — <date>` section with up to three groups:
 a version that has no section here, and shows the section in the app, on the
 download page and on GitHub Releases.
 
+## Unreleased
+
+### New
+- A Runtimes tab for the versions of your programming languages: see which Node.js, Python, Rust, Go… a new terminal really runs and where it comes from, install and uninstall versions, pick the default and pin a version for a project. QuickDesk works through nvm, uv, rustup and mise, and never touches system packages.
+- When a newer release of an installed line is out (say Node 22.24.1 for 22.23.3), the version shows an update button; the old one stays until you remove it.
+- Languages without a version manager (Go from apt, for example) can get mise in one click, downloaded from its GitHub releases and checked against their SHA-256 sums.
+- “Apply right away in open terminals”: changes reach terminals that are already open at their next prompt, and Node follows the nearest `.nvmrc` when you `cd`. When something in PATH gets in the way, the tab says why and offers the exact lines to add to your shell file, with a backup.
+
+### Improved
+- The download page shows the full command to download and install from a terminal.
+- The version list can show the newest release of each line, LTS releases only, or everything.
+
 ## 0.3.1 — 2026-10-09
 
 ### New

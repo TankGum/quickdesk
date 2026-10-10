@@ -213,6 +213,33 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
     </div>
   </section>
 
+  <!-- ============ RUNTIMES ============ -->
+  <section class="feature" id="runtimes" style="--accent: var(--runtimes)">
+    <div class="wrap">
+      <header class="feature__head">
+        <span class="shortcut"><Fragment set:html={t("rt-keys")} /></span>
+        <p class="eyebrow eyebrow--accent"><Fragment set:html={t("rt-eyebrow")} /></p>
+        <h2 class="section-title"><Fragment set:html={t("rt-title")} /></h2>
+        <p class="lead"><Fragment set:html={t("rt-lead")} /></p>
+      </header>
+
+      <!-- The real Runtimes tab, with sample data. -->
+      <div class="shot" data-shot data-mw="560" data-mh="900" style="--w: 903px; --h: 643px">
+        <div class="appwin appwin--main is-static">
+          <div class="appwin__bar">
+            <span>QuickDesk</span>
+            <span class="appwin__btns" aria-hidden="true">
+              <i><svg viewBox="0 0 16 16"><path d="M4.5 8.5h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></i>
+              <i><svg viewBox="0 0 16 16"><rect x="4.5" y="4.5" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></i>
+              <i><svg viewBox="0 0 16 16"><path d="m5 5 6 6m0-6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></i>
+            </span>
+          </div>
+          <iframe title="QuickDesk Runtimes tab (demo)" src={`/demo/?window=main&tab=versions&theme=dark${lang === "vi" ? "&lang=vi" : ""}`} width="903" height="603" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ AI USAGE ============ -->
   <section class="feature" id="ai" style="--accent: var(--ai)">
     <div class="wrap">

@@ -7,6 +7,7 @@ mod i18n;
 pub mod ipc;
 mod legacy;
 mod ring;
+mod runtimes;
 mod secrets;
 mod state;
 mod sync;
@@ -44,6 +45,7 @@ pub fn run(args: Vec<String>) {
             dispatch(app, Forwarded { args: argv.into_iter().skip(1).collect(), sent_at_ms: now_ms() });
         }))
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         // Login item starts hidden in the tray.
         .plugin(tauri_plugin_autostart::init(
@@ -92,6 +94,21 @@ pub fn run(args: Vec<String>) {
             commands::ports::ports_is_alive,
             commands::ports::ports_stop_container,
             commands::ports::ports_open,
+            commands::runtimes::runtimes_scan,
+            commands::runtimes::runtimes_available,
+            commands::runtimes::runtimes_run,
+            commands::runtimes::runtimes_upgrade,
+            commands::runtimes::runtimes_updates,
+            commands::runtimes::runtimes_cancel,
+            commands::runtimes::runtimes_job,
+            commands::runtimes::runtimes_shell_fix,
+            commands::runtimes::runtimes_shell_apply,
+            commands::runtimes::runtimes_shell_undo,
+            commands::runtimes::runtimes_pick_folder,
+            commands::runtimes::runtimes_auto_apply,
+            commands::runtimes::runtimes_set_auto_apply,
+            commands::runtimes::runtimes_project_get,
+            commands::runtimes::runtimes_project_set,
             commands::sync::sync_status,
             commands::sync::sync_enable,
             commands::sync::sync_join,
@@ -157,6 +174,7 @@ pub fn run(args: Vec<String>) {
                 lang_pref: Mutex::new(lang_pref),
                 ai,
                 updates,
+                runtimes: Default::default(),
             });
 
             tray::build(app, clip_paused)?;

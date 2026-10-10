@@ -1,8 +1,8 @@
 # QuickDesk
 
-Developer toolbox in the tray: **Quick Notes** (E2E-encrypted sync through your own S3/R2 bucket),
-**Clipboard history** (local only), **Port Manager** (incl. Docker containers) and
-**AI usage limits** (a ring in the top bar). Website: [quickdesk.click](https://quickdesk.click).
+Developer toolbox in the tray: **Quick Notes** (E2E-encrypted sync through QuickDesk Cloud),
+**Clipboard history** (local only), **Port Manager** (incl. Docker containers), **language
+Runtimes** (versions through nvm, rustup, uv, mise) and **AI usage limits** (a ring in the top bar). Website: [quickdesk.click](https://quickdesk.click).
 Tauri 2 + Rust + React. Design: [`docs/SPEC.md`](docs/SPEC.md).
 
 | Hotkey | Opens |
@@ -85,8 +85,10 @@ crates/qd-platform   session detection, GNOME keybindings, clipboard watchers
 crates/qd-notes      notes storage, FTS, sync merge rules
 crates/qd-clipboard  clipboard history storage and search
 crates/qd-ports      listening ports, process/container lookup, kill
-crates/qd-sync       encryption, S3 transport, sync engine
+crates/qd-sync       encryption, QuickDesk Cloud transport, sync engine
 crates/qd-ai-usage   AI usage limits (Claude Code, Codex, Antigravity)
+crates/qd-runtimes   language versions through nvm, rustup, uv and mise; PATH fixes
+sync-server          QuickDesk Cloud (Cloudflare Worker + R2)
 src-tauri            app shell: windows, tray, hotkeys, updater, commands, background workers
 src                  React UI (popups + main window)
 src/demo             sample-data backend: the same UI runs in the website's demo

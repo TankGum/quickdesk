@@ -6,6 +6,18 @@ Mỗi bản phát hành QuickDesk có gì mới. Bản tiếng Anh là
 Mỗi bản là một mục `## <phiên bản> — <ngày>` với tối đa ba nhóm:
 `### Mới`, `### Cải thiện`, `### Sửa lỗi`.
 
+## Unreleased
+
+### Mới
+- Tab Runtime cho version các ngôn ngữ lập trình: xem terminal mới thật sự chạy Node.js, Python, Rust, Go… bản nào và lấy từ đâu, cài và gỡ version, chọn bản mặc định và ghim version cho từng project. QuickDesk làm việc qua nvm, uv, rustup và mise, và không bao giờ đụng tới gói của hệ thống.
+- Khi dòng version đang cài có bản mới hơn (ví dụ Node 22.24.1 so với 22.23.3), version đó hiện nút cập nhật; bản cũ vẫn được giữ cho tới khi bạn gỡ.
+- Ngôn ngữ chưa có trình quản lý version (ví dụ Go cài từ apt) có thể cài mise bằng một nút bấm, tải từ GitHub của mise và kiểm tra với mã SHA-256 của bản phát hành.
+- “Áp dụng ngay trong các terminal đang mở”: thay đổi đến được cả terminal đang mở ở lần nhấn Enter tiếp theo, và Node tự theo `.nvmrc` gần nhất khi bạn `cd`. Khi PATH chen ngang, tab nói rõ lý do và đề xuất đúng các dòng cần thêm vào file shell, kèm bản sao lưu.
+
+### Cải thiện
+- Trang tải về hiện đủ lệnh để tải và cài thẳng từ terminal.
+- Danh sách version lọc được theo bản mới nhất của mỗi dòng, chỉ LTS, hoặc tất cả.
+
 ## 0.3.1 — 2026-10-09
 
 ### Mới

@@ -8,6 +8,7 @@
   --clip: #0a84ff;
   --ports: #30d158;
   --ai: #bf5af2;
+  --versions: #40c8e0;
   --ok: #30d158;
   --warn: #ff9f0a;
   --danger: #ff3b30;
@@ -74,6 +75,7 @@
 [data-mod="clipboard"] { --mod: var(--clip); --mod-ink: #fff; }
 [data-mod="ports"] { --mod: var(--ports); --mod-ink: #000; }
 [data-mod="ai"] { --mod: var(--ai); --mod-ink: #fff; }
+[data-mod="versions"] { --mod: var(--versions); --mod-ink: #000; }
 [data-mod="settings"] { --mod: var(--clip); --mod-ink: #fff; }
 /* Only the Settings tab's own dot is grey: set on .main it would reach every tab. */
 .tabs button[data-mod="settings"] { --dot: var(--faint); }
@@ -503,3 +505,42 @@ select option { color: var(--fg); background-color: var(--surface); }
   overflow-wrap: anywhere;
 }
 .disconnect-box { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); }
+
+/* Versions tab */
+.rt-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.rt-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.rt-card header { display: flex; gap: 8px; align-items: center; }
+.rt-card h3 { margin: 0; font-size: 15.5px; letter-spacing: -0.01em; }
+.rt-card h4 { margin: 0 0 6px; font-size: 13px; }
+.rt-active { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; min-width: 0; }
+.rt-path { font-size: 11.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; max-width: 100%; }
+.banner.warn { color: var(--fg); background: color-mix(in srgb, var(--warn) 12%, transparent); border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent); }
+.rt-issue, .rt-job-done { display: flex; gap: 10px; align-items: center; margin: 0; font-size: 12.5px; }
+.rt-issue > span, .rt-job-done > span { flex: 1; }
+.rt-list, .rt-avail { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.rt-list li, .rt-avail li { display: flex; gap: 8px; align-items: center; padding: 5px 8px; border-radius: 8px; flex-wrap: wrap; }
+.rt-list li:hover, .rt-avail li:hover { background: var(--hover); }
+.rt-list li.is-default { background: color-mix(in srgb, var(--mod) 9%, transparent); }
+.rt-version { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; font-weight: 500; }
+.badge.on { color: var(--mod-text); background: color-mix(in srgb, var(--mod) 18%, transparent); }
+.rt-avail { max-height: 260px; overflow: auto; }
+.rt-panel { border-top: 1px solid var(--border); padding-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.rt-input { width: 100%; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-2); background: var(--raised); color: var(--fg); font: inherit; font-size: 12.5px; }
+.rt-input:focus { outline: none; border-color: var(--mod); }
+form.row .rt-input { flex: 1; width: auto; }
+.rt-select { display: inline-flex; gap: 6px; align-items: center; }
+.rt-pre { margin: 0; padding: 8px 10px; border-radius: 8px; background: var(--raised); font-size: 11.5px; white-space: pre-wrap; word-break: break-all; }
+.rt-added { color: var(--mod-text); font-weight: 600; }
+.rt-job { display: flex; flex-direction: column; gap: 6px; }
+.rt-job-head { display: flex; gap: 8px; align-items: center; font-size: 12.5px; }
+.rt-job-line { font-size: 11px; color: var(--muted); white-space: pre-wrap; word-break: break-all; }
+.rt-progress { height: 6px; border-radius: 999px; background: var(--hover); overflow: hidden; }
+.rt-progress > div { height: 100%; background: var(--mod); border-radius: inherit; transition: width 0.2s; }
+.rt-progress.indeterminate > div { width: 35%; animation: rt-slide 1.2s ease-in-out infinite; }
+@keyframes rt-slide { from { transform: translateX(-100%); } to { transform: translateX(290%); } }
+.btn.link { background: none; padding: 0; color: var(--muted); text-decoration: underline; align-self: flex-start; }
+.rt-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+.rt-auto { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.rt-auto p { margin: 0 0 0 24px; }
+.rt-update { color: var(--mod-text); background: color-mix(in srgb, var(--mod) 14%, transparent); padding: 2px 8px; font-size: 11.5px; }
+.rt-filters .rt-input { flex: 1; min-width: 120px; width: auto; }

@@ -13,18 +13,18 @@ export const sections: Section[] = [
     id: "install",
     title: { en: "Install", vi: "Cài đặt" },
     html: {
-      en: `<p>Get the package for your distribution from the <a href="/download">download page</a>:</p>
+      en: `<p>Get the package for your distribution from the <a href="/download">download page</a>, which also has the exact commands to download and install it from a terminal. Install a downloaded file with:</p>
 <ul>
-<li><strong>Ubuntu, Debian, Mint, Pop!_OS:</strong> <code>sudo apt install ./QuickDesk_&lt;version&gt;_amd64.deb</code></li>
-<li><strong>Fedora, openSUSE:</strong> <code>sudo dnf install ./QuickDesk-&lt;version&gt;-1.x86_64.rpm</code></li>
+<li><strong>Ubuntu, Debian, Mint, Pop!_OS:</strong> <code>sudo apt install ~/Downloads/QuickDesk_&lt;version&gt;_amd64.deb</code></li>
+<li><strong>Fedora, openSUSE:</strong> <code>sudo dnf install ~/Downloads/QuickDesk-&lt;version&gt;-1.x86_64.rpm</code></li>
 <li><strong>Anything else:</strong> make the AppImage executable and run it. It needs FUSE 2 (<code>libfuse2</code>, on Ubuntu 24.04 <code>libfuse2t64</code>).</li>
 </ul>
 <p>QuickDesk needs an x86_64 system from the last few years (glibc 2.34 or newer). It works best on GNOME, on both Wayland and X11.</p>
 <p>On first start a welcome screen lists the shortcuts and offers two options: <strong>start when you log in</strong> (needed for clipboard history and the AI ring to work all the time) and <strong>instant paste</strong> (see <a href="#auto-paste">Auto-paste</a>). After that QuickDesk lives in the top bar.</p>`,
-      vi: `<p>Tải gói phù hợp với distro của bạn ở <a href="/vi/download">trang tải về</a>:</p>
+      vi: `<p>Tải gói phù hợp với distro của bạn ở <a href="/vi/download">trang tải về</a>; trang đó cũng có sẵn lệnh để tải và cài thẳng từ terminal. Cài file đã tải bằng:</p>
 <ul>
-<li><strong>Ubuntu, Debian, Mint, Pop!_OS:</strong> <code>sudo apt install ./QuickDesk_&lt;phiên-bản&gt;_amd64.deb</code></li>
-<li><strong>Fedora, openSUSE:</strong> <code>sudo dnf install ./QuickDesk-&lt;phiên-bản&gt;-1.x86_64.rpm</code></li>
+<li><strong>Ubuntu, Debian, Mint, Pop!_OS:</strong> <code>sudo apt install ~/Downloads/QuickDesk_&lt;phiên-bản&gt;_amd64.deb</code></li>
+<li><strong>Fedora, openSUSE:</strong> <code>sudo dnf install ~/Downloads/QuickDesk-&lt;phiên-bản&gt;-1.x86_64.rpm</code></li>
 <li><strong>Distro khác:</strong> cho file AppImage quyền chạy rồi mở nó. Cần FUSE 2 (<code>libfuse2</code>, trên Ubuntu 24.04 là <code>libfuse2t64</code>).</li>
 </ul>
 <p>QuickDesk cần máy x86_64 đời vài năm gần đây (glibc 2.34 trở lên). Chạy tốt nhất trên GNOME, cả Wayland lẫn X11.</p>
@@ -178,6 +178,36 @@ export const sections: Section[] = [
 <li><strong>Kill</strong> hỏi trước, dừng tiến trình nhẹ nhàng và chỉ đề nghị force kill khi nó không chịu thoát.</li>
 <li>Cổng do Docker mở hiện tên container và image, và <strong>Stop</strong> dừng container thay vì kill <code>docker-proxy</code>.</li>
 <li>Tiến trình của user khác (dịch vụ hệ thống) hiện dạng ẩn; xem chi tiết cần quyền root.</li>
+</ul>`,
+    },
+  },
+  {
+    id: "versions",
+    title: { en: "Language versions (Runtimes)", vi: "Version ngôn ngữ lập trình (Runtime)" },
+    html: {
+      en: `<p>The <strong>Runtimes</strong> tab manages the versions of the programming languages on this computer (Node.js, Python, Rust, Go, Java, Ruby, Deno, Bun, PHP). It shows the version a <em>new terminal</em> runs and where it comes from. QuickDesk asks your login shell, so this is what you get after <code>~/.bashrc</code> or <code>~/.zshrc</code>, not what the desktop sees.</p>
+<ul>
+<li>Languages installed with <strong>nvm</strong> (Node.js), <strong>rustup</strong> (Rust), <strong>uv</strong> (Python) or <strong>mise</strong> (Go, Java, Ruby, Deno, Bun, PHP and the others) can be changed: <strong>Install version…</strong> picks from the versions the tool offers (rustup takes a channel or version you type), <strong>Make default</strong> sets what new terminals use, <strong>Uninstall</strong> removes one and frees its space. The default cannot be removed; pick another default first.</li>
+<li>Installs run in the background with a progress bar and can be cancelled. Only one change runs at a time. The version list shows the newest release of each line by default; switch to LTS or everything, or type to filter.</li>
+<li>When a newer release of an installed line is out (Node 22.24.1 for 22.23.3, Python 3.13.9 for 3.13.7), the version shows <strong>↑ 22.24.1</strong>: one click installs it and, if the old one was the default, makes it the default. The old version stays until you uninstall it.</li>
+<li><strong>Apply right away in open terminals</strong> (top of the tab) makes changes reach terminals that are already open, from their next prompt: QuickDesk adds one line to your shell file that loads a small prompt hook (<code>~/.config/quickdesk/shell/hook.sh</code>). The hook makes the shell look up commands again after QuickDesk changed a version, and makes Node follow the nearest <code>.nvmrc</code> when you <code>cd</code> into a project, else the default you pick (a manual <code>nvm use</code> stays until you change folder or default). Without it, Rust changes still apply at once, Python and mise changes reach new terminals (or an open one after <code>hash -r</code>), and nvm changes reach new terminals only.</li>
+<li><strong>Set for a project…</strong> writes the tool's own file in a folder you choose: <code>.nvmrc</code>, <code>rust-toolchain.toml</code>, <code>.python-version</code> or <code>mise.toml</code> (mise keeps the other tools already listed there).</li>
+<li>A language with no version manager (Go from apt, for example) offers <strong>Install mise…</strong>: QuickDesk downloads the latest mise from github.com/jdx/mise, checks it against the release's SHA-256 sums and puts it in <code>~/.local/bin</code>. After you make a version the default, <strong>Fix PATH…</strong> offers the line that turns mise on in your shell.</li>
+<li>If new terminals would run another copy than the default (for example the system <code>python3</code> comes first in PATH), the card says why and <strong>Fix PATH…</strong> shows the exact lines it would add. Only after you agree does QuickDesk add them as a marked block at the end of your shell file, with a backup next to it; the block can be removed from the same place.</li>
+<li>PATH fixes and the prompt hook are written for bash (<code>~/.bashrc</code>) and zsh (<code>~/.zshrc</code>); fish is not supported yet.</li>
+<li>Copies installed by the system (apt, dnf) are never changed or removed; QuickDesk never runs <code>sudo</code>. Languages managed by tools it does not support (fnm, volta, pyenv, SDKMAN…) are shown read-only.</li>
+</ul>`,
+      vi: `<p>Tab <strong>Runtime</strong> quản lý version của các ngôn ngữ lập trình trên máy (Node.js, Python, Rust, Go, Java, Ruby, Deno, Bun, PHP): version mà <em>terminal mới</em> sẽ chạy và nó đến từ đâu. QuickDesk hỏi chính shell đăng nhập của bạn, nên đây là thứ bạn nhận được sau khi <code>~/.bashrc</code> hay <code>~/.zshrc</code> chạy, không phải thứ desktop nhìn thấy.</p>
+<ul>
+<li>Ngôn ngữ cài bằng <strong>nvm</strong> (Node.js), <strong>rustup</strong> (Rust), <strong>uv</strong> (Python) hoặc <strong>mise</strong> (Go, Java, Ruby, Deno, Bun, PHP và các ngôn ngữ khác) thì đổi được: <strong>Cài version…</strong> chọn trong danh sách công cụ đó cung cấp (rustup thì gõ channel hoặc version), <strong>Đặt mặc định</strong> chọn bản terminal mới sẽ dùng, <strong>Gỡ</strong> xoá một bản và giải phóng dung lượng. Không gỡ được bản mặc định; hãy chọn bản mặc định khác trước.</li>
+<li>Việc cài chạy nền, có thanh tiến trình và huỷ được. Mỗi lần chỉ chạy một thay đổi. Danh sách version mặc định hiện bản mới nhất của mỗi dòng; chuyển sang LTS hoặc tất cả, hoặc gõ để lọc.</li>
+<li>Khi dòng version đang cài có bản mới hơn (Node 22.24.1 so với 22.23.3, Python 3.13.9 so với 3.13.7), version đó hiện nút <strong>↑ 22.24.1</strong>: một bấm là cài bản mới, và nếu bản cũ đang là mặc định thì bản mới thành mặc định. Bản cũ vẫn giữ cho tới khi bạn gỡ.</li>
+<li><strong>Áp dụng ngay trong các terminal đang mở</strong> (đầu tab) giúp thay đổi đến được cả terminal đang mở, ngay từ lần nhấn Enter tiếp theo: QuickDesk thêm một dòng vào file shell để nạp một hook nhỏ cho prompt (<code>~/.config/quickdesk/shell/hook.sh</code>). Hook khiến shell tìm lại lệnh sau khi QuickDesk đổi version, và cho Node tự theo <code>.nvmrc</code> gần nhất khi bạn <code>cd</code> vào project, nếu không có thì theo bản mặc định bạn chọn (tự gõ <code>nvm use</code> thì được giữ cho tới khi bạn đổi thư mục hoặc bản mặc định). Nếu không bật: Rust vẫn đổi ngay, Python và các ngôn ngữ qua mise đổi ở terminal mới (hoặc ở terminal đang mở sau khi gõ <code>hash -r</code>), còn nvm chỉ đổi ở terminal mới.</li>
+<li><strong>Đặt cho project…</strong> ghi file của chính công cụ đó vào thư mục bạn chọn: <code>.nvmrc</code>, <code>rust-toolchain.toml</code>, <code>.python-version</code> hoặc <code>mise.toml</code> (mise giữ nguyên các công cụ khác đã có trong file).</li>
+<li>Ngôn ngữ chưa có trình quản lý version (ví dụ Go cài từ apt) sẽ có nút <strong>Cài mise…</strong>: QuickDesk tải bản mise mới nhất từ github.com/jdx/mise, kiểm tra với mã SHA-256 của bản phát hành rồi đặt vào <code>~/.local/bin</code>. Sau khi bạn đặt một version làm mặc định, <strong>Sửa PATH…</strong> sẽ đề xuất dòng bật mise trong shell.</li>
+<li>Nếu terminal mới sẽ chạy một bản khác bản mặc định (ví dụ <code>python3</code> của hệ thống đứng trước trong PATH), thẻ sẽ nói lý do và <strong>Sửa PATH…</strong> hiện đúng các dòng sẽ thêm. Chỉ khi bạn đồng ý, QuickDesk mới thêm chúng thành một khối có đánh dấu ở cuối file shell, kèm bản sao lưu bên cạnh; gỡ khối đó cũng ngay tại đây.</li>
+<li>Sửa PATH và hook cho prompt được viết cho bash (<code>~/.bashrc</code>) và zsh (<code>~/.zshrc</code>); fish chưa được hỗ trợ.</li>
+<li>Bản do hệ thống cài (apt, dnf) không bao giờ bị đổi hay gỡ; QuickDesk không bao giờ chạy <code>sudo</code>. Ngôn ngữ quản lý bằng công cụ QuickDesk chưa hỗ trợ (fnm, volta, pyenv, SDKMAN…) thì chỉ hiển thị.</li>
 </ul>`,
     },
   },

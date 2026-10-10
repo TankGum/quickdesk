@@ -8,6 +8,9 @@ import type {
   HotkeyConfig,
   Note,
   PortEntry,
+  Runtime,
+  RuntimeAction,
+  RuntimeJob,
   SyncStatus,
   UsageSnapshot,
 } from "../shared/ipc";
@@ -195,6 +198,141 @@ const sync: SyncStatus = {
   notice: null,
 };
 
+// ---------- Versions ----------
+
+const MB = 1024 * 1024;
+const nvmBin = (v: string) => `/home/demo/.nvm/versions/node/${v}/bin/node`;
+let runtimes: Runtime[] = [
+  {
+    id: "node",
+    name: "Node.js",
+    manager: "nvm",
+    managerVersion: "0.40.8",
+    active: { version: "22.23.3", path: nvmBin("v22.23.3"), managed: true },
+    default: "v22.23.3",
+    installed: [
+      { id: "v24.21.0", version: "24.21.0", path: nvmBin("v24.21.0"), bytes: 201 * MB, isDefault: false },
+      { id: "v22.23.3", version: "22.23.3", path: nvmBin("v22.23.3"), bytes: 187 * MB, isDefault: true },
+      { id: "v20.19.4", version: "20.19.4", path: nvmBin("v20.19.4"), bytes: 176 * MB, isDefault: false },
+    ],
+    issue: null,
+    freeInput: false,
+    projectFile: ".nvmrc",
+    installManager: null,
+  },
+  {
+    id: "python",
+    name: "Python",
+    manager: "uv",
+    managerVersion: "0.11.21",
+    active: { version: "3.12.3", path: "/usr/bin/python3", managed: false },
+    default: "cpython-3.13.7-linux-x86_64-gnu",
+    installed: [
+      { id: "cpython-3.13.7-linux-x86_64-gnu", version: "3.13.7", path: "/home/demo/.local/share/uv/python/cpython-3.13.7-linux-x86_64-gnu/bin/python3", bytes: 82 * MB, isDefault: true },
+    ],
+    issue: { kind: "shadowed", expected: "3.13.7", fix: ['export PATH="$HOME/.local/bin:$PATH"'] },
+    freeInput: false,
+    projectFile: ".python-version",
+    installManager: null,
+  },
+  {
+    id: "rust",
+    name: "Rust",
+    manager: "rustup",
+    managerVersion: "1.29.1",
+    active: { version: "1.92.0", path: "/home/demo/.cargo/bin/rustc", managed: true },
+    default: "stable-x86_64-unknown-linux-gnu",
+    installed: [
+      { id: "stable-x86_64-unknown-linux-gnu", version: "stable", path: "/home/demo/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc", bytes: 616 * MB, isDefault: true },
+      { id: "nightly-x86_64-unknown-linux-gnu", version: "nightly", path: "/home/demo/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/bin/rustc", bytes: 652 * MB, isDefault: false },
+    ],
+    issue: null,
+    freeInput: true,
+    projectFile: "rust-toolchain.toml",
+    installManager: null,
+  },
+  {
+    id: "go",
+    name: "Go",
+    manager: null,
+    managerVersion: null,
+    active: { version: "1.22.2", path: "/usr/bin/go", managed: false },
+    default: null,
+    installed: [],
+    issue: null,
+    freeInput: false,
+    projectFile: null,
+    installManager: "mise",
+  },
+];
+const nodeVersions = ["26.11.1", "26.10.0", "25.9.0", "24.21.0", "24.20.0", "23.11.1", "22.24.1", "22.23.3", "22.22.0", "21.7.3", "20.19.4", "20.19.3", "18.20.8"];
+const available: Record<string, { id: string; version: string; tag: string | null; line: string }[]> = {
+  node: nodeVersions.map((v, i) => ({
+    id: `v${v}`,
+    version: v,
+    tag: i === 0 ? "latest" : v === "24.21.0" ? "LTS: Krypton" : v === "22.24.1" ? "LTS: Jod" : v === "20.19.4" ? "LTS: Iron" : null,
+    line: v.split(".")[0],
+  })),
+  python: ["3.15.0b2", "3.14.6", "3.13.9", "3.13.7", "3.12.11", "3.11.13", "3.10.18", "3.9.23"].map((v, i) => ({
+    id: v,
+    version: v,
+    tag: i === 0 ? "pre-release" : i === 1 ? "latest" : null,
+    line: v.split(".").slice(0, 2).join("."),
+  })),
+  rust: ["stable", "beta", "nightly"].map((v) => ({ id: v, version: v, tag: null, line: "" })),
+  go: ["1.27.2", "1.27.1", "1.26.8", "1.25.11", "1.24.13", "1.23.12"].map((v, i) => ({
+    id: v,
+    version: v,
+    tag: i === 0 ? "latest" : null,
+    line: v.split(".").slice(0, 2).join("."),
+  })),
+};
+let job: RuntimeJob | null = null;
+let autoApplyOn = false;
+
+/** Pretend the manager ran: progress for a couple of seconds, then the new state. */
+function runJob(lang: string, action: RuntimeAction, version: string, from: string | null = null) {
+  job = { lang, action, version, running: true, percent: action === "install" || action === "upgrade" ? 0 : null, line: "", error: null, cancelled: false, startedAt: Date.now(), from };
+  emit("runtimes://job");
+  let step = 0;
+  const timer = setInterval(() => {
+    if (!job?.running) return clearInterval(timer);
+    step += 1;
+    if (job.percent !== null) job.percent = Math.min(100, step * 12);
+    job.line = action === "install" ? `Downloading ${version}… ${job.percent ?? ""}%` : `${action} ${version}`;
+    emit("runtimes://job");
+    if (step < 8) return;
+    clearInterval(timer);
+    const rt = runtimes.find((r) => r.id === lang);
+    if (rt && action === "install_manager") {
+      Object.assign(rt, { manager: "mise", managerVersion: "2026.10.6", installManager: null, projectFile: "mise.toml" });
+    } else if (rt) {
+      if ((action === "install" || action === "upgrade") && !rt.installed.some((i) => i.id === version)) {
+        const path = rt.manager === "mise" ? `/home/demo/.local/share/mise/installs/${lang}/${version}` : nvmBin(version);
+        rt.installed = [...rt.installed, { id: version, version: version.replace(/^v/, ""), path, bytes: 190 * MB, isDefault: false }].sort((a, b) =>
+          b.version.localeCompare(a.version, undefined, { numeric: true }),
+        );
+      }
+      if (action === "uninstall") rt.installed = rt.installed.filter((i) => i.id !== version);
+      const wasDefault = action === "upgrade" && rt.installed.some((i) => i.id === from && i.isDefault);
+      if (action === "set_default" || wasDefault) {
+        rt.default = version;
+        rt.installed = rt.installed.map((i) => ({ ...i, isDefault: i.id === version }));
+        const d = rt.installed.find((i) => i.isDefault);
+        if (d && rt.active?.managed) rt.active = { ...rt.active, version: d.version, path: rt.manager === "nvm" ? nvmBin(d.id) : rt.active.path };
+        // Like a fresh mise: the default is set, but the shell does not use mise yet.
+        if (d && rt.manager === "mise" && !rt.active?.managed) {
+          rt.issue = { kind: "not_loaded", expected: d.version, fix: ['eval "$("$HOME/.local/bin/mise" activate bash)"'] };
+        }
+      }
+      runtimes = [...runtimes];
+    }
+    job = { ...job, running: false, percent: 100 };
+    emit("runtimes://job");
+    emit("runtimes://changed");
+  }, 260);
+}
+
 // ---------- Commands ----------
 
 type Args = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -293,6 +431,62 @@ const commands: Record<string, (a: Args) => unknown> = {
     ports = ports.filter((p) => p.container?.id !== a.id);
   },
   ports_open: (a) => toPage("toast", { text: say(`Opening http://localhost:${a.port}`, `Đang mở http://localhost:${a.port}`) }),
+
+  runtimes_scan: () => runtimes,
+  runtimes_available: (a) => {
+    const rt = runtimes.find((r) => r.id === a.lang);
+    const versions = (available[a.lang] ?? []).map((v) => ({ ...v, installed: Boolean(rt?.installed.some((i) => i.id === v.id || i.version === v.version)) }));
+    return { versions, fetchedAt: Date.now(), stale: false };
+  },
+  runtimes_run: (a) => runJob(a.lang, a.action, a.version),
+  runtimes_upgrade: (a) => runJob(a.lang, "upgrade", a.to, a.from),
+  runtimes_updates: () =>
+    runtimes.flatMap((rt) =>
+      rt.installed.flatMap((i) => {
+        const line = rt.id === "node" ? i.version.split(".")[0] : i.version.split(".").slice(0, 2).join(".");
+        const newer = (available[rt.id] ?? []).find(
+          (v) => v.line === line && v.tag !== "pre-release" && v.version.localeCompare(i.version, undefined, { numeric: true }) > 0,
+        );
+        const newerInstalled = rt.installed.some((o) => o.id !== i.id && o.version.startsWith(`${line}.`) && o.version.localeCompare(i.version, undefined, { numeric: true }) > 0);
+        return newer && !newerInstalled && !rt.installed.some((o) => o.version === newer.version)
+          ? [{ lang: rt.id, from: i.id, fromVersion: i.version, to: newer.id, toVersion: newer.version }]
+          : [];
+      }),
+    ),
+  runtimes_cancel: () => {
+    if (job?.running) {
+      job = { ...job, running: false, cancelled: true };
+      emit("runtimes://job");
+    }
+  },
+  runtimes_job: () => job,
+  runtimes_shell_fix: (a) => ({ file: "/home/demo/.bashrc", lines: runtimes.find((r) => r.id === a.lang)?.issue?.fix ?? [], current: [] }),
+  runtimes_shell_apply: (a) => {
+    const rt = runtimes.find((r) => r.id === a.lang);
+    if (rt?.issue) {
+      const path = rt.manager === "mise" ? `/home/demo/.local/share/mise/shims/${rt.id}` : "/home/demo/.local/bin/python3";
+      rt.active = { version: rt.issue.expected, path, managed: true };
+      rt.issue = null;
+      runtimes = [...runtimes];
+      changed("runtimes://changed");
+    }
+    return { file: "/home/demo/.bashrc", backup: "/home/demo/.bashrc.quickdesk-bak-1791400000" };
+  },
+  runtimes_shell_undo: () => true,
+  runtimes_pick_folder: () => "/home/demo/projects/shop-api",
+  runtimes_auto_apply: () => ({
+    on: autoApplyOn,
+    file: "/home/demo/.bashrc",
+    line: '[ -s "$HOME/.config/quickdesk/shell/hook.sh" ] && . "$HOME/.config/quickdesk/shell/hook.sh"',
+    script: "/home/demo/.config/quickdesk/shell/hook.sh",
+  }),
+  runtimes_set_auto_apply: (a) => {
+    autoApplyOn = a.on;
+    return { file: "/home/demo/.bashrc", backup: a.on ? "/home/demo/.bashrc.quickdesk-bak-1791400000" : null };
+  },
+
+  runtimes_project_get: (a) => ({ file: `${a.dir}/${runtimes.find((r) => r.id === a.lang)?.projectFile}`, content: null }),
+  runtimes_project_set: (a) => `${a.dir}/${runtimes.find((r) => r.id === a.lang)?.projectFile}`,
 
   ai_usage_get: () => usage,
   ai_usage_refresh: () => ({ ...usage, updatedAt: Date.now() }),

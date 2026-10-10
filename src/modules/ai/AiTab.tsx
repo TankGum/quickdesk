@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 
 import { t, useI18n } from "../../shared/i18n";
 import { api, errorMessage, UsageSnapshot, useBackendEvent } from "../../shared/ipc";
-import { relativeTime } from "../../shared/time";
 import { ProviderCard } from "./ProviderCard";
 import { STALE_MS, windowLabel } from "./usage";
 
@@ -97,10 +96,6 @@ export function AiTab({ focusSignal }: { focusSignal: number }) {
           ))}
         </div>
       )}
-      <p className="muted small">
-        {snap.updatedAt && <>{t("ai.updated", { time: relativeTime(snap.updatedAt) })} · </>}
-        {t("ai.footnote")}
-      </p>
     </div>
   );
 }

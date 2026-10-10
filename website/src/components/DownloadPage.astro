@@ -50,15 +50,28 @@ const s = {
     copy: "Copy",
   },
 }[lang];
+// Download and install from a terminal: one step per line, copied as one command.
 const packages = [
-  { kind: "deb", label: ".deb", info: s.deb, file: f.deb, cmd: `sudo apt install ./${f.deb.name}` },
-  { kind: "rpm", label: ".rpm", info: s.rpm, file: f.rpm, cmd: `sudo dnf install ./${f.rpm.name}` },
+  {
+    kind: "deb",
+    label: ".deb",
+    info: s.deb,
+    file: f.deb,
+    steps: [`curl -fLo /tmp/${f.deb.name} ${f.deb.href}`, `sudo apt install /tmp/${f.deb.name}`],
+  },
+  {
+    kind: "rpm",
+    label: ".rpm",
+    info: s.rpm,
+    file: f.rpm,
+    steps: [`curl -fLo /tmp/${f.rpm.name} ${f.rpm.href}`, `sudo dnf install /tmp/${f.rpm.name}`],
+  },
   {
     kind: "appimage",
     label: "AppImage",
     info: s.appimage,
     file: f.appimage,
-    cmd: `chmod +x ${f.appimage.name} && ./${f.appimage.name}`,
+    steps: [`curl -fLO ${f.appimage.href}`, `chmod +x ${f.appimage.name} && ./${f.appimage.name}`],
   },
 ] as const;
 ---
@@ -89,8 +102,8 @@ const packages = [
             </div>
             <div class="pkg__more">
               <div class="pkg__cmd">
-                <code>{p.cmd}</code>
-                <button type="button" class="terminal__copy" data-copy={p.cmd}>{s.copy}</button>
+                <code>{p.steps.join("\n")}</code>
+                <button type="button" class="terminal__copy" data-copy={p.steps.join(" && ")}>{s.copy}</button>
               </div>
               <p class="pkg__sha">
                 {s.sha}: <code>{p.file.sha256}</code>

@@ -4,6 +4,7 @@ import { AiTab } from "../modules/ai/AiTab";
 import { ClipboardTab } from "../modules/clipboard/ClipboardTab";
 import { NotesTab } from "../modules/notes/NotesTab";
 import { PortsTab } from "../modules/ports/PortsTab";
+import { RuntimesTab } from "../modules/runtimes/RuntimesTab";
 import { SyncFooter } from "../modules/sync/SyncFooter";
 import { SyncSettings } from "../modules/sync/SyncSettings";
 import { HotkeySettings } from "../modules/settings/HotkeySettings";
@@ -15,7 +16,7 @@ import { LangPref, setLanguage, useI18n } from "../shared/i18n";
 import { api, AppInfo, currentWindow, errorMessage, FocusStats, hideWindow, useShown } from "../shared/ipc";
 import { Welcome } from "./Welcome";
 
-const TABS = ["notes", "clipboard", "ports", "ai", "settings"] as const;
+const TABS = ["notes", "clipboard", "ports", "versions", "ai", "settings"] as const;
 type Tab = (typeof TABS)[number];
 
 export function Main() {
@@ -75,6 +76,7 @@ export function Main() {
         {tab === "settings" && <Settings />}
         {tab === "ports" && <PortsTab focusSignal={shownAt} />}
         {tab === "clipboard" && <ClipboardTab focusSignal={shownAt} />}
+        {tab === "versions" && <RuntimesTab focusSignal={shownAt} />}
         {tab === "ai" && <AiTab focusSignal={shownAt} />}
       </section>
       <SyncFooter onOpenSettings={() => setTab("settings")} />

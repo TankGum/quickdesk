@@ -11,6 +11,8 @@ pub enum Target {
     Ports,
     /// AI usage limits (main window, AI tab).
     Ai,
+    /// Programming language versions (main window, Runtimes tab).
+    Versions,
     Main,
 }
 
@@ -24,6 +26,7 @@ impl Target {
             "clipboard" | "clip" => Some(Target::Clipboard),
             "ports" | "port" => Some(Target::Ports),
             "ai" | "usage" => Some(Target::Ai),
+            "versions" | "version" | "runtimes" => Some(Target::Versions),
             "main" => Some(Target::Main),
             _ => None,
         }
@@ -36,6 +39,7 @@ impl Target {
             Target::Clipboard => "clipboard",
             Target::Ports => "ports",
             Target::Ai => "ai",
+            Target::Versions => "versions",
             Target::Main => "main",
         }
     }
@@ -70,7 +74,7 @@ impl CliCommand {
 fn usage(bad: &str) -> String {
     format!(
         "unrecognized arguments: {bad:?}\n\
-         usage: quickdesk [toggle|show] <notes|quick-note|clipboard|ports|main> | --background | quit"
+         usage: quickdesk [toggle|show] <notes|quick-note|clipboard|ports|versions|ai|main> | --background | quit"
     )
 }
 

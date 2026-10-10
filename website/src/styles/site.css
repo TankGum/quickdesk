@@ -68,7 +68,7 @@ main.page { padding: calc(var(--nav-h) + 64px) 0 120px; min-height: 70vh; }
 .pkg__meta { color: var(--text-3); font-size: 13px; }
 .pkg__more { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .pkg__cmd { display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 16px; border-radius: 12px; background: #0b0b0d; border: 1px solid var(--line); }
-.pkg__cmd code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font: 13.5px/1.5 var(--mono); color: var(--text); }
+.pkg__cmd code { flex: 1; min-width: 0; overflow-x: auto; white-space: pre; font: 13.5px/1.5 var(--mono); color: var(--text); }
 .pkg__sha { margin: 0; color: var(--text-3); font-size: 12.5px; overflow-wrap: anywhere; }
 .pkg__sha code { font: 12px/1.5 var(--mono); }
 .dlpage__after { max-width: 1040px; margin: 24px auto 40px; text-align: center; color: var(--text-3); font-size: 14px; }

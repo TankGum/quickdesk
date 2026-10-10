@@ -6,6 +6,7 @@ pub mod clipboard;
 pub mod hotkeys;
 pub mod notes;
 pub mod ports;
+pub mod runtimes;
 pub mod sync;
 pub mod update;
 
@@ -50,6 +51,20 @@ impl From<qd_ports::Error> for CmdError {
             qd_ports::Error::NoSuchProcess(_) => "not_found",
             qd_ports::Error::Protected(_) => "invalid",
             _ => "internal",
+        };
+        CmdError::new(code, e.to_string())
+    }
+}
+
+impl From<qd_runtimes::Error> for CmdError {
+    fn from(e: qd_runtimes::Error) -> Self {
+        use qd_runtimes::Error as E;
+        let code = match e {
+            E::Invalid(_) => "invalid",
+            E::Unsupported(_) => "unsupported",
+            E::Cancelled => "cancelled",
+            E::Failed(_) => "failed",
+            E::Io(_) => "internal",
         };
         CmdError::new(code, e.to_string())
     }
