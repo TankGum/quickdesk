@@ -143,6 +143,12 @@ pub async fn check(app: &AppHandle) {
             set(app, status);
         }
         Ok(None) => set(app, UpdateStatus::UpToDate { checked_at: now_ms() as i64 }),
+        // The newest release has no package for this platform (e.g. a
+        // Linux-only release seen from Windows): nothing newer to install.
+        Err(tauri_plugin_updater::Error::TargetNotFound(_) | tauri_plugin_updater::Error::TargetsNotFound(_)) => {
+            tracing::info!("newest release has no package for this platform");
+            set(app, UpdateStatus::UpToDate { checked_at: now_ms() as i64 })
+        }
         Err(e) => {
             tracing::warn!(error = %e, "update check failed");
             let version = app.state::<AppState>().updates.available_version();
