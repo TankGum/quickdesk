@@ -62,4 +62,5 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: cargo clippy --workspace --all-targets -- -D warnings
-      - run: cargo test --workspace
+      # Report every failing crate at once, not just the first.
+      - run: cargo test --workspace --no-fail-fast

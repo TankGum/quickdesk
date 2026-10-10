@@ -118,6 +118,8 @@ mod tests {
         assert_eq!(applied(&db), vec![("core".into(), 1), ("fake".into(), 1), ("fake".into(), 2)]);
         db.conn().unwrap().execute("INSERT INTO fake_a (x, y) VALUES (1, 'ok')", []).unwrap();
 
+        // Windows will not delete a database file that is still open.
+        drop(db);
         std::fs::remove_dir_all(dir).unwrap();
     }
 
