@@ -176,22 +176,6 @@ export const home = {
     "en": "A small ring in the top bar shows how much of your Claude Code and Codex limits you’ve used, and when they reset — so you’re never cut off in the middle of a task.",
     "vi": "Một vòng tròn nhỏ trên thanh trên cùng cho biết bạn đã dùng bao nhiêu hạn mức Claude Code và Codex, và khi nào được đặt lại — để không bị cắt ngang giữa chừng."
   },
-  "gh-title": {
-    "en": "Open source, MIT licensed.",
-    "vi": "Mã nguồn mở, giấy phép MIT."
-  },
-  "gh-lead": {
-    "en": "Read every line, build it yourself, report a bug or send a pull request. QuickDesk is developed in the open on GitHub.",
-    "vi": "Đọc từng dòng code, tự build, báo lỗi hoặc gửi pull request. QuickDesk được phát triển công khai trên GitHub."
-  },
-  "gh-star": {
-    "en": "Star on GitHub",
-    "vi": "Star trên GitHub"
-  },
-  "gh-issues": {
-    "en": "Report an issue",
-    "vi": "Báo lỗi"
-  },
   "t80": {
     "en": "Questions?",
     "vi": "Câu hỏi thường gặp"

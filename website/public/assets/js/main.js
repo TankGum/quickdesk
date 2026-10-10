@@ -40,7 +40,6 @@
     const heroEl = $('.hero');
     const keys = $$('.kk', kb);
     const letterCap = $('[data-kb-letter]', kb);
-    const wave = $('.kk__wave', kb);
     const labels = $$('[data-kb-mod]', kb);
     const SEQ = [['notes', 'N'], ['clipboard', 'V'], ['ports', 'P']];
     let step = 0;
@@ -52,12 +51,7 @@
       heroEl.dataset.kb = mod;
       // super, alt, letter go down one after another, then all come back up.
       keys.forEach((k, i) => setTimeout(() => k.classList.add('is-down'), i * 120));
-      setTimeout(() => {
-        wave.classList.remove('is-on');
-        void wave.offsetWidth; // restart the animation
-        wave.classList.add('is-on');
-        show(mod);
-      }, 2 * 120 + 60);
+      setTimeout(() => show(mod), 2 * 120 + 60);
       setTimeout(() => keys.forEach((k) => k.classList.remove('is-down')), 760);
     };
     if (reduceMotion) {

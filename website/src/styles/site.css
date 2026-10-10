@@ -122,91 +122,84 @@ main.page { padding: calc(var(--nav-h) + 64px) 0 120px; min-height: 70vh; }
 .nav__menu[aria-expanded="true"] span:first-child { top: 19.5px; transform: rotate(45deg); }
 .nav__menu[aria-expanded="true"] span:last-child { top: 19.5px; transform: rotate(-45deg); }
 
-/* The menu: a glass sheet under the floating header; the page behind dims. */
-.drawer {
-  position: fixed;
-  inset: 0;
-  z-index: 49;
-  background: rgba(0, 0, 0, .5);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  opacity: 0;
-  transition: opacity .3s ease;
-}
+/* The menu: covers the screen; big type, one accent, nothing else. */
+.drawer { position: fixed; inset: 0; z-index: 60; }
 .drawer[hidden] { display: none; }
-.drawer.is-open { opacity: 1; }
 html.drawer-open { overflow: hidden; }
-/* While the menu is open the header is always the floating capsule */
-html.drawer-open .nav__inner {
-  background: rgba(22, 22, 25, .97);
-  border-color: rgba(255, 255, 255, .1);
-  backdrop-filter: saturate(180%) blur(22px);
-  -webkit-backdrop-filter: saturate(180%) blur(22px);
-}
 
 .drawer__panel {
   position: absolute;
-  top: calc(var(--nav-h) + 22px + env(safe-area-inset-top, 0px));
-  left: 16px;
-  right: 16px;
-  max-height: calc(100dvh - var(--nav-h) - 40px);
-  overflow-y: auto;
-  padding: 8px;
-  border-radius: 26px;
-  background: rgba(22, 22, 25, .97);
-  border: 1px solid rgba(255, 255, 255, .1);
-  box-shadow: 0 30px 70px -20px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .06);
-  backdrop-filter: saturate(180%) blur(28px);
-  -webkit-backdrop-filter: saturate(180%) blur(28px);
-  transform-origin: 50% 0;
-  transform: translateY(-14px) scale(.96);
-  opacity: 0;
-  transition: transform .3s var(--ease), opacity .22s ease;
-}
-.drawer.is-open .drawer__panel { transform: none; opacity: 1; transition: transform .45s var(--ease), opacity .3s ease; }
-
-.drawer ul { margin: 0; padding: 0; list-style: none; }
-.drawer__main a {
+  inset: 0;
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 11px 12px;
-  border-radius: 16px;
-  font-size: 17px;
-  font-weight: 500;
-  color: var(--text);
-  transition: background-color .2s;
+  flex-direction: column;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 28px calc(22px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* Opaque: nothing of the page shows through the big type. */
+  background: radial-gradient(90% 40% at 0% 0%, rgba(0, 113, 227, .12), transparent 70%), var(--bg);
+  opacity: 0;
+  transition: opacity .28s ease;
 }
-.drawer__main a:active, .drawer__main a:hover { background: rgba(255, 255, 255, .06); }
-.drawer__main a[aria-current] { background: rgba(255, 255, 255, .09); }
-.drawer__icon {
-  flex: none;
+.drawer.is-open .drawer__panel { opacity: 1; }
+
+/* Same place as the header it covers */
+.drawer__head { display: flex; align-items: center; justify-content: space-between; min-height: 52px; margin: 0 -10px 0 -2px; }
+.drawer__head .brand { font-size: 17px; }
+.drawer__close {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 11px;
-  background: rgba(255, 255, 255, .07);
-  color: var(--text-2);
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
 }
-.drawer__main a[aria-current] .drawer__icon { background: var(--blue); color: #fff; }
-.drawer__icon svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.drawer__text { flex: 1; }
-.drawer__chev { font-size: 20px; color: var(--text-3); }
-/* GitHub (the last row) leaves the site: separate it a little */
-.drawer__main li:last-child { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); }
+.drawer__close:hover { background: rgba(255, 255, 255, .08); }
+.drawer__close svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 
-.drawer__foot { display: grid; gap: 8px; padding: 10px 4px 4px; }
-.lang--wide { display: grid; grid-template-columns: 1fr 1fr; margin: 0; padding: 3px; }
-.lang--wide a { padding: 9px 0; text-align: center; font-size: 13.5px; }
-.drawer__cta { width: 100%; padding: 13px 0; font-size: 16px; }
+.drawer ul { margin: 0; padding: 7vh 0 0; list-style: none; }
+.drawer__main a {
+  display: block;
+  padding: 7px 0;
+  font-size: clamp(28px, 8.4vw, 36px);
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -.03em;
+  color: var(--text-3);
+  transition: color .2s;
+}
+.drawer__main a:hover, .drawer__main a:active { color: var(--text-2); }
+.drawer__main a[aria-current] { color: var(--text); }
 
-/* Rows arrive one after another when opening; all leave together when closing. */
-.drawer li, .drawer__foot { opacity: 0; transform: translateY(-6px); transition: opacity .15s ease, transform .2s var(--ease); }
-.drawer.is-open li, .drawer.is-open .drawer__foot {
+.drawer__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+}
+.drawer__meta a { color: var(--text-2); }
+.drawer__meta a:hover { color: var(--text); }
+.drawer__lang { display: flex; gap: 10px; color: var(--text-3); }
+.drawer__lang a[aria-current] { color: var(--text); font-weight: 600; }
+
+.drawer__foot { margin-top: auto; display: grid; gap: 12px; padding-top: 28px; }
+.drawer__cta { width: 100%; padding: 15px 0; font-size: 17px; justify-content: center; }
+.drawer__ver { margin: 0; text-align: center; color: var(--text-3); font-size: 12.5px; }
+
+/* Rows rise into place one after another; all leave together. */
+.drawer li, .drawer__meta, .drawer__foot { opacity: 0; transform: translateY(14px); transition: opacity .15s ease, transform .2s ease; }
+.drawer.is-open li, .drawer.is-open .drawer__meta, .drawer.is-open .drawer__foot {
   opacity: 1;
   transform: none;
-  transition: opacity .35s ease calc(var(--i) * 35ms + 80ms), transform .45s var(--ease) calc(var(--i) * 35ms + 80ms);
+  transition: opacity .4s ease calc(var(--i) * 45ms + 60ms), transform .6s cubic-bezier(.16, 1, .3, 1) calc(var(--i) * 45ms + 60ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .drawer__panel, .drawer li, .drawer__meta, .drawer__foot { transition: none !important; }
 }
 
 @media (max-width: 640px) {

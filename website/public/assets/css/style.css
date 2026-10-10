@@ -239,13 +239,6 @@ kbd {
 .nav__gh:hover { color: var(--text); }
 .nav__gh svg { width: 18px; height: 18px; }
 
-.oss { padding-block: 120px; border-top: 1px solid var(--line); }
-.oss__inner { text-align: center; }
-.oss__mark { display: inline-grid; place-items: center; width: 64px; height: 64px; margin-bottom: 24px; border-radius: 18px; background: rgba(255, 255, 255, .07); }
-.oss__mark svg { width: 34px; height: 34px; }
-.oss__cta { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
-.oss__repo { margin: 22px 0 0; color: var(--text-3); font-size: 14px; }
-
 /* Language switch (nav) */
 .lang {
   display: inline-flex;
@@ -374,23 +367,6 @@ kbd {
     0 0 0 1px color-mix(in srgb, var(--kc) 60%, transparent),
     0 0 60px -6px var(--kc);
 }
-/* The wave that leaves the letter key on every press */
-.kk__wave {
-  position: absolute;
-  left: 50%;
-  top: 45%;
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  border: 2px solid var(--kc);
-  box-shadow: 0 0 30px var(--kc), inset 0 0 30px var(--kc);
-  transform: translate(-50%, -50%) scale(.6);
-  opacity: 0;
-  pointer-events: none;
-}
-.kk__wave.is-on { animation: wave 1.3s cubic-bezier(.2, .7, .3, 1); }
-@keyframes wave { 0% { opacity: .9; transform: translate(-50%, -50%) scale(.6); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(4.2); } }
-
 /* The module's name under the keys, crossfading */
 .kb__label { position: relative; height: 34px; margin: 34px 0 0; font-size: clamp(20px, 2.4vw, 26px); font-weight: 600; letter-spacing: -.02em; }
 .kb__label span { position: absolute; inset: 0; color: var(--kc); opacity: 0; transform: translateY(8px); transition: opacity .4s ease, transform .5s var(--ease); }
@@ -404,7 +380,7 @@ kbd {
   .kk--mod .kk__cap { min-width: 92px; }
 }
 
-/* "New in 0.3.0" pill above the headline, with a light sweeping across it */
+/* "New in …" pill above the headline */
 .hero__new {
   position: relative;
   display: inline-flex;
@@ -421,16 +397,6 @@ kbd {
   transition: border-color .2s, color .2s;
 }
 .hero__new:hover { color: var(--text); border-color: rgba(255, 255, 255, .28); }
-.hero__new::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .14) 50%, transparent 70%);
-  transform: translateX(-100%);
-  animation: sweep 4s ease-in-out 1.2s infinite;
-  pointer-events: none;
-}
-@keyframes sweep { 0%, 60% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 .hero__new-tag {
   padding: 3px 10px;
   border-radius: 999px;

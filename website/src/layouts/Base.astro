@@ -94,28 +94,40 @@ const ghMark =
       </div>
     </header>
 
-    <!-- Phones: the menu is a glass sheet that drops from the header. -->
+    <!-- Phones: the menu covers the screen, big type, nothing else. -->
     <div class="drawer" id="drawer" hidden>
       <nav class="drawer__panel" aria-label="Menu">
+        <div class="drawer__head">
+          <a href={href(lang, "/")} class="brand">
+            <img src="/favicon.svg" alt="" width="24" height="24" />
+            <span>QuickDesk</span>
+          </a>
+          <button type="button" class="drawer__close" aria-label={s.close} data-drawer-close>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
         <ul class="drawer__main">
           {
-            menu.map((m, i) => (
+            menu.slice(0, -1).map((m, i) => (
               <li style={`--i: ${i}`}>
                 <a href={m.href} aria-current={m.current ? "page" : undefined}>
-                  <span class="drawer__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d={m.icon} /></svg></span>
-                  <span class="drawer__text">{m.label}</span>
-                  <span class="drawer__chev" aria-hidden="true">›</span>
+                  {m.label}
                 </a>
               </li>
             ))
           }
         </ul>
-        <div class="drawer__foot" style={`--i: ${menu.length}`}>
-          <div class="lang lang--wide" role="group" aria-label={s.language}>
-            <a href={href("en", page)} hreflang="en" aria-current={lang === "en" ? "true" : undefined}>English</a>
-            <a href={href("vi", page)} hreflang="vi" aria-current={lang === "vi" ? "true" : undefined}>Tiếng Việt</a>
+        <div class="drawer__meta" style={`--i: ${menu.length - 1}`}>
+          <a href={GITHUB}>{s.github} <span aria-hidden="true">↗</span></a>
+          <div class="drawer__lang" role="group" aria-label={s.language}>
+            <a href={href("en", page)} hreflang="en" aria-current={lang === "en" ? "true" : undefined}>EN</a>
+            <span aria-hidden="true">·</span>
+            <a href={href("vi", page)} hreflang="vi" aria-current={lang === "vi" ? "true" : undefined}>VI</a>
           </div>
+        </div>
+        <div class="drawer__foot" style={`--i: ${menu.length}`}>
           <a href={href(lang, "/download")} class="btn btn--primary drawer__cta">{s.download}</a>
+          <p class="drawer__ver">QuickDesk {release.version} · Linux</p>
         </div>
       </nav>
     </div>
@@ -143,11 +155,12 @@ const ghMark =
     </footer>
 
     <script is:inline>
-      // Phone menu: the button toggles it; it fades and slides in and out.
+      // Phone menu: covers the screen; × and Escape close it.
       (() => {
         const drawer = document.getElementById("drawer");
         const button = document.querySelector("[data-drawer-toggle]");
         let closing;
+        const isOpen = () => drawer.classList.contains("is-open");
         const open = () => {
           clearTimeout(closing);
           drawer.hidden = false;
@@ -156,16 +169,19 @@ const ghMark =
           drawer.classList.add("is-open");
           button.setAttribute("aria-expanded", "true");
           document.documentElement.classList.add("drawer-open");
+          drawer.querySelector(".drawer__close").focus({ preventScroll: true });
         };
         const close = () => {
+          if (!isOpen()) return;
           drawer.classList.remove("is-open");
           button.setAttribute("aria-expanded", "false");
           document.documentElement.classList.remove("drawer-open");
-          closing = setTimeout(() => (drawer.hidden = true), 320);
+          button.focus({ preventScroll: true });
+          closing = setTimeout(() => (drawer.hidden = true), 340);
         };
-        button.addEventListener("click", () => (drawer.classList.contains("is-open") ? close() : open()));
-        drawer.addEventListener("click", (e) => e.target === drawer && close());
-        document.addEventListener("keydown", (e) => e.key === "Escape" && drawer.classList.contains("is-open") && close());
+        button.addEventListener("click", () => (isOpen() ? close() : open()));
+        drawer.querySelectorAll("[data-drawer-close]").forEach((el) => el.addEventListener("click", close));
+        document.addEventListener("keydown", (e) => e.key === "Escape" && close());
         matchMedia("(min-width: 641px)").addEventListener("change", (e) => e.matches && close());
       })();
     </script>
