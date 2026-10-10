@@ -176,6 +176,26 @@ export const home = {
     "en": "A small ring in the top bar shows how much of your Claude Code and Codex limits you’ve used, and when they reset — so you’re never cut off in the middle of a task.",
     "vi": "Một vòng tròn nhỏ trên thanh trên cùng cho biết bạn đã dùng bao nhiêu hạn mức Claude Code và Codex, và khi nào được đặt lại — để không bị cắt ngang giữa chừng."
   },
+  "faq-hi": {
+    "en": "Hi! Ask me anything about QuickDesk: pick a question below.",
+    "vi": "Chào bạn! Hỏi gì về QuickDesk cũng được: chọn một câu bên dưới."
+  },
+  "faq-status": {
+    "en": "Replies instantly",
+    "vi": "Trả lời ngay"
+  },
+  "faq-typing": {
+    "en": "QuickDesk is typing",
+    "vi": "QuickDesk đang gõ"
+  },
+  "faq-again": {
+    "en": "Start over",
+    "vi": "Hỏi lại từ đầu"
+  },
+  "faq-docs": {
+    "en": "Docs",
+    "vi": "Tài liệu"
+  },
   "t80": {
     "en": "Questions?",
     "vi": "Câu hỏi thường gặp"

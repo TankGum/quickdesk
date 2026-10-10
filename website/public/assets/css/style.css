@@ -1269,37 +1269,96 @@ kbd {
 .terminal .c { color: var(--text-3); }
 
 .soon { margin: 36px 0 0; text-align: center; font-size: 14px; line-height: 1.9; color: var(--text-3); }
-.soon a, .faq details a { color: var(--link); }
-.soon a:hover, .faq details a:hover { text-decoration: underline; }
+.soon a, .faq .msg a, .chat__data a { color: var(--link); }
+.soon a:hover, .faq .msg a:hover, .chat__data a:hover { text-decoration: underline; }
 
 /* ---------- FAQ ---------- */
 
 .faq { padding-block: 140px; border-top: 1px solid var(--line); }
-.faq__list { margin-top: 56px; border-top: 1px solid var(--line); }
-.faq details { border-bottom: 1px solid var(--line); }
-.faq summary {
-  position: relative;
-  padding: 24px 44px 24px 0;
-  list-style: none;
+
+/* FAQ as a chat with QuickDesk */
+.chat {
+  max-width: 760px;
+  margin: 56px auto 0;
+  border-radius: 26px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 40px 100px -50px rgba(10, 132, 255, .35);
+  overflow: hidden;
+}
+.chat__head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.chat__head img { border-radius: 10px; }
+.chat__who { display: grid; line-height: 1.25; }
+.chat__who b { font-size: 15px; }
+.chat__who span { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-3); }
+.chat__who i { width: 7px; height: 7px; border-radius: 50%; background: var(--ports); box-shadow: 0 0 8px var(--ports); }
+.chat__docs { margin-left: auto; font-size: 14px; color: var(--link); }
+
+.chat__log {
+  height: 440px;
+  overflow-y: auto;
+  padding: 22px 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scrollbar-width: thin;
+  -webkit-mask-image: linear-gradient(transparent, #000 28px);
+  mask-image: linear-gradient(transparent, #000 28px);
+}
+.msg { display: flex; align-items: flex-end; gap: 8px; max-width: 84%; animation: msg-in .35s var(--ease) both; }
+.msg p { margin: 0; padding: 11px 15px; font-size: 15.5px; line-height: 1.5; }
+.msg--bot img { flex: none; border-radius: 8px; }
+.msg--bot p { border-radius: 20px 20px 20px 6px; background: rgba(255, 255, 255, .07); color: var(--text); }
+/* Consecutive answers share one avatar */
+.msg--bot + .msg--bot img { visibility: hidden; }
+.msg--me { align-self: flex-end; }
+.msg--me p { border-radius: 20px 20px 6px 20px; background: var(--blue); color: #fff; }
+.msg code { padding: .1em .35em; border-radius: 5px; background: rgba(0, 0, 0, .35); font-size: .86em; }
+@keyframes msg-in { from { opacity: 0; transform: translateY(8px) scale(.97); } }
+/* Three bouncing dots while QuickDesk "types" */
+.msg--typing p { display: flex; gap: 5px; padding: 15px 16px; }
+.msg--typing p i { width: 7px; height: 7px; border-radius: 50%; background: var(--text-3); animation: typing 1s ease-in-out infinite; }
+.msg--typing p i:nth-child(2) { animation-delay: .15s; }
+.msg--typing p i:nth-child(3) { animation-delay: .3s; }
+@keyframes typing { 0%, 60%, 100% { transform: none; opacity: .5; } 30% { transform: translateY(-4px); opacity: 1; } }
+
+.chat__chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 18px 18px; border-top: 1px solid var(--line); }
+.chat__chips button {
+  padding: 8px 14px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .04);
+  color: var(--text);
+  font: 500 14px/1.3 var(--font);
+  text-align: left;
   cursor: pointer;
-  font-size: 19px;
-  font-weight: 600;
-  letter-spacing: -.02em;
+  transition: border-color .2s, background-color .2s, transform .2s var(--ease);
 }
-.faq summary::-webkit-details-marker { display: none; }
-.faq summary::after {
-  content: "+";
-  position: absolute;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 26px;
-  font-weight: 300;
-  color: var(--text-2);
-  transition: transform .3s var(--ease);
+.chat__chips button:hover { border-color: color-mix(in srgb, var(--blue) 70%, transparent); background: rgba(0, 113, 227, .12); }
+.chat__chips button:active { transform: scale(.97); }
+.chat__chips button:disabled { opacity: .45; cursor: default; }
+.chat__chips .is-again { color: var(--link); }
+
+/* Without JavaScript: the questions and answers as a plain list */
+.chat__data { margin: 0; padding: 8px 22px 22px; }
+.chat__data dt { margin-top: 18px; font-weight: 600; color: var(--text); }
+.chat__data dd { margin: 6px 0 0; color: var(--text-2); }
+.chat.is-live .chat__data { display: none; }
+.chat:not(.is-live) .chat__log, .chat:not(.is-live) .chat__chips { display: none; }
+
+@media (max-width: 640px) {
+  .chat { margin-top: 36px; border-radius: 20px; }
+  .chat__log { height: 400px; padding: 18px 12px 10px; }
+  .msg { max-width: 92%; }
+  .msg p { font-size: 15px; }
+  /* one swipeable row of questions */
+  .chat__chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 12px 12px 14px; }
+  .chat__chips::-webkit-scrollbar { display: none; }
+  .chat__chips button { flex: none; white-space: nowrap; }
 }
-.faq details[open] summary::after { transform: translateY(-50%) rotate(45deg); }
-.faq details p { margin: -6px 0 26px; max-width: 680px; color: var(--text-2); }
+@media (prefers-reduced-motion: reduce) {
+  .msg, .msg--typing p i { animation: none; }
+}
 .faq details code { color: var(--text); }
 
 /* ---------- Footer ---------- */

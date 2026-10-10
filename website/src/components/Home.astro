@@ -270,51 +270,129 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
   <DownloadCta lang={lang} release={release} />
 
   <!-- ============ FAQ ============ -->
+  <!-- A chat: pick a question, QuickDesk "types" and answers. The questions
+       and answers are plain HTML too (shown as a list without JavaScript). -->
   <section class="faq" id="faq">
-    <div class="wrap wrap--narrow">
+    <div class="wrap">
       <h2 class="section-title center"><Fragment set:html={t("t80")} /></h2>
-      <div class="faq__list">
-        <details>
-          <summary><Fragment set:html={t("t81")} /></summary>
-          <p><Fragment set:html={t("t82")} /></p>
-        </details>
-        <details>
-          <summary><Fragment set:html={t("t83")} /></summary>
-          <p><Fragment set:html={t("t84")} /></p>
-        </details>
-        <details>
-          <summary><Fragment set:html={t("t85")} /></summary>
-          <p><Fragment set:html={t("t86")} /></p>
-        </details>
-        <details>
-          <summary><Fragment set:html={t("t87")} /></summary>
-          <p><Fragment set:html={t("t88")} /></p>
-        </details>
-        <details>
-          <summary><Fragment set:html={t("t89")} /></summary>
-          <p><Fragment set:html={t("t90")} /></p>
-        </details>
-        <details>
-          <summary><Fragment set:html={t("t91")} /></summary>
-          <p><Fragment set:html={t("t92")} /></p>
-        </details>
-        <details>
-          <summary><Fragment set:html={t("t93")} /></summary>
-          <p><Fragment set:html={t("t94")} /></p>
-        </details>
-        <details>
-          <summary><Fragment set:html={t("t95")} /></summary>
-          <p><Fragment set:html={t("t96")} /></p>
-        </details>
-        <details>
-          <summary><Fragment set:html={t("t97")} /></summary>
-          <p><Fragment set:html={t("t98")} /></p>
-        </details>
-        <details>
-          <summary><Fragment set:html={t("t99")} /></summary>
-          <p><Fragment set:html={t("t100")} /></p>
-        </details>
+      <div class="chat" data-chat>
+        <div class="chat__head">
+          <img src="/favicon.svg" alt="" width="34" height="34" />
+          <div class="chat__who">
+            <b>QuickDesk</b>
+            <span><i></i><Fragment set:html={t("faq-status")} /></span>
+          </div>
+          <a class="chat__docs" href={href(lang, "/docs")}><Fragment set:html={t("faq-docs")} /> <span aria-hidden="true">›</span></a>
+        </div>
+        <div class="chat__log" data-chat-log aria-live="polite">
+          <div class="msg msg--bot"><img src="/favicon.svg" alt="" width="26" height="26" /><p><Fragment set:html={t("faq-hi")} /></p></div>
+        </div>
+        <div class="chat__chips" data-chat-chips></div>
+        <dl class="chat__data" data-chat-data data-typing={t("faq-typing")} data-again={t("faq-again")}>
+          <dt><Fragment set:html={t("t81")} /></dt>
+          <dd><Fragment set:html={t("t82")} /></dd>
+          <dt><Fragment set:html={t("t83")} /></dt>
+          <dd><Fragment set:html={t("t84")} /></dd>
+          <dt><Fragment set:html={t("t85")} /></dt>
+          <dd><Fragment set:html={t("t86")} /></dd>
+          <dt><Fragment set:html={t("t87")} /></dt>
+          <dd><Fragment set:html={t("t88")} /></dd>
+          <dt><Fragment set:html={t("t89")} /></dt>
+          <dd><Fragment set:html={t("t90")} /></dd>
+          <dt><Fragment set:html={t("t91")} /></dt>
+          <dd><Fragment set:html={t("t92")} /></dd>
+          <dt><Fragment set:html={t("t93")} /></dt>
+          <dd><Fragment set:html={t("t94")} /></dd>
+          <dt><Fragment set:html={t("t95")} /></dt>
+          <dd><Fragment set:html={t("t96")} /></dd>
+          <dt><Fragment set:html={t("t97")} /></dt>
+          <dd><Fragment set:html={t("t98")} /></dd>
+          <dt><Fragment set:html={t("t99")} /></dt>
+          <dd><Fragment set:html={t("t100")} /></dd>
+        </dl>
       </div>
     </div>
   </section>
+
+  <script is:inline>
+    // FAQ chat: a chip becomes your message, QuickDesk "types", then answers.
+    // The first question asks itself when the chat comes into view.
+    (() => {
+      const chat = document.querySelector("[data-chat]");
+      if (!chat) return;
+      const log = chat.querySelector("[data-chat-log]");
+      const chips = chat.querySelector("[data-chat-chips]");
+      const data = chat.querySelector("[data-chat-data]");
+      const items = [...data.querySelectorAll("dt")].map((dt) => ({ q: dt.innerHTML, a: dt.nextElementSibling.innerHTML }));
+      const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const greeting = log.innerHTML;
+      let busy = false;
+      let started = false;
+
+      const scroll = () => log.scrollTo({ top: log.scrollHeight, behavior: still ? "auto" : "smooth" });
+      const add = (cls, html) => {
+        const m = document.createElement("div");
+        m.className = `msg ${cls}`;
+        m.innerHTML = (cls.includes("bot") ? '<img src="/favicon.svg" alt="" width="26" height="26">' : "") + `<p>${html}</p>`;
+        log.append(m);
+        scroll();
+        return m;
+      };
+      const renderChips = () => {
+        chips.innerHTML = "";
+        const left = items.filter((it) => !it.asked);
+        left.forEach((it) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.innerHTML = it.q;
+          b.addEventListener("click", () => ask(it));
+          chips.append(b);
+        });
+        if (!left.length) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "is-again";
+          b.textContent = `↺ ${data.dataset.again}`;
+          b.addEventListener("click", reset);
+          chips.append(b);
+        }
+      };
+      const ask = (it) => {
+        if (busy || it.asked) return;
+        busy = true;
+        it.asked = true;
+        renderChips();
+        chips.querySelectorAll("button").forEach((b) => (b.disabled = true));
+        add("msg--me", it.q);
+        let typing;
+        const answer = () => {
+          typing?.remove();
+          add("msg--bot", it.a);
+          busy = false;
+          chips.querySelectorAll("button").forEach((b) => (b.disabled = false));
+        };
+        if (still) return answer();
+        setTimeout(() => {
+          typing = add("msg--bot msg--typing", "<i></i><i></i><i></i>");
+          typing.setAttribute("aria-label", data.dataset.typing);
+        }, 280);
+        // Longer answers take a little longer to "type".
+        setTimeout(answer, 280 + Math.min(1400, 500 + it.a.length * 2.2));
+      };
+      const reset = () => {
+        items.forEach((it) => (it.asked = false));
+        log.innerHTML = greeting;
+        renderChips();
+      };
+
+      chat.classList.add("is-live");
+      renderChips();
+      new IntersectionObserver(([e], io) => {
+        if (!e.isIntersecting || started) return;
+        started = true;
+        io.disconnect();
+        setTimeout(() => ask(items[0]), still ? 0 : 700);
+      }, { threshold: 0.5 }).observe(chat);
+    })();
+  </script>
 
