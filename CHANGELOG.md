@@ -8,7 +8,7 @@ Each release is a `## <version> — <date>` section with up to three groups:
 a version that has no section here, and shows the section in the app, on the
 download page and on GitHub Releases.
 
-## Unreleased
+## 0.4.0 — 2026-10-10
 
 ### New
 - A Runtimes tab for the versions of your programming languages: see which Node.js, Python, Rust, Go… a new terminal really runs and where it comes from, install and uninstall versions, pick the default and pin a version for a project. QuickDesk works through nvm, uv, rustup and mise, and never touches system packages.

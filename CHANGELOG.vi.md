@@ -6,7 +6,7 @@ Mỗi bản phát hành QuickDesk có gì mới. Bản tiếng Anh là
 Mỗi bản là một mục `## <phiên bản> — <ngày>` với tối đa ba nhóm:
 `### Mới`, `### Cải thiện`, `### Sửa lỗi`.
 
-## Unreleased
+## 0.4.0 — 2026-10-10
 
 ### Mới
 - Tab Runtime cho version các ngôn ngữ lập trình: xem terminal mới thật sự chạy Node.js, Python, Rust, Go… bản nào và lấy từ đâu, cài và gỡ version, chọn bản mặc định và ghim version cho từng project. QuickDesk làm việc qua nvm, uv, rustup và mise, và không bao giờ đụng tới gói của hệ thống.
