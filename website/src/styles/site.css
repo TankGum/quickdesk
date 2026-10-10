@@ -18,6 +18,8 @@ main.page { padding: calc(var(--nav-h) + 64px) 0 120px; min-height: 70vh; }
 .prose a { color: var(--link); }
 .prose a:hover { text-decoration: underline; }
 .prose strong { color: var(--text); font-weight: 600; }
+.prose pre { margin: 0 0 1.2em; padding: 12px 14px; border-radius: 12px; background: rgba(255, 255, 255, .05); border: 1px solid var(--line); overflow-x: auto; scrollbar-width: thin; }
+.prose pre code { padding: 0; background: none; white-space: pre; }
 .prose code { padding: .1em .4em; border-radius: 6px; background: rgba(255, 255, 255, .07); color: var(--text); font-size: .86em; }
 .prose ul, .prose ol { padding-left: 22px; }
 .prose li { margin: 6px 0; }
@@ -33,6 +35,7 @@ main.page { padding: calc(var(--nav-h) + 64px) 0 120px; min-height: 70vh; }
 .docs__toc ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; }
 .docs__toc a { display: block; padding: 6px 10px; border-radius: 8px; color: var(--text-2); }
 .docs__toc a:hover { background: rgba(255, 255, 255, .06); color: var(--text); }
+.docs__toc a[aria-current="true"] { background: rgba(255, 255, 255, .08); color: var(--text); }
 .docs .prose h2:first-of-type { margin-top: 40px; }
 .docs__more { margin-top: 64px; }
 
@@ -50,6 +53,10 @@ main.page { padding: calc(var(--nav-h) + 64px) 0 120px; min-height: 70vh; }
 .dlpage__head .section-title { margin: 0 0 10px; font-size: clamp(34px, 5vw, 52px); }
 .dlpage__notlinux { margin: 18px auto 0; max-width: 560px; padding: 10px 14px; border-radius: 12px; background: rgba(255, 159, 10, .12); color: #ffb340; }
 .pkgs { display: grid; gap: 16px; max-width: 1040px; margin: 0 auto; }
+.oneline { max-width: 1040px; margin: 0 auto 36px; padding: 24px 28px; border-radius: 22px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; border: 1px solid var(--line); background: var(--surface); }
+.oneline h2, .pkgs__title { margin: 0; font-size: 20px; letter-spacing: -0.01em; }
+.oneline p { margin: 0; font-size: 14px; }
+.pkgs__title { max-width: 1040px; margin: 0 auto 14px; color: var(--text-2); font-weight: 500; font-size: 15px; }
 .pkg {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -80,7 +87,8 @@ main.page { padding: calc(var(--nav-h) + 64px) 0 120px; min-height: 70vh; }
 .notfound .hero__cta { margin-top: 32px; }
 
 @media (max-width: 860px) {
-  .docs { grid-template-columns: 1fr; gap: 24px; }
+  /* minmax(0, …): the contents row must never widen the page. */
+  .docs { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   .docs__toc { position: static; }
   .pkg { grid-template-columns: 1fr; }
   .pkg__get { align-items: flex-start; }
@@ -222,15 +230,38 @@ html.drawer-open .nav__inner {
   .pkg__get { align-items: stretch; }
   .pkg__get .btn { justify-content: center; }
   .pkg__cmd { padding: 8px 8px 8px 12px; }
+  .oneline { padding: 18px 16px; }
   .pkg__cmd code { font-size: 12.5px; }
   .dlpage__head .section-title { font-size: 32px; }
 
-  /* Docs: the contents become one scrollable row */
-  .docs__toc { margin: 0 -24px; padding: 0 24px; overflow-x: auto; scrollbar-width: none; }
-  .docs__toc::-webkit-scrollbar { display: none; }
+  /* Docs: the contents become one scrollable row that stays under the nav */
+  /* The row sticks to the very top and its glass reaches behind the floating
+     nav, so nothing shows between the two. */
+  html:has(.docs) { scroll-padding-top: calc(var(--nav-h) + 76px); }
+  .docs__toc {
+    position: sticky; top: 0; z-index: 20;
+    margin: calc(-1 * (var(--nav-h) + 22px)) -24px 0;
+    padding: calc(var(--nav-h) + 22px) 0 10px;
+    background: rgba(0, 0, 0, .8); -webkit-backdrop-filter: saturate(160%) blur(18px); backdrop-filter: saturate(160%) blur(18px);
+    border-bottom: 1px solid var(--line);
+  }
+  .docs__toc ol {
+    overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; scroll-padding-inline: 24px;
+    padding: 0 24px;
+    /* fade the ends so it reads as scrollable */
+    mask-image: linear-gradient(90deg, transparent 0, #000 20px, #000 calc(100% - 20px), transparent);
+  }
+  .docs__toc ol::-webkit-scrollbar { display: none; }
   .docs__toc-title { display: none; }
-  .docs__toc ol { display: flex; gap: 6px; width: max-content; }
-  .docs__toc a { padding: 6px 12px; border: 1px solid var(--line-2); border-radius: 999px; white-space: nowrap; font-size: 13px; }
+  .docs__toc ol { display: flex; gap: 6px; }
+  .docs__toc li { flex: none; }
+  .docs__toc a {
+    padding: 7px 13px; border: 1px solid var(--line-2); border-radius: 999px; white-space: nowrap;
+    font-size: 13px; font-weight: 500; background: rgba(255, 255, 255, .04);
+    transition: background-color .2s, color .2s, border-color .2s;
+  }
+  .docs__toc a[aria-current="true"] { background: var(--text); border-color: var(--text); color: #000; }
+  .docs .prose h1 { margin-top: 18px; }
 
   /* Tables become one card per row, each cell labelled */
   .prose table, .prose tbody, .prose tr, .prose td { display: block; width: 100%; }

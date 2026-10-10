@@ -13,7 +13,9 @@ export const sections: Section[] = [
     id: "install",
     title: { en: "Install", vi: "Cài đặt" },
     html: {
-      en: `<p>Get the package for your distribution from the <a href="/download">download page</a>, which also has the exact commands to download and install it from a terminal. Install a downloaded file with:</p>
+      en: `<p>The quickest way, on any distribution:</p>
+<pre><code>curl -fsSL https://quickdesk.click/install.sh | bash</code></pre>
+<p>It picks the .deb, .rpm or AppImage for your system, checks its SHA-256 and installs it (<a href="/install.sh">read the script</a>). Or get a package from the <a href="/download">download page</a> and install the downloaded file with:</p>
 <ul>
 <li><strong>Ubuntu, Debian, Mint, Pop!_OS:</strong> <code>sudo apt install ~/Downloads/QuickDesk_&lt;version&gt;_amd64.deb</code></li>
 <li><strong>Fedora, openSUSE:</strong> <code>sudo dnf install ~/Downloads/QuickDesk-&lt;version&gt;-1.x86_64.rpm</code></li>
@@ -21,7 +23,9 @@ export const sections: Section[] = [
 </ul>
 <p>QuickDesk needs an x86_64 system from the last few years (glibc 2.34 or newer). It works best on GNOME, on both Wayland and X11.</p>
 <p>On first start a welcome screen lists the shortcuts and offers two options: <strong>start when you log in</strong> (needed for clipboard history and the AI ring to work all the time) and <strong>instant paste</strong> (see <a href="#auto-paste">Auto-paste</a>). After that QuickDesk lives in the top bar.</p>`,
-      vi: `<p>Tải gói phù hợp với distro của bạn ở <a href="/vi/download">trang tải về</a>; trang đó cũng có sẵn lệnh để tải và cài thẳng từ terminal. Cài file đã tải bằng:</p>
+      vi: `<p>Cách nhanh nhất, trên mọi distro:</p>
+<pre><code>curl -fsSL https://quickdesk.click/install.sh | bash</code></pre>
+<p>Script tự chọn gói .deb, .rpm hoặc AppImage hợp với máy, kiểm tra SHA-256 rồi cài (<a href="/install.sh">xem script</a>). Hoặc tải một gói ở <a href="/vi/download">trang tải về</a> rồi cài file đã tải bằng:</p>
 <ul>
 <li><strong>Ubuntu, Debian, Mint, Pop!_OS:</strong> <code>sudo apt install ~/Downloads/QuickDesk_&lt;phiên-bản&gt;_amd64.deb</code></li>
 <li><strong>Fedora, openSUSE:</strong> <code>sudo dnf install ~/Downloads/QuickDesk-&lt;phiên-bản&gt;-1.x86_64.rpm</code></li>

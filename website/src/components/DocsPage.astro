@@ -42,3 +42,46 @@ const local = (html: string) => (lang === "vi" ? html.replace(/href="\/(?!vi\/)(
     </p>
   </article>
 </div>
+
+<script is:inline>
+  // Mark the section being read in the contents: the last one whose heading
+  // has passed under the nav. On phones, keep its chip in view.
+  (() => {
+    const links = [...document.querySelectorAll(".docs__toc a")];
+    const sections = links.map((a) => document.getElementById(a.hash.slice(1)));
+    const row = document.querySelector(".docs__toc ol");
+    let current = null;
+    const update = () => {
+      const line = window.innerWidth <= 640 ? 150 : 120;
+      let i = 0;
+      sections.forEach((el, k) => {
+        if (el && el.getBoundingClientRect().top <= line) i = k;
+      });
+      // At the very bottom the last section is the one being read.
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) i = sections.length - 1;
+      const a = links[i];
+      if (!a || a === current) return;
+      current?.removeAttribute("aria-current");
+      a.setAttribute("aria-current", "true");
+      current = a;
+      if (row && row.scrollWidth > row.clientWidth) {
+        row.scrollTo({ left: a.parentElement.offsetLeft - (row.clientWidth - a.offsetWidth) / 2, behavior: "smooth" });
+      }
+    };
+    let queued = false;
+    addEventListener(
+      "scroll",
+      () => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(() => {
+          queued = false;
+          update();
+        });
+      },
+      { passive: true },
+    );
+    addEventListener("resize", update);
+    update();
+  })();
+</script>

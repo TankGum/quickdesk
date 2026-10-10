@@ -31,6 +31,10 @@ const s = {
     after: "Then open QuickDesk from your app menu. It lives in the top bar and updates itself from now on.",
     notLinux: "QuickDesk runs on Linux for now. Windows and macOS versions are planned.",
     copy: "Copy",
+    oneTitle: "Install with one command",
+    oneLead: "Picks the right package for your distribution (.deb, .rpm or AppImage), checks its SHA-256 and installs it. It asks for your password only for the install step.",
+    oneScript: "Read the script",
+    orPick: "Or pick a package",
   },
   vi: {
     title: `Tải QuickDesk ${v}`,
@@ -48,8 +52,13 @@ const s = {
     after: "Sau đó mở QuickDesk từ menu ứng dụng. App nằm trên thanh trên cùng và từ giờ sẽ tự cập nhật.",
     notLinux: "Hiện QuickDesk chạy trên Linux. Bản cho Windows và macOS đang được lên kế hoạch.",
     copy: "Copy",
+    oneTitle: "Cài bằng một lệnh",
+    oneLead: "Tự chọn gói hợp với distro của bạn (.deb, .rpm hoặc AppImage), kiểm tra SHA-256 rồi cài. Chỉ hỏi mật khẩu ở bước cài đặt.",
+    oneScript: "Xem script",
+    orPick: "Hoặc chọn một gói",
   },
 }[lang];
+const oneLine = "curl -fsSL https://quickdesk.click/install.sh | bash";
 // Download and install from a terminal: one step per line, copied as one command.
 const packages = [
   {
@@ -84,6 +93,18 @@ const packages = [
       <p class="dlpage__notlinux" data-notlinux hidden>{s.notLinux}</p>
     </header>
 
+    <div class="oneline">
+      <h2>{s.oneTitle}</h2>
+      <div class="pkg__cmd">
+        <code>{oneLine}</code>
+        <button type="button" class="terminal__copy" data-copy={oneLine}>{s.copy}</button>
+      </div>
+      <p class="muted">
+        {s.oneLead} <a class="btn--link" href="/install.sh">{s.oneScript}</a>
+      </p>
+    </div>
+
+    <h2 class="pkgs__title">{s.orPick}</h2>
     <div class="pkgs">
       {
         packages.map((p) => (
