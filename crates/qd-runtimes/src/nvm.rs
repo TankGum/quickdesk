@@ -166,7 +166,8 @@ fn parse_ls_remote(out: &str) -> Vec<Available> {
     list
 }
 
-#[cfg(test)]
+// nvm is a Unix shell script; its "lts/*" alias file cannot even exist on Windows.
+#[cfg(all(test, unix))]
 mod tests {
     use super::*;
     use crate::testutil::{FakeRunner, TempDir};

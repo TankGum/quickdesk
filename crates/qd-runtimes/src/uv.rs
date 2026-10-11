@@ -276,6 +276,8 @@ mod tests {
         assert_eq!(uv.init_lines(), ["export PATH=\"$HOME/.local/bin:$PATH\""]);
     }
 
+    // Unix: on Windows being on PATH is enough (there is no /usr/bin).
+    #[cfg(unix)]
     #[test]
     fn needs_its_bin_dir_before_usr_bin() {
         let t = TempDir::new("uv-path");

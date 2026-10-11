@@ -409,6 +409,8 @@ mod tests {
         let p = go.project_command(Path::new("/work/api"), "1.23.4").unwrap();
         let file = Path::new("/work/api").join("mise.toml").display().to_string();
         assert_eq!(p.args, ["use", "--path", file.as_str(), "go@1.23.4"]);
+        // Shell lines are for Unix; Windows fixes the user PATH instead.
+        #[cfg(unix)]
         assert_eq!(go.init_lines(), ["eval \"$(\"$HOME/.local/bin/mise\" activate bash)\""]);
     }
 
@@ -430,6 +432,8 @@ mod tests {
         assert_eq!(run.ran.lock().unwrap()[0].args, ["ls-remote", "go"]);
     }
 
+    // Unix layout; on Windows the shims are under %LOCALAPPDATA%\mise.
+    #[cfg(unix)]
     #[test]
     fn knows_shims_and_installs() {
         let t = TempDir::new("mise-path");

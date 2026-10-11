@@ -745,6 +745,8 @@ mod tests {
         assert_eq!((go.manager.as_deref(), go.active.as_ref().unwrap().version.as_str()), (None, "1.22.2"));
     }
 
+    // Unix: on Windows the fix is folders for the user PATH (winpath.rs).
+    #[cfg(unix)]
     #[test]
     fn explains_why_the_terminal_runs_another_copy() {
         // nvm is not set up in the shell: the system node runs.
@@ -790,9 +792,15 @@ mod tests {
         assert_eq!((go.manager.as_deref(), go.install_manager.as_deref()), (None, Some("mise")));
         assert_eq!(rts[0].install_manager, None, "node has nvm");
         let cmd = sys.command("go", Action::InstallManager, "").unwrap();
+        #[cfg(unix)]
         assert_eq!(cmd.args.last().map(String::as_str), Some(sys.probe.home.join(".local/bin").to_str().unwrap()));
+        // Windows: the PowerShell installer gets the folder from the environment.
+        #[cfg(windows)]
+        assert_eq!(cmd.env.first().map(|(k, _)| k.as_str()), Some("QD_MISE_DIR"));
     }
 
+    // Unix layout (~/.local/share/mise); on Windows mise lives in %LOCALAPPDATA%.
+    #[cfg(unix)]
     #[test]
     fn picks_mise_where_it_is_what_the_terminal_runs() {
         let (t, _) = nvm_system(&[], "");
