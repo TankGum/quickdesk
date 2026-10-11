@@ -1,0 +1,60 @@
+---
+// The first visit to the home page opens on a short animation: the logo
+// tile lands, its three bars draw in, the name and the tagline rise, and the
+// screen lifts to show the page. A click or any key skips it. Base.astro
+// decides in <head> whether to play it (html.intro-play): on arriving from
+// outside the site and on reload, never with reduced motion; "?intro" forces it.
+import type { Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const tagline = lang === "vi" ? "Cả bàn làm việc. Chỉ cách một phím tắt." : "Your whole desk. One shortcut away.";
+const skip = lang === "vi" ? "Bỏ qua" : "Skip";
+const bars = [
+  { w: 48, top: 27, c: "var(--notes)" },
+  { w: 36, top: 43.2, c: "var(--clip)" },
+  { w: 24, top: 59.4, c: "var(--ports)" },
+];
+---
+<div class="intro" id="intro" aria-hidden="true">
+  <span class="intro__glow intro__glow--a"></span>
+  <span class="intro__glow intro__glow--b"></span>
+  <span class="intro__glow intro__glow--c"></span>
+  <div class="intro__stage">
+    <div class="intro__tile">
+      {bars.map((b, i) => <span class="intro__bar" style={`--w: ${b.w}px; --top: ${b.top}px; --c: ${b.c}; --i: ${i}`}></span>)}
+    </div>
+    <p class="intro__word">
+      {[..."QuickDesk"].map((ch, i) => <span style={`--i: ${i}`}>{ch}</span>)}
+    </p>
+    <p class="intro__tagline">{tagline}</p>
+    <span class="intro__load"><i></i></span>
+  </div>
+  <button type="button" class="intro__skip" tabindex="-1">{skip}</button>
+</div>
+<script is:inline>
+  (() => {
+    const html = document.documentElement;
+    const intro = document.getElementById("intro");
+    if (!html.classList.contains("intro-play")) {
+      intro.remove();
+      return;
+    }
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      html.classList.add("intro-out");
+      setTimeout(() => {
+        html.classList.remove("intro-play", "intro-out");
+        intro.remove();
+      }, 900);
+    };
+    const timer = setTimeout(finish, 2400);
+    intro.addEventListener("click", finish);
+    addEventListener("keydown", finish, { once: true });
+  })();
+</script>

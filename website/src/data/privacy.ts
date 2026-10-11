@@ -26,7 +26,7 @@ export const privacy: Record<Lang, { title: string; updated: string; html: strin
 </table>
 <p>Codex and Antigravity usage is read from log files on your computer; nothing is sent.</p>
 <h2>This website</h2>
-<p>quickdesk.click is a static site on Cloudflare Pages, with no cookies, no analytics and no tracking. It loads fonts from Google Fonts, so Google sees your IP address. The demo runs entirely in your browser on sample data. The system you pick (Linux, Windows or macOS) is remembered in your browser’s local storage and never sent anywhere.</p>
+<p>quickdesk.click is a static site on Cloudflare Pages, with no cookies, no analytics and no tracking. It loads fonts from Google Fonts, so Google sees your IP address. The demo runs entirely in your browser on sample data. The system you pick (Linux, Windows or macOS) and the light or dark theme, if you switch it, are remembered in your browser’s local storage and never sent anywhere.</p>
 <h2>Questions</h2>
 <p>QuickDesk is open source: every claim here can be checked in the <a href="https://github.com/TankGum/quickdesk">source code</a>. Ask or report a problem in <a href="https://github.com/TankGum/quickdesk/issues">GitHub issues</a>.</p>`,
   },
@@ -53,7 +53,7 @@ export const privacy: Record<Lang, { title: string; updated: string; html: strin
 </table>
 <p>Usage của Codex và Antigravity được đọc từ file log trên máy; không gửi gì cả.</p>
 <h2>Trang web này</h2>
-<p>quickdesk.click là trang tĩnh trên Cloudflare Pages: không cookie, không analytics, không theo dõi. Trang tải font từ Google Fonts nên Google thấy địa chỉ IP của bạn. Demo chạy hoàn toàn trong trình duyệt với dữ liệu mẫu. Hệ điều hành bạn chọn (Linux, Windows hay macOS) được nhớ trong local storage của trình duyệt và không gửi đi đâu.</p>
+<p>quickdesk.click là trang tĩnh trên Cloudflare Pages: không cookie, không analytics, không theo dõi. Trang tải font từ Google Fonts nên Google thấy địa chỉ IP của bạn. Demo chạy hoàn toàn trong trình duyệt với dữ liệu mẫu. Hệ điều hành bạn chọn (Linux, Windows hay macOS) và giao diện sáng hoặc tối, nếu bạn đổi, được nhớ trong local storage của trình duyệt và không gửi đi đâu.</p>
 <h2>Câu hỏi</h2>
 <p>QuickDesk là mã nguồn mở: mọi điều ghi ở đây đều kiểm chứng được trong <a href="https://github.com/TankGum/quickdesk">mã nguồn</a>. Hỏi hoặc báo lỗi tại <a href="https://github.com/TankGum/quickdesk/issues">GitHub issues</a>.</p>`,
   },

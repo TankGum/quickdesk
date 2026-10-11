@@ -1,5 +1,10 @@
 ---
 // Home page: short call to action; the full download page is /download.
+// Text on the left; on the right a terminal plays the install for the system
+// picked on the page (typed command, download bar, checks, then QuickDesk
+// running with its shortcut). It plays while the section is on screen, and
+// shows the finished install when motion is reduced or scripts are off.
+import { OS_ICONS } from "../data/os-icons";
 import { href, type Lang } from "../i18n";
 import { hasMac, type Release } from "../data/release";
 
@@ -8,29 +13,187 @@ interface Props {
   release: Release;
 }
 const { lang, release } = Astro.props;
+const v = release.version;
+// Non-breaking hyphens: "2026-10-11" must not wrap across lines.
+const date = release.date.replaceAll("-", "‑");
 const s = {
   en: {
     title: "Ready when you are.",
-    lead: `QuickDesk ${release.version} for Linux, Windows${hasMac ? " and macOS" : ", macOS coming soon"} · released ${release.date}. Free and open source.`,
+    lead: "Install it once and everything is a shortcut away: your notes, what you copied, the ports in use and your AI limits.",
+    soon: "soon",
     download: "Download",
     changes: "What’s new",
+    meta: `Version ${v} · ${date} · Free and open source (MIT)`,
+    downloading: "Downloading",
+    verified: "SHA-256 verified",
+    installed: `QuickDesk ${v} installed`,
+    running: "QuickDesk is running",
+    open: "Open it with",
   },
   vi: {
     title: "Sẵn sàng khi bạn cần.",
-    lead: `QuickDesk ${release.version} cho Linux, Windows${hasMac ? " và macOS" : ", macOS sắp có"} · phát hành ${release.date}. Miễn phí và mã nguồn mở.`,
+    lead: "Cài một lần, mọi thứ chỉ cách một phím tắt: ghi chú, những gì bạn đã copy, các cổng đang mở và hạn mức AI.",
+    soon: "sắp có",
     download: "Tải về",
     changes: "Có gì mới",
+    meta: `Phiên bản ${v} · ${date} · Miễn phí, mã nguồn mở (MIT)`,
+    downloading: "Đang tải",
+    verified: "Đã kiểm tra SHA-256",
+    installed: `Đã cài QuickDesk ${v}`,
+    running: "QuickDesk đang chạy",
+    open: "Mở bằng",
   },
 }[lang];
+const systems = [
+  { id: "linux", label: "Linux", ready: true },
+  { id: "windows", label: "Windows", ready: true },
+  { id: "macos", label: "macOS", ready: hasMac },
+] as const;
+const f = release.files;
+// What the terminal plays for each system.
+const scripts = {
+  linux: { title: "bash", prompt: "$", cmd: "curl -fsSL https://quickdesk.click/install.sh | bash", file: f.deb.name, keys: ["Super", "Alt", "N"] },
+  windows: {
+    title: "PowerShell",
+    prompt: "PS>",
+    cmd: "irm https://quickdesk.click/install.ps1 | iex",
+    file: f.windows?.name ?? `QuickDesk_${v}_x64-setup.exe`,
+    keys: ["Win", "Alt", "N"],
+  },
+  macos: {
+    title: "zsh",
+    prompt: "%",
+    cmd: "curl -fsSL https://quickdesk.click/install.sh | bash",
+    file: f.macos_app?.name ?? `QuickDesk_${v}_aarch64.app.tar.gz`,
+    keys: ["⌃", "⌥", "N"],
+  },
+};
+const play = { ...scripts, text: { downloading: s.downloading, verified: s.verified, installed: s.installed } };
+const first = scripts.linux;
 ---
 <section class="download" id="download">
-  <div class="wrap download__head">
-    <img src="/favicon.svg" alt="" width="88" height="88" class="download__logo" />
-    <h2 class="section-title center">{s.title}</h2>
-    <p class="lead center">{s.lead}</p>
-    <div class="hero__cta">
-      <a class="btn btn--primary btn--lg" href={href(lang, "/download")}>{s.download}</a>
-      <a class="btn btn--link" href={href(lang, "/changelog")}>{s.changes} <span aria-hidden="true">›</span></a>
+  <div class="wrap cta">
+    <div class="cta__text">
+      <h2 class="section-title cta__title">{s.title}</h2>
+      <p class="lead cta__lead">{s.lead}</p>
+      <ul class="download__os">
+        {
+          systems.map((o) => (
+            <li>
+              <a href={`${href(lang, "/download")}#${o.id}`} class:list={["download__chip", { "is-soon": !o.ready }]}>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d={OS_ICONS[o.id]} fill="currentColor" />
+                </svg>
+                {o.label}
+                {!o.ready && <span class="download__soon">{s.soon}</span>}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="cta__actions">
+        <a class="btn btn--primary btn--lg download__btn" href={href(lang, "/download")}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-4.5-4.5L12 15l4.5-4.5M5 19h14" /></svg>
+          {s.download}
+        </a>
+        <a class="btn btn--link" href={href(lang, "/changelog")}>{s.changes} <span aria-hidden="true">›</span></a>
+      </div>
+      <p class="download__meta">{s.meta}</p>
+    </div>
+
+    <!-- The finished install, as shown without motion; the script replays it. -->
+    <div class="install" aria-hidden="true" data-install={JSON.stringify(play)}>
+      <div class="install__bar">
+        <i></i><i></i><i></i>
+        <span data-i="title">{first.title}</span>
+      </div>
+      <div class="install__body">
+        <p class="install__line">
+          <span class="install__prompt" data-i="prompt">{first.prompt}</span> <span data-i="cmd">{first.cmd}</span><span class="install__caret"></span>
+        </p>
+        <p class="install__line install__out" data-step="1">
+          {s.downloading} <span data-i="file">{first.file}</span>
+        </p>
+        <p class="install__line install__out install__progress" data-step="1">
+          <span class="install__track"><span class="install__fill" style="--p: 1"></span></span>
+          <span class="install__pct" data-i="pct">100%</span>
+        </p>
+        <p class="install__line install__out install__ok" data-step="2">✓ {s.verified}</p>
+        <p class="install__line install__out install__ok" data-step="3">✓ {s.installed}</p>
+      </div>
+      <div class="install__toast" data-step="4">
+        <img src="/favicon.svg" alt="" width="40" height="40" />
+        <span>
+          <b>{s.running}</b>
+          <small>
+            {s.open}{" "}
+            <span data-i="keys">
+              {first.keys.map((k) => <kbd>{k}</kbd>)}
+            </span>
+          </small>
+        </span>
+      </div>
     </div>
   </div>
 </section>
+<script is:inline>
+  // Replays the install while the section is on screen: type the command,
+  // fill the download bar, tick the checks, show QuickDesk running, pause,
+  // start again. Follows the system picked on the page (html[data-os]).
+  (() => {
+    const box = document.querySelector("[data-install]");
+    if (!box || matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
+    const data = JSON.parse(box.dataset.install);
+    const $ = (k) => box.querySelector(`[data-i="${k}"]`);
+    const steps = [...box.querySelectorAll("[data-step]")];
+    const fill = box.querySelector(".install__fill");
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    let visible = false;
+    let running = false;
+    const show = (n) => steps.forEach((el) => el.classList.toggle("is-on", Number(el.dataset.step) <= n));
+    const round = async () => {
+      const os = data[document.documentElement.dataset.os] ? document.documentElement.dataset.os : "linux";
+      const d = data[os];
+      $("title").textContent = d.title;
+      $("prompt").textContent = d.prompt;
+      $("file").textContent = d.file;
+      $("keys").replaceChildren(...d.keys.map((k) => Object.assign(document.createElement("kbd"), { textContent: k })));
+      box.classList.add("is-playing");
+      show(0);
+      fill.style.setProperty("--p", 0);
+      $("pct").textContent = "0%";
+      $("cmd").textContent = "";
+      await wait(500);
+      for (const ch of d.cmd) {
+        $("cmd").textContent += ch;
+        await wait(ch === " " ? 55 : 24 + Math.random() * 30);
+      }
+      await wait(380);
+      box.classList.add("is-ran");
+      show(1);
+      for (let p = 0; p <= 100; p += 4) {
+        fill.style.setProperty("--p", p / 100);
+        $("pct").textContent = `${p}%`;
+        await wait(p < 70 ? 34 : 22);
+      }
+      await wait(260);
+      show(2);
+      await wait(420);
+      show(3);
+      await wait(520);
+      show(4);
+      await wait(4200);
+      box.classList.remove("is-ran");
+    };
+    const loop = async () => {
+      if (running) return;
+      running = true;
+      while (visible) await round();
+      running = false;
+    };
+    new IntersectionObserver((entries) => {
+      visible = entries.some((e) => e.isIntersecting);
+      if (visible) loop();
+    }, { threshold: 0.3 }).observe(box);
+  })();
+</script>

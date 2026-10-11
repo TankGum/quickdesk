@@ -12,6 +12,37 @@ const lead =
     ? "Cài đặt, phím tắt, đồng bộ, clipboard, cổng, usage AI và cập nhật."
     : "Installing, shortcuts, sync, clipboard, ports, AI usage and updates.";
 const contents = lang === "vi" ? "Nội dung" : "Contents";
+// The contents, in three groups, each entry with an icon and a short name
+// (the heading itself can be longer).
+type Meta = { group: 0 | 1 | 2; icon: string; short?: Record<Lang, string> };
+const groups = lang === "vi" ? ["Bắt đầu", "Tính năng", "Trợ giúp"] : ["Get started", "Features", "Help"];
+const meta: Record<string, Meta> = {
+  install: { group: 0, icon: "M12 4v11m-4.5-4.5L12 15l4.5-4.5M5 19h14" },
+  macos: { group: 0, icon: "M5 5.5h14v9.5H5zM3 18.5h18" },
+  shortcuts: {
+    group: 0,
+    icon: "M9 9V6.5A2.5 2.5 0 1 0 6.5 9H9zm0 0h6m-6 0v6m6-6V6.5A2.5 2.5 0 1 1 17.5 9H15zm0 0v6m0 0h2.5a2.5 2.5 0 1 1-2.5 2.5V15zm0 0H9m0 0v2.5A2.5 2.5 0 1 1 6.5 15H9z",
+  },
+  notes: { group: 1, icon: "M5 4h14v10l-5 6H5zM14 20v-6h5M8.5 9h7M8.5 12.5h4" },
+  sync: {
+    group: 1,
+    icon: "M4.5 12a7.5 7.5 0 0 1 12.8-5.3L19.5 9M19.5 4.5V9H15M19.5 12a7.5 7.5 0 0 1-12.8 5.3L4.5 15M4.5 19.5V15H9",
+    short: { en: "Sync", vi: "Đồng bộ" },
+  },
+  clipboard: { group: 1, icon: "M9 3.5h6v3H9zM8 5H6v15h12V5h-2M9 11.5h6M9 15h4", short: { en: "Clipboard", vi: "Clipboard" } },
+  "auto-paste": { group: 1, icon: "M6.5 4.5 18 10.8l-5.3 1.5-2.4 5.2z" },
+  ports: { group: 1, icon: "M9 3v5M15 3v5M7 8h10v3a5 5 0 0 1-10 0zM12 16v5" },
+  versions: { group: 1, icon: "M8.5 7 4 12l4.5 5M15.5 7 20 12l-4.5 5M13.5 5l-3 14", short: { en: "Runtimes", vi: "Runtime" } },
+  ai: { group: 1, icon: "M4 16.5a8 8 0 1 1 16 0M12 16.5l4-5" },
+  updates: { group: 2, icon: "M12 7v5l3 2M20 12a8 8 0 1 1-2.34-5.66M20 4v4h-4" },
+  uninstall: { group: 2, icon: "M5 7h14M10 7V4.5h4V7M7 7l1 13h8l1-13" },
+  troubleshooting: {
+    group: 2,
+    icon: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 5.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM5.6 5.6l3.9 3.9m5 5 3.9 3.9m0-12.8-3.9 3.9m-5 5-3.9 3.9",
+  },
+};
+const fallback: Meta = { group: 2, icon: "M6 4.5h9l3 3v12H6z" };
+const toc = sections.map((s) => ({ ...s, ...(meta[s.id] ?? fallback) }));
 // Section HTML links to /download etc.; point them at this language.
 const local = (html: string) => (lang === "vi" ? html.replace(/href="\/(?!vi\/)([a-z]+)"/g, 'href="/vi/$1"') : html);
 ---
@@ -19,8 +50,30 @@ const local = (html: string) => (lang === "vi" ? html.replace(/href="\/(?!vi\/)(
   <aside class="docs__toc" aria-label={contents}>
     <p class="docs__toc-title">{contents}</p>
     <ol>
-      {sections.map((s) => <li><a href={`#${s.id}`}>{s.title[lang]}</a></li>)}
+      {
+        toc.map((s, i) => (
+          <>
+            {(i === 0 || toc[i - 1].group !== s.group) && (
+              <li class="docs__toc-group" aria-hidden="true">
+                {groups[s.group]}
+              </li>
+            )}
+            <li>
+              <a href={`#${s.id}`}>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d={s.icon} />
+                </svg>
+                <span>{s.short?.[lang] ?? s.title[lang]}</span>
+              </a>
+            </li>
+          </>
+        ))
+      }
     </ol>
+    <a class="docs__toc-help" href="https://github.com/TankGum/quickdesk/issues">
+      <b>{lang === "vi" ? "Còn thắc mắc?" : "Still stuck?"}</b>
+      <span>{lang === "vi" ? "Hỏi trên GitHub" : "Ask on GitHub"} <span aria-hidden="true">↗</span></span>
+    </a>
   </aside>
   <article class="prose">
     <h1>{title}</h1>
@@ -45,33 +98,61 @@ const local = (html: string) => (lang === "vi" ? html.replace(/href="\/(?!vi\/)(
 
 <script is:inline>
   // Mark the section being read in the contents: the last one whose heading
-  // has passed under the nav. On phones, keep its chip in view.
+  // has passed under the nav. A click marks its entry at once and holds it
+  // while the page scrolls there, instead of lighting up every section on the
+  // way. The contents keep the marked entry in view (the column on desktop,
+  // the row of chips on phones).
   (() => {
-    const links = [...document.querySelectorAll(".docs__toc a")];
+    const toc = document.querySelector(".docs__toc");
+    const links = [...toc.querySelectorAll("ol a")];
     const sections = links.map((a) => document.getElementById(a.hash.slice(1)));
-    const row = document.querySelector(".docs__toc ol");
+    const row = toc.querySelector("ol");
     let current = null;
+    let held = false;
+    let release;
+    const mark = (a) => {
+      if (!a || a === current) return;
+      current?.removeAttribute("aria-current");
+      a.setAttribute("aria-current", "true");
+      current = a;
+      if (row.scrollWidth > row.clientWidth) {
+        row.scrollTo({ left: a.parentElement.offsetLeft - (row.clientWidth - a.offsetWidth) / 2, behavior: "smooth" });
+      } else if (toc.scrollHeight > toc.clientHeight) {
+        const top = a.offsetTop - toc.offsetTop;
+        if (top < toc.scrollTop + 40 || top + a.offsetHeight > toc.scrollTop + toc.clientHeight - 40) {
+          toc.scrollTo({ top: top - toc.clientHeight / 2, behavior: "smooth" });
+        }
+      }
+    };
     const update = () => {
-      const line = window.innerWidth <= 640 ? 150 : 120;
+      // A heading counts once it is in the top third (a click on the
+      // contents lands it below the nav and the row of chips).
+      const line = Math.max(180, window.innerHeight * 0.3);
       let i = 0;
       sections.forEach((el, k) => {
         if (el && el.getBoundingClientRect().top <= line) i = k;
       });
       // At the very bottom the last section is the one being read.
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) i = sections.length - 1;
-      const a = links[i];
-      if (!a || a === current) return;
-      current?.removeAttribute("aria-current");
-      a.setAttribute("aria-current", "true");
-      current = a;
-      if (row && row.scrollWidth > row.clientWidth) {
-        row.scrollTo({ left: a.parentElement.offsetLeft - (row.clientWidth - a.offsetWidth) / 2, behavior: "smooth" });
-      }
+      mark(links[i]);
     };
+    // Held until the scroll it started has been still for a moment.
+    const hold = (ms) => {
+      clearTimeout(release);
+      release = setTimeout(() => (held = false), ms);
+    };
+    links.forEach((a) =>
+      a.addEventListener("click", () => {
+        held = true;
+        mark(a);
+        hold(800);
+      }),
+    );
     let queued = false;
     addEventListener(
       "scroll",
       () => {
+        if (held) return hold(150);
         if (queued) return;
         queued = true;
         requestAnimationFrame(() => {

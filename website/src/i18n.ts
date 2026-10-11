@@ -40,6 +40,9 @@ export const ui = {
     skip: "Skip to content",
     menu: "Menu",
     close: "Close",
+    faq: "FAQ",
+    theme: "Switch between light and dark",
+    themeShort: "Light / dark",
   },
   vi: {
     home: "Trang chủ",
@@ -60,6 +63,9 @@ export const ui = {
     skip: "Bỏ qua tới nội dung",
     menu: "Menu",
     close: "Đóng",
+    faq: "FAQ",
+    theme: "Đổi giao diện sáng / tối",
+    themeShort: "Sáng / tối",
   },
 } as const;
 
