@@ -6,7 +6,7 @@ Mỗi bản phát hành QuickDesk có gì mới. Bản tiếng Anh là
 Mỗi bản là một mục `## <phiên bản> — <ngày>` với tối đa ba nhóm:
 `### Mới`, `### Cải thiện`, `### Sửa lỗi`.
 
-## Unreleased
+## 0.6.1 — 2026-10-12
 
 ### Sửa lỗi
 - macOS: chọn một mục trong popup clipboard lại dán đúng vào ô bạn đang gõ. QuickDesk giờ tự lùi lại để macOS trả focus về đúng app và ô đó, thay vì yêu cầu kích hoạt app, điều mà các bản macOS mới có thể chỉ làm nửa vời.
