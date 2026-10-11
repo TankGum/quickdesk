@@ -245,7 +245,7 @@ impl System {
             .filter(|h| !h.is_empty())
             .map(PathBuf::from)
             .unwrap_or_else(|| PathBuf::from("/"));
-        let shell = std::env::var("SHELL").ok();
+        let shell = std::env::var("SHELL").ok().filter(|s| !s.is_empty()).or_else(login_shell);
         Self::from_probe(probe::run(&home, shell.as_deref()))
     }
 
@@ -528,6 +528,26 @@ fn fix_for(m: &dyn Manager) -> Vec<String> {
     } else {
         m.init_lines()
     }
+}
+
+/// The user's login shell from the account database, for when `$SHELL` is
+/// not set (apps started from the macOS Finder may not get it).
+#[cfg(unix)]
+fn login_shell() -> Option<String> {
+    // SAFETY: getpwuid returns a pointer into static storage (or null); the
+    // string is copied out before anything else can call it.
+    unsafe {
+        let pw = libc::getpwuid(libc::getuid());
+        if pw.is_null() || (*pw).pw_shell.is_null() {
+            return None;
+        }
+        std::ffi::CStr::from_ptr((*pw).pw_shell).to_str().ok().map(str::to_owned)
+    }
+}
+
+#[cfg(not(unix))]
+fn login_shell() -> Option<String> {
+    None
 }
 
 /// `name` as an executable file name here (`rustc.exe` on Windows).

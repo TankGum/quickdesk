@@ -22,13 +22,15 @@ pub struct HotkeyConfig {
 
 impl Default for HotkeyConfig {
     /// Super+Alt rather than Super+Shift: input methods like IBus Unikey
-    /// swallow Super+Shift+<letter> while a text field has focus.
+    /// swallow Super+Shift+<letter> while a text field has focus. On macOS
+    /// Control+Option (⌃⌥): Super is ⌘ there, and ⌘⌥V / ⌘⌥N belong to Finder.
     fn default() -> Self {
+        let m = if cfg!(target_os = "macos") { "Ctrl+Alt" } else { "Super+Alt" };
         HotkeyConfig {
-            notes: "Super+Alt+N".into(),
+            notes: format!("{m}+N"),
             quick_note: String::new(),
-            clipboard: "Super+Alt+V".into(),
-            ports: "Super+Alt+P".into(),
+            clipboard: format!("{m}+V"),
+            ports: format!("{m}+P"),
         }
     }
 }
@@ -177,10 +179,19 @@ mod tests {
         assert_eq!(next.quick_note, "Super+Alt+Q");
         assert!(cfg.with(Target::Notes, "Shift+N").is_err(), "needs Ctrl/Alt/Super");
         assert!(cfg.with(Target::Notes, "Super+Alt+?").is_err());
-        let dup = cfg.with(Target::Notes, "Super+Alt+V").unwrap_err();
+        // The defaults differ per system (⌃⌥ on macOS): use whatever they are.
+        let dup = cfg.with(Target::Notes, &cfg.clipboard).unwrap_err();
         assert!(dup.contains("clipboard"), "{dup}");
-        assert_eq!(cfg.with(Target::Notes, "Super+Alt+N").unwrap(), cfg, "rebinding to itself is fine");
+        assert_eq!(cfg.with(Target::Notes, &cfg.notes).unwrap(), cfg, "rebinding to itself is fine");
         assert_eq!(cfg.with(Target::Clipboard, "").unwrap().clipboard, "", "empty unbinds");
+    }
+
+    #[test]
+    fn defaults_use_control_option_on_macos_only() {
+        let cfg = HotkeyConfig::default();
+        let expected = if cfg!(target_os = "macos") { "Ctrl+Alt+N" } else { "Super+Alt+N" };
+        assert_eq!(cfg.notes, expected);
+        assert_eq!(&cfg.clipboard[..cfg.clipboard.len() - 1], &expected[..expected.len() - 1]);
     }
 
     #[test]

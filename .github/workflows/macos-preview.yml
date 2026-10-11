@@ -1,0 +1,31 @@
+name: macOS preview
+
+# Run by hand (Actions → macOS preview → Run workflow) to get a Mac build to
+# try, without publishing anything: QuickDesk.app (zipped) and a .dmg for
+# Apple Silicon, signed ad hoc. Attached to the run as the
+# "quickdesk-macos-preview" artifact.
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tauri build --bundles app,dmg
+      # A zip keeps the .app's signature and permissions intact in the artifact.
+      - name: Zip the app
+        run: ditto -c -k --keepParent target/release/bundle/macos/QuickDesk.app target/release/bundle/QuickDesk-macos.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quickdesk-macos-preview
+          path: |
+            target/release/bundle/QuickDesk-macos.zip
+            target/release/bundle/dmg/*.dmg

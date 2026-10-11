@@ -6,7 +6,7 @@ import OsPicker from "./OsPicker.astro";
 import { href } from "../i18n";
 import { home } from "../data/home";
 import type { Lang } from "../i18n";
-import type { Release } from "../data/release";
+import { hasMac, type Release } from "../data/release";
 
 interface Props {
   lang: Lang;
@@ -15,8 +15,8 @@ interface Props {
 const { lang, release } = Astro.props;
 // The hero's download button (and the demo desktop below) follow the system picked here.
 const dl = {
-  en: { pick: "Your system", linux: "Download for Linux", windows: "Download for Windows", macos: "macOS: coming soon" },
-  vi: { pick: "Hệ điều hành của bạn", linux: "Tải cho Linux", windows: "Tải cho Windows", macos: "macOS: sắp có" },
+  en: { pick: "Your system", linux: "Download for Linux", windows: "Download for Windows", macos: hasMac ? "Download for macOS" : "macOS: coming soon" },
+  vi: { pick: "Hệ điều hành của bạn", linux: "Tải cho Linux", windows: "Tải cho Windows", macos: hasMac ? "Tải cho macOS" : "macOS: sắp có" },
 }[lang];
 const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", release.version).replaceAll("{{DATE}}", release.date);
 ---
@@ -306,11 +306,11 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
         <div class="chat__chips" data-chat-chips></div>
         <dl class="chat__data" data-chat-data data-typing={t("faq-typing")} data-again={t("faq-again")}>
           <dt><Fragment set:html={t("t81")} /></dt>
-          <dd><Fragment set:html={t("t82")} /></dd>
+          <dd><Fragment set:html={t(hasMac ? "t82-mac" : "t82")} /></dd>
           <dt><Fragment set:html={t("t83")} /></dt>
           <dd><Fragment set:html={t("t84")} /></dd>
           <dt><Fragment set:html={t("t85")} /></dt>
-          <dd><Fragment set:html={t("t86")} /></dd>
+          <dd><Fragment set:html={t(hasMac ? "t86-mac" : "t86")} /></dd>
           <dt><Fragment set:html={t("t87")} /></dt>
           <dd><Fragment set:html={t("t88")} /></dd>
           <dt><Fragment set:html={t("t89")} /></dt>
@@ -318,13 +318,13 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
           <dt><Fragment set:html={t("t91")} /></dt>
           <dd><Fragment set:html={t("t92")} /></dd>
           <dt><Fragment set:html={t("t93")} /></dt>
-          <dd><Fragment set:html={t("t94")} /></dd>
+          <dd><Fragment set:html={t(hasMac ? "t94-mac" : "t94")} /></dd>
           <dt><Fragment set:html={t("t95")} /></dt>
           <dd><Fragment set:html={t("t96")} /></dd>
           <dt><Fragment set:html={t("t97")} /></dt>
           <dd><Fragment set:html={t("t98")} /></dd>
           <dt><Fragment set:html={t("t99")} /></dt>
-          <dd><Fragment set:html={t("t100")} /></dd>
+          <dd><Fragment set:html={t(hasMac ? "t100-mac" : "t100")} /></dd>
         </dl>
       </div>
     </div>

@@ -4,7 +4,9 @@
 // Windows images arrive as DIBs; the conversion is plain code, tested everywhere.
 #[cfg_attr(not(windows), allow(dead_code))]
 mod dib;
-#[cfg(not(any(target_os = "linux", windows)))]
+#[cfg(target_os = "macos")]
+mod macos;
+#[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
 mod poll;
 #[cfg(windows)]
 mod windows;
@@ -73,7 +75,9 @@ pub fn spawn_watcher(on_event: impl Fn(ClipEvent) + Send + 'static) -> WatcherHa
     let backend = x11::spawn(on_event, state.clone());
     #[cfg(windows)]
     let backend = windows::spawn(on_event, state.clone());
-    #[cfg(not(any(target_os = "linux", windows)))]
+    #[cfg(target_os = "macos")]
+    let backend = macos::spawn(on_event, state.clone());
+    #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
     let backend = poll::spawn(on_event, state.clone());
     WatcherHandle { backend, state }
 }

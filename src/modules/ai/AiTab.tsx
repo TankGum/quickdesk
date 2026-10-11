@@ -4,7 +4,7 @@ import { t, useI18n } from "../../shared/i18n";
 import { api, errorMessage, UsageSnapshot, useBackendEvent } from "../../shared/ipc";
 import { ProviderCard } from "./ProviderCard";
 import { STALE_MS, windowLabel } from "./usage";
-import { isWindows } from "../../shared/platform";
+import { isMac, isWindows } from "../../shared/platform";
 
 export function AiTab({ focusSignal }: { focusSignal: number }) {
   useI18n();
@@ -61,7 +61,7 @@ export function AiTab({ focusSignal }: { focusSignal: number }) {
             checked={snap.trayEnabled}
             onChange={(e) => void api.aiSetTray(e.target.checked).catch((x) => setError(errorMessage(x)))}
           />
-          {t(isWindows ? "ai.tray.win" : "ai.tray")}
+          {t(isWindows ? "ai.tray.win" : isMac ? "ai.tray.mac" : "ai.tray")}
         </label>
         {snap.trayEnabled && (
           <label className="ai-ring-pick">
@@ -88,6 +88,18 @@ export function AiTab({ focusSignal }: { focusSignal: number }) {
         )}
       </div>
       {error && <div className="banner error">{error}</div>}
+      {snap.claudeKeychain === false && (
+        <div className="banner info ai-keychain">
+          <span>
+            <b>{t("ai.keychain.title")}</b>
+            <br />
+            <span className="small">{t("ai.keychain.body")}</span>
+          </span>
+          <button className="btn primary" onClick={() => void api.aiSetClaudeKeychain(true).catch((x) => setError(errorMessage(x)))}>
+            {t("ai.keychain.allow")}
+          </button>
+        </div>
+      )}
       {snap.providers.length === 0 ? (
         <div className="empty">{t("ai.none")}</div>
       ) : (
@@ -96,6 +108,11 @@ export function AiTab({ focusSignal }: { focusSignal: number }) {
             <ProviderCard key={p.provider} p={p} ringShows={snap.trayEnabled ? snap.ringShows : null} />
           ))}
         </div>
+      )}
+      {snap.claudeKeychain === true && (
+        <button className="btn link small" onClick={() => void api.aiSetClaudeKeychain(false).catch((x) => setError(errorMessage(x)))}>
+          {t("ai.keychain.stop")}
+        </button>
       )}
     </div>
   );

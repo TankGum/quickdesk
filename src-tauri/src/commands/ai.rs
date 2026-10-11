@@ -25,6 +25,12 @@ pub fn ai_set_tray(app: AppHandle, enabled: bool) -> CmdResult<()> {
     Ok(ai_usage::set_tray_enabled(&app, enabled)?)
 }
 
+/// macOS: allow or stop reading Claude Code's login from the Keychain.
+#[tauri::command]
+pub fn ai_set_claude_keychain(app: AppHandle, on: bool) -> CmdResult<()> {
+    Ok(ai_usage::set_claude_keychain(&app, on)?)
+}
+
 /// Pick which limit the top-bar ring shows (`None` = automatic).
 #[tauri::command]
 pub fn ai_set_ring(app: AppHandle, choice: Option<RingChoice>) -> CmdResult<()> {

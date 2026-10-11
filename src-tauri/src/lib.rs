@@ -7,6 +7,8 @@ mod i18n;
 pub mod ipc;
 #[cfg(target_os = "linux")]
 mod legacy;
+#[cfg(target_os = "macos")]
+mod macos;
 mod ring;
 mod runtimes;
 mod secrets;
@@ -90,6 +92,7 @@ pub fn run(args: Vec<String>) {
             commands::clipboard::clip_set_paste_method,
             commands::clipboard::clip_uinput_enable,
             commands::clipboard::clip_uinput_disable,
+            commands::clipboard::clip_accessibility_request,
             commands::app::app_onboarding,
             commands::app::app_autostart_get,
             commands::app::app_autostart_set,
@@ -98,6 +101,7 @@ pub fn run(args: Vec<String>) {
             commands::ai::ai_usage_refresh,
             commands::ai::ai_set_tray,
             commands::ai::ai_set_ring,
+            commands::ai::ai_set_claude_keychain,
             commands::app::app_set_language,
             commands::app::app_onboarding_finish,
             commands::ports::ports_scan,
@@ -194,8 +198,13 @@ pub fn run(args: Vec<String>) {
             // WebView2 runs the UI while a window is being created, and its
             // first commands need AppState. Created before setup, on Windows
             // they panicked inside a WebView2 callback and the app aborted.
+            // macOS: a menu bar app, with no Dock icon or app switcher entry.
+            #[cfg(target_os = "macos")]
+            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
             for config in app.config().app.windows.clone() {
-                tauri::WebviewWindowBuilder::from_config(app.handle(), &config)?.build()?;
+                let _window = tauri::WebviewWindowBuilder::from_config(app.handle(), &config)?.build()?;
+                #[cfg(target_os = "macos")]
+                macos::place_on_spaces(&_window, windows::is_popup(&config.label));
             }
 
             tray::build(app, clip_paused)?;

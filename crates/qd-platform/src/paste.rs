@@ -345,7 +345,96 @@ mod imp {
     }
 }
 
-#[cfg(not(any(target_os = "linux", windows)))]
+#[cfg(target_os = "macos")]
+mod imp {
+    use std::sync::atomic::{AtomicI32, Ordering};
+    use std::time::{Duration, Instant};
+
+    use core_graphics::event::{CGEvent, CGEventFlags, CGEventTapLocation, CGKeyCode};
+    use core_graphics::event_source::{CGEventSource, CGEventSourceStateID};
+    use objc2_app_kit::{NSApplicationActivationOptions, NSRunningApplication, NSWorkspace};
+
+    use super::{Chord, PasteMethod};
+
+    /// The app that was in front when the popup opened (its process id).
+    static TARGET: AtomicI32 = AtomicI32::new(0);
+    /// `V` on the ANSI layout (kVK_ANSI_V); ⌘ plus this key is Paste.
+    const KEY_V: CGKeyCode = 0x09;
+
+    fn front_pid() -> i32 {
+        NSWorkspace::sharedWorkspace().frontmostApplication().map(|a| a.processIdentifier()).unwrap_or(0)
+    }
+
+    /// Call right before showing the popup.
+    pub fn remember_target() {
+        TARGET.store(front_pid(), Ordering::SeqCst);
+    }
+
+    /// Bring the app back to the front; `false` if it quit meanwhile.
+    fn activate(pid: i32) -> bool {
+        NSRunningApplication::runningApplicationWithProcessIdentifier(pid)
+            .is_some_and(|app| app.activateWithOptions(NSApplicationActivationOptions::empty()))
+    }
+
+    /// Press ⌘V for the app in front. macOS drops synthetic key presses from
+    /// apps without the Accessibility permission, so that is checked first.
+    fn press_cmd_v() -> Result<(), String> {
+        if !crate::macos::accessibility_trusted() {
+            return Err("accessibility_needed".into());
+        }
+        let source = CGEventSource::new(CGEventSourceStateID::HIDSystemState)
+            .map_err(|_| "cannot create a keyboard event source".to_owned())?;
+        for down in [true, false] {
+            let event = CGEvent::new_keyboard_event(source.clone(), KEY_V, down)
+                .map_err(|_| "cannot create the key press".to_owned())?;
+            event.set_flags(CGEventFlags::CGEventFlagCommand);
+            event.post(CGEventTapLocation::HID);
+        }
+        Ok(())
+    }
+
+    /// Fields kept private so every platform builds it the same way: `default()`.
+    #[derive(Default)]
+    pub struct AutoPaster {
+        _private: (),
+    }
+
+    impl AutoPaster {
+        pub fn resolve(_method: PasteMethod) -> PasteMethod {
+            PasteMethod::Auto
+        }
+
+        /// ⌘V pastes text, images and files alike, terminals included.
+        pub async fn paste(
+            &self,
+            _method: PasteMethod,
+            _restore_token: Option<&str>,
+            _chord: Chord,
+        ) -> Result<Option<String>, String> {
+            let target = TARGET.load(Ordering::SeqCst);
+            if target == 0 || target == std::process::id() as i32 {
+                return Err("no app to paste into".into());
+            }
+            if !activate(target) {
+                return Err("the app to paste into is gone".into());
+            }
+            let started = Instant::now();
+            while front_pid() != target && started.elapsed() < Duration::from_millis(600) {
+                tokio::time::sleep(Duration::from_millis(15)).await;
+            }
+            if front_pid() != target {
+                return Err("could not bring the app back to the front".into());
+            }
+            // Let it give the focus back to its text field first.
+            tokio::time::sleep(Duration::from_millis(60)).await;
+            press_cmd_v().map(|()| None)
+        }
+
+        pub async fn close_if_idle(&self, _idle: Duration) {}
+    }
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
 mod imp {
     use std::time::Duration;
 
@@ -376,8 +465,8 @@ mod imp {
 pub use imp::AutoPaster;
 
 /// Remember the window to paste into; call right before showing the popup.
-/// Only Windows needs it: elsewhere hiding the popup refocuses that window.
+/// Windows and macOS need it: on Linux hiding the popup refocuses that window.
 pub fn remember_target() {
-    #[cfg(windows)]
+    #[cfg(any(windows, target_os = "macos"))]
     imp::remember_target();
 }

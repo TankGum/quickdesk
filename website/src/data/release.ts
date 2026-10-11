@@ -19,8 +19,9 @@ export interface Release {
   date: string;
   /** Absolute download URLs, sizes and checksums per package type. */
   files: Record<"deb" | "rpm" | "appimage", ReleaseFile & { href: string; sizeText: string }> &
-    /** From the first release with a Windows build on. */
-    Partial<Record<"windows", ReleaseFile & { href: string; sizeText: string }>>;
+    /** From the first release with a Windows / macOS build on. `macos` is the
+     *  disk image, `macos_app` the app archive (updater and install.sh). */
+    Partial<Record<"windows" | "macos" | "macos_app", ReleaseFile & { href: string; sizeText: string }>>;
   checksums: string;
 }
 
@@ -52,3 +53,6 @@ async function load(): Promise<Release> {
 }
 
 export const release: Release = await load();
+
+/** The newest release has a Mac build; until then the site says "coming soon". */
+export const hasMac = Boolean(release.files.macos && release.files.macos_app);

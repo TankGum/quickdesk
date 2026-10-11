@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Key, t, useI18n } from "../../shared/i18n";
 import { api, errorMessage, PasteInfo, PasteMethod } from "../../shared/ipc";
 import { Icon } from "../../shared/Icon";
+import { isMac } from "../../shared/platform";
 
 const METHODS: { value: PasteMethod; label: Key; hint: Key }[] = [
   { value: "auto", label: "paste.auto", hint: "paste.auto.hint" },
@@ -37,11 +38,29 @@ export function PasteSettings() {
 
   if (!info) return null;
 
-  // Windows: SendInput needs no setup and there is nothing to choose.
+  // Windows and macOS: the system's own key input; nothing to choose. macOS
+  // needs the Accessibility permission for it.
   if (info.native) {
     return (
       <div className="paste-settings">
-        <p className="muted small">{t("paste.windows")}</p>
+        <p className="muted small">{t(isMac ? "paste.mac" : "paste.windows")}</p>
+        {isMac &&
+          (info.needsPermission ? (
+            <div className="banner warn">
+              <span>{t("paste.macNeeded")}</span>
+              <span className="row tight">
+                <button className="btn primary" disabled={busy} onClick={() => void run(async () => void (await api.clipAccessibilityRequest()))}>
+                  {t("paste.macAllow")}
+                </button>
+                <button className="btn" onClick={refresh}>
+                  {t("paste.macRecheck")}
+                </button>
+              </span>
+            </div>
+          ) : (
+            <p className="small">✓ {t("paste.macAllowed")}</p>
+          ))}
+        {error && <div className="banner error">{error}</div>}
       </div>
     );
   }

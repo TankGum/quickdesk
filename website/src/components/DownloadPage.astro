@@ -3,7 +3,7 @@
 // browser), each with its one-line install and its packages with size and
 // checksum, then the release notes.
 import { changelog } from "../data/changelog";
-import { release } from "../data/release";
+import { hasMac, release } from "../data/release";
 import { href, type Lang } from "../i18n";
 import OsPicker from "./OsPicker.astro";
 
@@ -19,13 +19,19 @@ const f = release.files;
 const s = {
   en: {
     title: `Download QuickDesk ${v}`,
-    lead: `For Linux and Windows on x86_64, macOS coming soon · released ${date}. Free and open source (MIT).`,
+    lead: hasMac
+      ? `For Linux and Windows (x86_64) and macOS (Apple Silicon) · released ${date}. Free and open source (MIT).`
+      : `For Linux and Windows on x86_64, macOS coming soon · released ${date}. Free and open source (MIT).`,
     pick: "Your system",
     soon: "soon",
     deb: ["Ubuntu, Debian, Linux Mint, Pop!_OS", "Ubuntu 22.04 and newer, Debian 12 and newer."],
     rpm: ["Fedora and other RPM-based distros", "Fedora 36 and newer, openSUSE Tumbleweed."],
     appimage: ["Any other distribution", "Portable: no install needed. Needs FUSE 2 (libfuse2)."],
     windows: ["Windows 10 and 11", "64-bit. Installs for your user only: no administrator rights needed."],
+    macos: ["macOS 11 or later", "Apple Silicon (M1 and newer). Open the disk image and drag QuickDesk to Applications."],
+    oneMac: "In Terminal. Downloads QuickDesk.app, checks its SHA-256, puts it in Applications and opens it. Installed this way, macOS does not warn about it.",
+    afterMac: "QuickDesk lives in the menu bar and updates itself from now on. For auto-paste, allow it under Privacy & Security → Accessibility when macOS asks.",
+    gatekeeper: "Downloaded in a browser, macOS says it cannot check QuickDesk for malware: the app is not signed with an Apple Developer ID yet. Open System Settings → Privacy & Security and choose Open Anyway, or install with the command above, which avoids the warning.",
     get: "Download",
     sha: "SHA-256",
     all: "All checksums (SHA256SUMS)",
@@ -46,13 +52,19 @@ const s = {
   },
   vi: {
     title: `Tải QuickDesk ${v}`,
-    lead: `Cho Linux và Windows x86_64, macOS sắp có · phát hành ${date}. Miễn phí, mã nguồn mở (MIT).`,
+    lead: hasMac
+      ? `Cho Linux và Windows (x86_64) và macOS (Apple Silicon) · phát hành ${date}. Miễn phí, mã nguồn mở (MIT).`
+      : `Cho Linux và Windows x86_64, macOS sắp có · phát hành ${date}. Miễn phí, mã nguồn mở (MIT).`,
     pick: "Hệ điều hành của bạn",
     soon: "sắp có",
     deb: ["Ubuntu, Debian, Linux Mint, Pop!_OS", "Ubuntu 22.04 trở lên, Debian 12 trở lên."],
     rpm: ["Fedora và các distro dùng RPM", "Fedora 36 trở lên, openSUSE Tumbleweed."],
     appimage: ["Mọi distro khác", "Chạy ngay, không cần cài. Cần FUSE 2 (libfuse2)."],
     windows: ["Windows 10 và 11", "64-bit. Chỉ cài cho tài khoản của bạn: không cần quyền quản trị."],
+    macos: ["macOS 11 trở lên", "Apple Silicon (M1 trở lên). Mở file disk image rồi kéo QuickDesk vào Applications."],
+    oneMac: "Chạy trong Terminal. Tải QuickDesk.app, kiểm tra SHA-256, đặt vào Applications rồi mở. Cài theo cách này thì macOS không cảnh báo.",
+    afterMac: "QuickDesk nằm trên menu bar và từ giờ sẽ tự cập nhật. Để tự động dán, hãy cho phép trong Privacy & Security → Accessibility khi macOS hỏi.",
+    gatekeeper: "Nếu tải bằng trình duyệt, macOS sẽ báo không kiểm tra được QuickDesk: app chưa được ký bằng Apple Developer ID. Mở System Settings → Privacy & Security và chọn Open Anyway, hoặc cài bằng lệnh ở trên để khỏi bị cảnh báo.",
     get: "Tải",
     sha: "SHA-256",
     all: "Toàn bộ mã kiểm tra (SHA256SUMS)",
@@ -102,10 +114,25 @@ const linux: Pkg[] = [
 const windows: Pkg[] = f.windows
   ? [{ kind: "windows", label: "Windows", info: s.windows, file: f.windows, steps: [oneWindows] }]
   : [];
+const mac: Pkg[] = f.macos
+  ? [
+      {
+        kind: "macos",
+        label: ".dmg",
+        info: s.macos,
+        file: f.macos,
+        // Downloaded with curl, the image is not quarantined either.
+        steps: [`curl -fLo /tmp/${f.macos.name} ${f.macos.href}`, `open /tmp/${f.macos.name}`],
+      },
+    ]
+  : [];
 const systems = [
   { id: "linux", label: "Linux", one: oneLinux, oneLead: s.oneLinux, script: "/install.sh", pkgs: linux, after: s.afterLinux },
   ...(windows.length
     ? [{ id: "windows", label: "Windows", one: oneWindows, oneLead: s.oneWindows, script: "/install.ps1", pkgs: windows, after: s.afterWindows }]
+    : []),
+  ...(hasMac
+    ? [{ id: "macos", label: "macOS", one: oneLinux, oneLead: s.oneMac, script: "/install.sh", pkgs: mac, after: s.afterMac }]
     : []),
 ];
 ---
@@ -117,7 +144,7 @@ const systems = [
       <p class="lead">{s.lead}</p>
     </header>
 
-    <OsPicker lang={lang} label={s.pick} only={systems.map((o) => o.id as "linux" | "windows")} />
+    <OsPicker lang={lang} label={s.pick} only={systems.map((o) => o.id as "linux" | "windows" | "macos")} />
 
     {
       systems.map((o) => (
@@ -157,6 +184,7 @@ const systems = [
                     {s.sha}: <code>{p.file.sha256}</code>
                   </p>
                   {p.kind === "windows" && <p class="pkg__note">{s.smartscreen}</p>}
+                  {p.kind === "macos" && <p class="pkg__note">{s.gatekeeper}</p>}
                 </div>
               </article>
             ))}
@@ -166,7 +194,7 @@ const systems = [
       ))
     }
 
-    <div data-os-panel="macos" hidden>
+    {!hasMac && <div data-os-panel="macos" hidden>
       <div class="oneline oneline--soon">
         <h2>{s.macTitle}</h2>
         <p class="muted">{s.macLead}</p>
@@ -174,7 +202,7 @@ const systems = [
           <a class="btn--link" href="https://github.com/TankGum/quickdesk/releases">{s.macWatch} <span aria-hidden="true">↗</span></a>
         </p>
       </div>
-    </div>
+    </div>}
 
     <p class="dlpage__after">
       <a class="btn--link" href={release.checksums}>{s.all}</a>

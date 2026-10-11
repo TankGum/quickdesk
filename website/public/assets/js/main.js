@@ -16,7 +16,8 @@
   const KEYS = {
     linux: { super: 'Super', alt: 'Alt', cap: '<i>❖</i>super', altCap: '<i></i>alt' },
     windows: { super: 'Win', alt: 'Alt', cap: `<i>${WIN_LOGO}</i>win`, altCap: '<i></i>alt' },
-    macos: { super: '⌘', alt: '⌥', cap: '<i>⌘</i>cmd', altCap: '<i>⌥</i>option' },
+    // macOS uses Control+Option (⌃⌥): ⌘⌥V and ⌘⌥N belong to Finder.
+    macos: { super: '⌃', alt: '⌥', cap: '<i>⌃</i>control', altCap: '<i>⌥</i>option' },
   };
   // Mark the keys once, by what they say in the page.
   $$('kbd').forEach((k) => {

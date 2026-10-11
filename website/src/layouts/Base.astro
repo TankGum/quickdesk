@@ -2,7 +2,7 @@
 // Shared page shell: head (SEO, hreflang), nav, footer.
 import "../styles/site.css";
 import { OS_ICONS } from "../data/os-icons";
-import { release } from "../data/release";
+import { hasMac, release } from "../data/release";
 import { GITHUB, href, pagePath, ui, type Lang } from "../i18n";
 
 interface Props {
@@ -191,7 +191,7 @@ const ghMark =
                   <li>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d={OS_ICONS[id]} fill="currentColor" /></svg>
                     {{ linux: "Linux", windows: "Windows", macos: "macOS" }[id]}
-                    {id === "macos" && <span class="footer__soon">{s.soon}</span>}
+                    {id === "macos" && !hasMac && <span class="footer__soon">{s.soon}</span>}
                   </li>
                 ))
               }

@@ -182,11 +182,14 @@ const usage: UsageSnapshot = {
   ringShows: { provider: "codex", window: "five_hour" },
   ring: null,
   trayEnabled: true,
+  claudeKeychain: null,
 };
 
 // ---------- Settings ----------
 
-const hotkeys: HotkeyConfig = { notes: "Super+Alt+N", quickNote: "", clipboard: "Super+Alt+V", ports: "Super+Alt+P" };
+// The app's defaults: Control+Option on a Mac (see src-tauri/src/hotkeys.rs).
+const mod = /Macintosh|Mac OS X/.test(navigator.userAgent) ? "Ctrl+Alt" : "Super+Alt";
+const hotkeys: HotkeyConfig = { notes: `${mod}+N`, quickNote: "", clipboard: `${mod}+V`, ports: `${mod}+P` };
 
 // ?sync=off shows the "turn on sync" screen.
 const sync: SyncStatus = {
@@ -463,7 +466,8 @@ const commands: Record<string, (a: Args) => unknown> = {
     clipStatus.pausedUntil = a.paused && a.minutes ? Date.now() + a.minutes * MIN : null;
     changed("clipboard://changed");
   },
-  clip_paste_info: () => ({ method: "auto", effective: "portal", uinputAvailable: true, ruleInstalled: false, canEnable: true, setupCommand: null, native: false }),
+  clip_paste_info: () => ({ method: "auto", effective: "portal", uinputAvailable: true, ruleInstalled: false, canEnable: true, setupCommand: null, native: /Windows|Macintosh|Mac OS X/.test(navigator.userAgent), needsPermission: false }),
+  clip_accessibility_request: () => true,
   clipboard_write: () => undefined,
 
   ports_scan: () => ports.filter((p) => p.pid === null || !dead.has(p.pid)),
@@ -537,6 +541,9 @@ const commands: Record<string, (a: Args) => unknown> = {
   runtimes_project_set: (a) => `${a.dir}/${runtimes.find((r) => r.id === a.lang)?.projectFile}`,
 
   ai_usage_get: () => usage,
+  ai_set_claude_keychain: (a) => {
+    usage.claudeKeychain = a.on;
+  },
   ai_usage_refresh: () => ({ ...usage, updatedAt: Date.now() }),
   ai_set_tray: (a) => {
     usage.trayEnabled = a.enabled;

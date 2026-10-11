@@ -7,6 +7,7 @@ import { useClipboard } from "../modules/clipboard/useClipboard";
 import { Hints } from "../shared/Hints";
 import { useI18n } from "../shared/i18n";
 import { api, ClipKind, errorMessage, hideWindow, useShown } from "../shared/ipc";
+import { isMac } from "../shared/platform";
 import { relativeTime } from "../shared/time";
 
 const POPUP_LIMIT = 50;
@@ -49,9 +50,14 @@ export function ClipPopup() {
         await hideWindow();
       }
     } catch (e) {
-      const pasteFailed = typeof e === "object" && e !== null && (e as { code?: string }).code === "paste_failed";
+      const code = typeof e === "object" && e !== null ? (e as { code?: string }).code : undefined;
+      const pasteFailed = code === "paste_failed" || code === "accessibility_needed";
       setError(
-        pasteFailed ? t("clip.pasteFailed", { error: errorMessage(e) }) : errorMessage(e),
+        code === "accessibility_needed"
+          ? t("clip.needAccessibility")
+          : pasteFailed
+            ? t(isMac ? "clip.pasteFailedMac" : "clip.pasteFailed", { error: errorMessage(e) })
+            : errorMessage(e),
       );
       if (pasteFailed) void api.show("clipboard");
     }

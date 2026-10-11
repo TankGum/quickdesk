@@ -3,6 +3,8 @@
 pub mod accel;
 pub mod clipboard;
 pub mod gnome;
+#[cfg(target_os = "macos")]
+pub mod macos;
 pub mod paste;
 pub mod session;
 #[cfg(target_os = "linux")]

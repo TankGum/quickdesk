@@ -140,8 +140,10 @@ export interface PasteInfo {
   ruleInstalled: boolean;
   canEnable: boolean;
   setupCommand: string | null;
-  /** Windows: pasted with the system's own key input; nothing to set up. */
+  /** Windows, macOS: pasted with the system's own key input; no method to pick. */
   native: boolean;
+  /** macOS: the Accessibility permission is still missing. */
+  needsPermission: boolean;
 }
 
 export interface UsageWindow {
@@ -176,6 +178,8 @@ export interface UsageSnapshot {
   /** The user's choice; null = automatic. */
   ring: RingChoice | null;
   trayEnabled: boolean;
+  /** macOS, Claude Code's login is in the Keychain: may QuickDesk read it? null: not asked here. */
+  claudeKeychain: boolean | null;
 }
 
 /** One language on this computer (crates/qd-runtimes). */
@@ -338,6 +342,8 @@ export const api = {
   clipSetPasteMethod: (method: PasteMethod) => invoke<void>("clip_set_paste_method", { method }),
   clipUinputEnable: () => invoke<void>("clip_uinput_enable"),
   clipUinputDisable: () => invoke<void>("clip_uinput_disable"),
+  /** macOS: ask for Accessibility; whether it is granted now. */
+  clipAccessibilityRequest: () => invoke<boolean>("clip_accessibility_request"),
   autostartGet: () => invoke<boolean>("app_autostart_get"),
   autostartSet: (enabled: boolean) => invoke<boolean>("app_autostart_set", { enabled }),
   onboarding: () => invoke<{ done: boolean; offerUinput: boolean }>("app_onboarding"),
@@ -359,6 +365,7 @@ export const api = {
   aiUsageRefresh: () => invoke<UsageSnapshot>("ai_usage_refresh"),
   aiSetTray: (enabled: boolean) => invoke<void>("ai_set_tray", { enabled }),
   aiSetRing: (choice: RingChoice | null) => invoke<void>("ai_set_ring", { choice }),
+  aiSetClaudeKeychain: (on: boolean) => invoke<void>("ai_set_claude_keychain", { on }),
   focusReport: (report: FocusReport) => invoke<void>("diag_focus_report", { report }),
   focusStats: () => invoke<FocusStats>("diag_focus_stats"),
   updateStatus: () => invoke<UpdateInfo>("update_status"),

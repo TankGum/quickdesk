@@ -19,6 +19,8 @@ use crate::state::AppState;
 const TRAY_ID: &str = "ai-usage";
 const SETTING_TRAY: &str = "ai.tray";
 const SETTING_RING: &str = "ai.ring";
+/// macOS: the user allowed reading Claude Code's login from the Keychain.
+const SETTING_CLAUDE_KEYCHAIN: &str = "ai.claudeKeychain";
 
 /// Which limit the top-bar ring shows.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -102,6 +104,9 @@ pub struct UsageSnapshot {
     /// The user's choice; `None` = automatic.
     pub ring: Option<RingChoice>,
     pub tray_enabled: bool,
+    /// macOS, Claude Code's login is in the Keychain: whether QuickDesk may
+    /// read it. `None` where that question does not come up.
+    pub claude_keychain: Option<bool>,
 }
 
 pub struct AiUsageService {
@@ -114,8 +119,14 @@ impl AiUsageService {
     pub fn new(conn: &rusqlite::Connection) -> Self {
         let tray_enabled = qd_core::settings::get(conn, SETTING_TRAY).ok().flatten().unwrap_or(true);
         let ring = qd_core::settings::get(conn, SETTING_RING).ok().flatten();
+        let keychain: bool = qd_core::settings::get(conn, SETTING_CLAUDE_KEYCHAIN).ok().flatten().unwrap_or(false);
         AiUsageService {
-            snapshot: Mutex::new(UsageSnapshot { tray_enabled, ring, ..Default::default() }),
+            snapshot: Mutex::new(UsageSnapshot {
+                tray_enabled,
+                ring,
+                claude_keychain: (keychain || qd_ai_usage::claude_keychain_possible()).then_some(keychain),
+                ..Default::default()
+            }),
             tx: Mutex::new(None),
             live: Mutex::new(LiveSchedule::default()),
         }
@@ -137,7 +148,8 @@ pub fn refresh(app: &AppHandle, manual: bool) {
     let state = app.state::<AppState>();
     let now = Instant::now();
     let live = state.ai.live.lock().unwrap_or_else(|e| e.into_inner()).due(manual, now);
-    let fresh = qd_ai_usage::collect(live);
+    let keychain = state.ai.snapshot().claude_keychain == Some(true);
+    let fresh = qd_ai_usage::collect(live, keychain);
     if live {
         let limited = fresh.iter().any(|p| p.error.as_deref() == Some("rate_limited"));
         state.ai.live.lock().unwrap_or_else(|e| e.into_inner()).record(limited, now);
@@ -145,13 +157,15 @@ pub fn refresh(app: &AppHandle, manual: bool) {
             tracing::warn!("usage endpoint rate limited; backing off");
         }
     }
-    let skipped = if live { Vec::new() } else { qd_ai_usage::live_providers() };
+    let skipped = if live { Vec::new() } else { qd_ai_usage::live_providers(keychain) };
     let snap = {
         let mut s = state.ai.snapshot.lock().unwrap_or_else(|e| e.into_inner());
         let providers = qd_ai_usage::merge(&s.providers, fresh, &skipped);
         (s.headline, s.ring_shows) = pick(&providers, s.ring.as_ref());
         s.providers = providers;
         s.updated_at = Some(now_ms() as i64);
+        // The question only shows where it applies (or once answered yes).
+        s.claude_keychain = (keychain || qd_ai_usage::claude_keychain_possible()).then_some(keychain);
         s.clone()
     };
     tracing::debug!(headline = ?snap.headline, tools = snap.providers.len(), "ai usage refreshed");
@@ -190,6 +204,23 @@ pub fn set_tray_enabled(app: &AppHandle, enabled: bool) -> qd_core::Result<()> {
     };
     update_tray(app, &snap);
     let _ = app.emit("ai://usage", snap);
+    Ok(())
+}
+
+/// macOS: allow (or stop) reading Claude Code's login from the Keychain,
+/// then refresh with the network so the numbers show up right away.
+pub fn set_claude_keychain(app: &AppHandle, on: bool) -> qd_core::Result<()> {
+    let state = app.state::<AppState>();
+    qd_core::settings::set(&*state.db.conn()?, SETTING_CLAUDE_KEYCHAIN, &on)?;
+    {
+        let mut s = state.ai.snapshot.lock().unwrap_or_else(|e| e.into_inner());
+        s.claude_keychain = Some(on);
+        if !on {
+            s.providers.retain(|p| p.provider != "claude");
+        }
+    }
+    tracing::info!(on, "Claude login from the Keychain");
+    state.ai.refresh_soon();
     Ok(())
 }
 

@@ -1,7 +1,5 @@
-//! Portable fallback for Windows / macOS: poll the clipboard text.
-//! (Images and files are only captured by the Linux watcher so far.)
-//! TODO: native listeners (AddClipboardFormatListener, NSPasteboard
-//! changeCount) and their "concealed" markers for password managers.
+//! Portable fallback for systems without a native watcher: poll the
+//! clipboard text (images and files need a native one).
 
 use std::sync::{Arc, Mutex};
 use std::thread;

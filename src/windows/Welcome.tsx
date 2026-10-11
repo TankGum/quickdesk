@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { lang, setLanguage, useI18n } from "../shared/i18n";
 import { markSeen } from "../modules/update/WhatsNew";
 import { api, errorMessage, HotkeyConfig } from "../shared/ipc";
-import { keyLabel } from "../shared/platform";
+import { isMac, keyLabel } from "../shared/platform";
 
 /** First-run screen: shows the hotkeys and offers the one-time instant-paste opt-in. */
 export function Welcome({ onDone }: { onDone: () => void }) {
@@ -64,7 +64,7 @@ export function Welcome({ onDone }: { onDone: () => void }) {
         ))}
       </div>
       <h1>{t("welcome.title")}</h1>
-      <p className="muted">{t("welcome.intro")}</p>
+      <p className="muted">{t(isMac ? "welcome.intro.mac" : "welcome.intro")}</p>
       {hotkeys && (
         <dl className="welcome-keys">
           <dt><kbd>{keyLabel(hotkeys.notes)}</kbd></dt>

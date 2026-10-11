@@ -5,6 +5,11 @@
 //! token: refreshing it would rotate the refresh token behind Claude Code's
 //! back, so an expired login is reported instead ("open Claude Code").
 //! The endpoint is not a public API and may change; parsing is lenient.
+//!
+//! On macOS Claude Code keeps the login in the Keychain instead of a file.
+//! QuickDesk reads it there only after the user turned that on (macOS then
+//! asks once), and like the file it is never stored or sent anywhere but
+//! api.anthropic.com.
 
 use std::path::PathBuf;
 use std::time::Duration;
@@ -15,17 +20,46 @@ use crate::{now_ms, parse_rfc3339_ms, ProviderUsage, UsageWindow};
 
 const USAGE_URL: &str = "https://api.anthropic.com/api/oauth/usage";
 
+/// The Keychain item Claude Code saves its login in (macOS).
+#[cfg(target_os = "macos")]
+const KEYCHAIN_SERVICE: &str = "Claude Code-credentials";
+
+/// Where the login is read from.
+enum Login {
+    File(PathBuf),
+    #[cfg(target_os = "macos")]
+    Keychain,
+}
+
 pub struct Claude {
-    credentials: PathBuf,
+    login: Login,
+}
+
+fn config_dir() -> Option<PathBuf> {
+    std::env::var_os("CLAUDE_CONFIG_DIR").map(PathBuf::from).or_else(|| crate::home().map(|h| h.join(".claude")))
 }
 
 impl Claude {
-    pub fn detect() -> Option<Self> {
-        let dir = std::env::var_os("CLAUDE_CONFIG_DIR")
-            .map(PathBuf::from)
-            .or_else(|| crate::home().map(|h| h.join(".claude")))?;
-        let credentials = dir.join(".credentials.json");
-        credentials.exists().then_some(Claude { credentials })
+    /// `keychain`: the user allowed reading the login from the Keychain.
+    pub fn detect(keychain: bool) -> Option<Self> {
+        let credentials = config_dir()?.join(".credentials.json");
+        if credentials.exists() {
+            return Some(Claude { login: Login::File(credentials) });
+        }
+        #[cfg(target_os = "macos")]
+        if keychain && keychain_possible() {
+            return Some(Claude { login: Login::Keychain });
+        }
+        let _ = keychain;
+        None
+    }
+
+    fn read_login(&self) -> Result<String, String> {
+        match &self.login {
+            Login::File(path) => std::fs::read_to_string(path).map_err(|e| format!("cannot read Claude login: {e}")),
+            #[cfg(target_os = "macos")]
+            Login::Keychain => read_keychain(),
+        }
     }
 
     pub fn fetch(&self) -> ProviderUsage {
@@ -38,7 +72,7 @@ impl Claude {
     }
 
     fn fetch_inner(&self, usage: &mut ProviderUsage) -> Result<(), String> {
-        let raw = std::fs::read_to_string(&self.credentials).map_err(|e| format!("cannot read Claude login: {e}"))?;
+        let raw = self.read_login()?;
         let cred: Value = serde_json::from_str(&raw).map_err(|_| "Claude login file is not valid JSON".to_owned())?;
         let oauth = cred.get("claudeAiOauth").ok_or("not logged in to Claude Code with a subscription")?;
         usage.plan = oauth.get("subscriptionType").and_then(Value::as_str).map(capitalize);
@@ -61,6 +95,36 @@ impl Claude {
         };
         usage.windows = parse(&body);
         Ok(())
+    }
+}
+
+/// macOS: Claude Code is set up here but its login is in the Keychain, so
+/// reading it needs the user's go-ahead (the AI tab asks).
+pub fn keychain_possible() -> bool {
+    cfg!(target_os = "macos") && config_dir().is_some_and(|d| d.is_dir() && !d.join(".credentials.json").exists())
+}
+
+/// The login JSON Claude Code saved in the Keychain. macOS asks the user the
+/// first time (Always Allow keeps it quiet afterwards).
+#[cfg(target_os = "macos")]
+fn read_keychain() -> Result<String, String> {
+    use security_framework::item::{ItemClass, ItemSearchOptions, SearchResult};
+    let found = ItemSearchOptions::new()
+        .class(ItemClass::generic_password())
+        .service(KEYCHAIN_SERVICE)
+        .load_data(true)
+        .limit(1)
+        .search()
+        .map_err(|e| {
+            if e.code() == -25300 {
+                "not logged in to Claude Code".to_owned()
+            } else {
+                format!("Keychain: {e}")
+            }
+        })?;
+    match found.into_iter().next() {
+        Some(SearchResult::Data(bytes)) => String::from_utf8(bytes).map_err(|_| "Claude login is not text".to_owned()),
+        _ => Err("not logged in to Claude Code".into()),
     }
 }
 

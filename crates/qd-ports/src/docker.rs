@@ -40,11 +40,23 @@ struct ApiPort {
     proto: String,
 }
 
+/// `DOCKER_HOST`, else the first socket that exists: the system one, then
+/// where Docker Desktop (macOS), OrbStack, Colima and rootless Docker put theirs.
 fn socket_path() -> PathBuf {
-    std::env::var("DOCKER_HOST")
-        .ok()
-        .and_then(|h| h.strip_prefix("unix://").map(PathBuf::from))
-        .unwrap_or_else(|| PathBuf::from("/var/run/docker.sock"))
+    if let Some(p) = std::env::var("DOCKER_HOST").ok().and_then(|h| h.strip_prefix("unix://").map(PathBuf::from)) {
+        return p;
+    }
+    let system = PathBuf::from("/var/run/docker.sock");
+    let home = std::env::var_os("HOME").map(PathBuf::from);
+    let runtime = std::env::var_os("XDG_RUNTIME_DIR").map(PathBuf::from);
+    let candidates = [
+        Some(system.clone()),
+        home.as_ref().map(|h| h.join(".docker/run/docker.sock")),
+        home.as_ref().map(|h| h.join(".orbstack/run/docker.sock")),
+        home.as_ref().map(|h| h.join(".colima/default/docker.sock")),
+        runtime.map(|r| r.join("docker.sock")),
+    ];
+    candidates.into_iter().flatten().find(|p| p.exists()).unwrap_or(system)
 }
 
 /// Minimal HTTP/1.0 request (no chunked encoding to deal with).

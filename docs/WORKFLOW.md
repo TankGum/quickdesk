@@ -13,7 +13,8 @@ GitHub (TankGum/quickdesk)
  ├─ push to main ──────────► Cloudflare Pages builds website/ → https://quickdesk.click
  └─ push a tag vX.Y.Z ─────► Release (.github/workflows/release.yml):
                                1. checks tag = version and release notes exist
-                               2. builds + signs .deb / .rpm / .AppImage
+                               2. builds + signs .deb / .rpm / .AppImage, the Windows installer
+                                  and the macOS app (all three must build)
                                3. scripts/publish_r2.py → R2 bucket → https://dl.quickdesk.click
                                   (packages, .sig, SHA256SUMS, latest.json, update.json)
                                4. GitHub Release with the notes and packages
@@ -53,8 +54,19 @@ works for crates without C code; for the whole app use Zig as the cross compiler
 `cargo zigbuild --workspace --target x86_64-pc-windows-gnu` (`cargo install cargo-zigbuild`,
 plus `zig` on PATH, e.g. `pip install ziglang`). Windows-only code lives behind `cfg(windows)`:
 the clipboard watcher (`crates/qd-platform/src/clipboard/windows.rs`), SendInput paste
-(`paste.rs`), the NSIS config (`src-tauri/tauri.windows.conf.json`). The Runtimes tab is
-hidden on Windows (`src/windows/Main.tsx`).
+(`paste.rs`), the NSIS config (`src-tauri/tauri.windows.conf.json`), the user PATH fix
+(`crates/qd-runtimes/src/winpath.rs`).
+
+**macOS.** CI runs clippy and the tests on `macos-14` (Apple Silicon). To try a Mac build, run
+**Actions → macOS preview → Run workflow**: the artifact has `QuickDesk-macos.zip` (the .app)
+and a `.dmg`, signed ad hoc (`xattr -dr com.apple.quarantine QuickDesk.app` after a browser
+download). Locally, clippy for `aarch64-apple-darwin` works through zig like for Windows
+(`rustup target add aarch64-apple-darwin`; `CC_aarch64_apple_darwin` = cargo-zigbuild's
+`zigcc-aarch64-apple-darwin-*.sh` wrapper; no linking). macOS-only code lives behind
+`cfg(target_os = "macos")`: the NSPasteboard watcher (`clipboard/macos.rs`), ⌘V paste and the
+Accessibility permission (`paste.rs`, `qd-platform/src/macos.rs`), menu bar app and Spaces
+(`src-tauri/src/macos.rs`), Claude's login from the Keychain (`qd-ai-usage/src/claude.rs`), the
+bundle config (`src-tauri/tauri.macos.conf.json`). Default shortcuts there are ⌃⌥N / V / P.
 
 While working, also:
 

@@ -2,7 +2,7 @@
 // and the home page's questions and answers. Built from the same strings the
 // pages show, so the two never disagree.
 import { home } from "./home";
-import { release } from "./release";
+import { hasMac, release } from "./release";
 import { GITHUB, href, type Lang } from "../i18n";
 
 const SITE = "https://quickdesk.click";
@@ -25,7 +25,7 @@ export function softwareApp(lang: Lang) {
         ? "Tiện ích desktop miễn phí, mã nguồn mở: ghi chú mã hoá đầu-cuối có đồng bộ, lịch sử clipboard, trình quản lý cổng, version ngôn ngữ lập trình và hạn mức AI, gọi ra bằng một phím tắt."
         : "A free, open-source desktop helper: end-to-end encrypted synced notes, clipboard history, a port manager, programming language versions and AI usage limits, each one shortcut away.",
     applicationCategory: "UtilitiesApplication",
-    operatingSystem: "Linux, Windows 10, Windows 11",
+    operatingSystem: hasMac ? "Linux, Windows 10, Windows 11, macOS 11 or later (Apple Silicon)" : "Linux, Windows 10, Windows 11",
     softwareVersion: release.version,
     dateModified: release.date,
     url: `${SITE}${href(lang, "/")}`,
@@ -42,16 +42,16 @@ export function softwareApp(lang: Lang) {
 /** The FAQ on the home page (questions t81, t83 … t99; answers the key after). */
 export function faqPage(lang: Lang) {
   const pairs: [keyof typeof home, keyof typeof home][] = [
-    ["t81", "t82"],
+    ["t81", hasMac ? "t82-mac" : "t82"],
     ["t83", "t84"],
-    ["t85", "t86"],
+    ["t85", hasMac ? "t86-mac" : "t86"],
     ["t87", "t88"],
     ["t89", "t90"],
     ["t91", "t92"],
-    ["t93", "t94"],
+    ["t93", hasMac ? "t94-mac" : "t94"],
     ["t95", "t96"],
     ["t97", "t98"],
-    ["t99", "t100"],
+    ["t99", hasMac ? "t100-mac" : "t100"],
   ];
   return {
     "@context": "https://schema.org",

@@ -1,7 +1,7 @@
 ---
 // Home page: short call to action; the full download page is /download.
 import { href, type Lang } from "../i18n";
-import type { Release } from "../data/release";
+import { hasMac, type Release } from "../data/release";
 
 interface Props {
   lang: Lang;
@@ -11,13 +11,13 @@ const { lang, release } = Astro.props;
 const s = {
   en: {
     title: "Ready when you are.",
-    lead: `QuickDesk ${release.version} for Linux and Windows, macOS coming soon · released ${release.date}. Free and open source.`,
+    lead: `QuickDesk ${release.version} for Linux, Windows${hasMac ? " and macOS" : ", macOS coming soon"} · released ${release.date}. Free and open source.`,
     download: "Download",
     changes: "What’s new",
   },
   vi: {
     title: "Sẵn sàng khi bạn cần.",
-    lead: `QuickDesk ${release.version} cho Linux và Windows, macOS sắp có · phát hành ${release.date}. Miễn phí và mã nguồn mở.`,
+    lead: `QuickDesk ${release.version} cho Linux, Windows${hasMac ? " và macOS" : ", macOS sắp có"} · phát hành ${release.date}. Miễn phí và mã nguồn mở.`,
     download: "Tải về",
     changes: "Có gì mới",
   },

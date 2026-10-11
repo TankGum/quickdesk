@@ -1,8 +1,9 @@
 # Releasing QuickDesk
 
 Notes sync through QuickDesk Cloud (`sync-server/`, a Worker on
-`sync.quickdesk.click`). Linux packages (`.deb`, `.rpm`, `.AppImage`) and the Windows installer
-(NSIS `.exe`) are built by GitHub Actions and published to a Cloudflare R2 bucket served at
+`sync.quickdesk.click`). Linux packages (`.deb`, `.rpm`, `.AppImage`), the Windows installer
+(NSIS `.exe`) and the macOS app (Apple Silicon `.dmg` and `.app.tar.gz`) are built by GitHub
+Actions and published to a Cloudflare R2 bucket served at
 `https://dl.quickdesk.click`.
 The website `https://quickdesk.click` (`website/`) is a separate Astro site on
 Cloudflare Pages that reads the newest release from the bucket's `latest.json`.
@@ -62,8 +63,8 @@ npx tauri signer generate -w ~/.tauri/quickdesk.key   # asks for a password
 
 The Release workflow builds with `createUpdaterArtifacts`, so each package gets
 a `.sig`, and `scripts/publish_r2.py` writes `update.json` with one entry per
-package type (`linux-x86_64-deb`, `-rpm`, `-appimage`): each install updates
-with the same kind of package it came from. A .deb or .rpm is installed with
+package type (`linux-x86_64-deb`, `-rpm`, `-appimage`, `windows-x86_64-nsis`,
+`darwin-aarch64-app`): each install updates with the same kind of package it came from. A .deb or .rpm is installed with
 `pkexec dpkg -i` / `rpm -U`, which asks for the administrator password; the
 app then restarts. The endpoint is `plugins.updater.endpoints`; keep the old
 URL listed there if the bucket ever moves to a custom domain.
@@ -138,13 +139,16 @@ Run it locally (Node 22): `npm run build:demo && cd website && npm install && np
    newer, an existing tag, or missing release notes (`-- --dry-run` checks only).
 3. Wait for the **Release** workflow (about 15 minutes).
 4. The workflow checks the tag matches the version and that release notes exist, builds the Linux
-   packages on Ubuntu 22.04 (they then also install on newer distributions) and the Windows
-   installer on `windows-latest`, and once **both** built, uploads:
+   packages on Ubuntu 22.04 (they then also install on newer distributions), the Windows
+   installer on `windows-latest` and the macOS app on `macos-14` (Apple Silicon, signed ad hoc),
+   and once **all three** built, uploads:
    ```
    releases/<version>/QuickDesk_<version>_amd64.deb
    releases/<version>/QuickDesk-<version>-1.x86_64.rpm
    releases/<version>/QuickDesk_<version>_amd64.AppImage
    releases/<version>/QuickDesk_<version>_x64-setup.exe   Windows (also its update package)
+   releases/<version>/QuickDesk_<version>_aarch64.dmg     macOS disk image (website download)
+   releases/<version>/QuickDesk_<version>_aarch64.app.tar.gz  macOS update package; install.sh uses it
    releases/<version>/SHA256SUMS
    releases/<version>/*.sig      updater signatures
    latest.json                   read by the website
@@ -160,5 +164,8 @@ Testing the upload without R2: run any S3-compatible server locally and set
 
 - Code signing for Windows: the installer is unsigned, so SmartScreen warns ("More info → Run
   anyway"). The updater's own signatures still protect updates.
-- The Runtimes tab on Windows (hidden there for now).
-- macOS builds.
+- Code signing for macOS: the app is signed ad hoc (no Apple Developer ID), so a .dmg downloaded
+  in a browser needs "Open Anyway" (install.sh avoids it: curl does not quarantine), and macOS
+  may ask for Accessibility and the Keychain again after each update. With a Developer ID,
+  set `bundle.macOS.signingIdentity` and notarize in the macos job.
+- Intel Macs: only `aarch64-apple-darwin` is built.

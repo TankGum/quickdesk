@@ -333,9 +333,9 @@ try {
         .env("QD_MISE_DIR", dir.display().to_string())
 }
 
-/// Download the latest mise for this CPU from its GitHub releases, check it
-/// against the release's SHA256SUMS and put it in `dir`. Fixed script; `dir`
-/// goes in as `$1`.
+/// Download the latest mise for this system and CPU (Linux or macOS) from its
+/// GitHub releases, check it against the release's SHA256SUMS and put it in
+/// `dir`. Fixed script; `dir` goes in as `$1`.
 pub fn installer(dir: &Path) -> Cmd {
     const SCRIPT: &str = r#"set -eu
 case "$(uname -m)" in
@@ -343,17 +343,22 @@ case "$(uname -m)" in
   aarch64|arm64) arch=arm64 ;;
   *) echo "mise has no build for $(uname -m)" >&2; exit 1 ;;
 esac
+case "$(uname -s)" in
+  Darwin) os=macos ;;
+  *) os=linux ;;
+esac
 tag=$(curl -fsSLo /dev/null -w '%{url_effective}' https://github.com/jdx/mise/releases/latest)
 v=${tag##*/}
 case "$v" in v[0-9]*) ;; *) echo "could not find the latest mise release" >&2; exit 1 ;; esac
-name="mise-$v-linux-$arch"
+name="mise-$v-$os-$arch"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 echo "Downloading $name"
 curl -fL --progress-bar -o "$tmp/mise" "https://github.com/jdx/mise/releases/download/$v/$name"
 curl -fsSL -o "$tmp/SHASUMS256.txt" "https://github.com/jdx/mise/releases/download/$v/SHASUMS256.txt"
 want=$(awk -v n="./$name" '$2 == n { print $1 }' "$tmp/SHASUMS256.txt")
-got=$(sha256sum "$tmp/mise" | cut -d ' ' -f 1)
+# macOS has shasum, not sha256sum.
+if command -v sha256sum >/dev/null 2>&1; then got=$(sha256sum "$tmp/mise" | cut -d ' ' -f 1); else got=$(shasum -a 256 "$tmp/mise" | cut -d ' ' -f 1); fi
 if [ -z "$want" ] || [ "$want" != "$got" ]; then echo "checksum does not match for $name" >&2; exit 1; fi
 mkdir -p "$1"
 install -m 0755 "$tmp/mise" "$1/mise"

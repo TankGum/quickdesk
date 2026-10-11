@@ -88,9 +88,11 @@ pub(crate) fn now_ms() -> i64 {
 /// `live` allows network requests (Claude). Vendors rate-limit their usage
 /// endpoints, so callers pass `false` most of the time; live providers are
 /// then omitted and the caller keeps showing their previous result.
-pub fn collect(live: bool) -> Vec<ProviderUsage> {
+/// `claude_keychain`: the user allowed reading Claude Code's login from the
+/// macOS Keychain.
+pub fn collect(live: bool, claude_keychain: bool) -> Vec<ProviderUsage> {
     let mut out = Vec::new();
-    if let Some(p) = claude::Claude::detect() {
+    if let Some(p) = claude::Claude::detect(claude_keychain) {
         if live {
             out.push(p.fetch());
         }
@@ -107,8 +109,13 @@ pub fn collect(live: bool) -> Vec<ProviderUsage> {
 /// The 5-hour usage to show in the top bar: the most used one across tools.
 /// Names of live providers present on this machine (to know which ones
 /// `collect(false)` left out).
-pub fn live_providers() -> Vec<&'static str> {
-    claude::Claude::detect().map(|_| vec!["claude"]).unwrap_or_default()
+pub fn live_providers(claude_keychain: bool) -> Vec<&'static str> {
+    claude::Claude::detect(claude_keychain).map(|_| vec!["claude"]).unwrap_or_default()
+}
+
+/// macOS: Claude Code is here, with its login in the Keychain (ask first).
+pub fn claude_keychain_possible() -> bool {
+    claude::keychain_possible()
 }
 
 /// Merge a fresh result with the previous one: keep the last good numbers

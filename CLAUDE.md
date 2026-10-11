@@ -20,9 +20,10 @@ Rules that are easy to break:
   `api.anthropic.com`; never print, store or refresh it.
 - Sync goes through QuickDesk Cloud (`sync-server/`, `crates/qd-sync/src/cloud.rs`); notes stay
   end-to-end encrypted on the client. Deploying the Worker affects every installed app.
-- QuickDesk ships for Linux and Windows. Platform code sits behind `cfg(target_os = "linux")` /
-  `cfg(windows)`; the UI checks `isWindows` (`src/shared/platform.ts`). Releases build both, and
-  publish only when both built.
+- QuickDesk ships for Linux, Windows and macOS (Apple Silicon). Platform code sits behind
+  `cfg(target_os = "linux")` / `cfg(windows)` / `cfg(target_os = "macos")`; the UI checks
+  `isWindows` / `isMac` (`src/shared/platform.ts`). Releases build all three, and publish only when
+  all three built. The website shows macOS only once `latest.json` has a Mac build (`hasMac`).
 - Never read `~/.tauri/quickdesk.key` (the updater's private signing key); the `.pub` file is fine.
 - Release notes go in both `CHANGELOG.md` and `CHANGELOG.vi.md` (a `## Unreleased` section is fine until the
   version is known; the release script dates it); then `npm run release <version>`.

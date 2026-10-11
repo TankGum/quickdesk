@@ -1,14 +1,17 @@
 // /docs content. Each section is HTML in both languages; keep facts in step
 // with the app (defaults, limits, paths) when they change.
 import type { Lang } from "../i18n";
+import { hasMac } from "./release";
 
 export interface Section {
   id: string;
   title: Record<Lang, string>;
   html: Record<Lang, string>;
+  /** Shown once a release has a Mac build. */
+  mac?: true;
 }
 
-export const sections: Section[] = [
+const all: Section[] = [
   {
     id: "install",
     title: { en: "Install", vi: "Cài đặt" },
@@ -35,6 +38,35 @@ export const sections: Section[] = [
 <p>QuickDesk cần máy x86_64 đời vài năm gần đây (glibc 2.34 trở lên). Chạy tốt nhất trên GNOME, cả Wayland lẫn X11.</p>
 <p><strong>Windows 10 và 11 (64-bit):</strong> trong PowerShell, chạy <code>irm https://quickdesk.click/install.ps1 | iex</code>, hoặc tải bộ cài ở <a href="/download">trang tải về</a>. Bộ cài chỉ cài cho tài khoản của bạn, không cần quyền quản trị. Bộ cài chưa được ký số nên Windows có thể báo đã chặn để bảo vệ máy: chọn <em>More info → Run anyway</em>. Trên Windows, phím tắt là <kbd>Win</kbd> <kbd>Alt</kbd> <kbd>N</kbd> / <kbd>V</kbd> / <kbd>P</kbd>, QuickDesk nằm ở khay hệ thống, và tự động dán không cần cài đặt gì. Tab Runtime trên Windows làm việc qua mise, rustup và uv (xem mục <em>Version ngôn ngữ lập trình</em>).</p>
 <p>Lần mở đầu tiên, màn hình chào hiện danh sách phím tắt và hai lựa chọn: <strong>tự chạy khi đăng nhập</strong> (cần để lịch sử clipboard và vòng tròn AI luôn hoạt động) và <strong>dán tức thì</strong> (xem <a href="#auto-paste">Tự động dán</a>). Sau đó QuickDesk nằm trên thanh trên cùng.</p>`,
+    },
+  },
+  {
+    id: "macos",
+    mac: true,
+    title: { en: "macOS", vi: "macOS" },
+    html: {
+      en: `<p>QuickDesk runs on macOS 11 or later on Apple Silicon (M1 and newer). In Terminal, run <code>curl -fsSL https://quickdesk.click/install.sh | bash</code>: it puts QuickDesk.app in Applications and opens it. Or download the <code>.dmg</code> from the <a href="/download#macos">download page</a> and drag QuickDesk to Applications. The app is not signed with an Apple Developer ID yet, so when it was downloaded in a browser macOS says it cannot check it: open System Settings → Privacy & Security and choose <em>Open Anyway</em> (installed with the command, there is no warning).</p>
+<ul>
+<li>QuickDesk lives in the menu bar, with no Dock icon. Its popups open on the Space you are on, also over an app in full screen.</li>
+<li>The shortcuts are <kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>N</kbd> / <kbd>V</kbd> / <kbd>P</kbd> (Control + Option): ⌘⌥V and ⌘⌥N belong to Finder.</li>
+<li><strong>Auto-paste</strong> presses ⌘V in the app you were using, which macOS allows only after you add QuickDesk under System Settings → Privacy & Security → <strong>Accessibility</strong>. macOS asks the first time you pick an entry; until then the entry is copied and you press ⌘V. Settings → Auto-paste shows whether it is allowed.</li>
+<li>Newer macOS versions may ask whether QuickDesk may read what other apps copy. Choose Allow, or clipboard history stays empty.</li>
+<li><strong>Claude usage:</strong> Claude Code keeps its login in the Keychain on a Mac. The AI tab offers to read it there; macOS then asks once (choose <em>Always Allow</em>). Like on the other systems the login is only read and only sent to <code>api.anthropic.com</code>.</li>
+<li>Because the app is signed ad hoc, macOS may ask for Accessibility and the Keychain again after an update. If auto-paste stops working, remove QuickDesk from the Accessibility list and add it again.</li>
+<li>The Runtimes tab works as on Linux, with your login shell (zsh: <code>~/.zshrc</code>). Copies installed with Homebrew are shown but not changed.</li>
+</ul>
+<p><strong>Uninstall:</strong> quit QuickDesk from the menu bar and move it from Applications to the Trash. Your data stays in <code>~/Library/Application Support/click.quickdesk</code> until you delete that folder.</p>`,
+      vi: `<p>QuickDesk chạy trên macOS 11 trở lên với Apple Silicon (M1 trở lên). Trong Terminal, chạy <code>curl -fsSL https://quickdesk.click/install.sh | bash</code>: lệnh này đặt QuickDesk.app vào Applications rồi mở nó. Hoặc tải file <code>.dmg</code> ở <a href="/vi/download#macos">trang tải về</a> rồi kéo QuickDesk vào Applications. App chưa được ký bằng Apple Developer ID nên nếu tải bằng trình duyệt, macOS sẽ báo không kiểm tra được: mở System Settings → Privacy & Security và chọn <em>Open Anyway</em> (cài bằng lệnh thì không bị cảnh báo).</p>
+<ul>
+<li>QuickDesk nằm trên menu bar, không có icon trên Dock. Popup mở ngay trên Space bạn đang dùng, kể cả khi đang có app toàn màn hình.</li>
+<li>Phím tắt là <kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>N</kbd> / <kbd>V</kbd> / <kbd>P</kbd> (Control + Option): ⌘⌥V và ⌘⌥N là phím của Finder.</li>
+<li><strong>Tự động dán</strong> bấm ⌘V trong app bạn đang dùng, và macOS chỉ cho phép sau khi bạn thêm QuickDesk vào System Settings → Privacy & Security → <strong>Accessibility</strong>. macOS hỏi ở lần đầu bạn chọn một mục; trước đó mục được copy và bạn bấm ⌘V. Cài đặt → Tự động dán cho biết đã được cho phép chưa.</li>
+<li>Các bản macOS mới có thể hỏi QuickDesk có được đọc những gì app khác copy không. Hãy chọn Allow, nếu không lịch sử clipboard sẽ trống.</li>
+<li><strong>Usage Claude:</strong> trên Mac, Claude Code giữ phiên đăng nhập trong Keychain. Tab AI đề nghị đọc nó ở đó; macOS sẽ hỏi một lần (chọn <em>Always Allow</em>). Giống các hệ điều hành khác, phiên đăng nhập chỉ được đọc và chỉ gửi tới <code>api.anthropic.com</code>.</li>
+<li>Vì app được ký ad-hoc, sau khi cập nhật macOS có thể hỏi lại quyền Accessibility và Keychain. Nếu tự động dán ngừng chạy, hãy xoá QuickDesk khỏi danh sách Accessibility rồi thêm lại.</li>
+<li>Tab Runtime chạy giống trên Linux, với shell đăng nhập của bạn (zsh: <code>~/.zshrc</code>). Bản cài bằng Homebrew chỉ được hiển thị, không bị đổi.</li>
+</ul>
+<p><strong>Gỡ cài đặt:</strong> thoát QuickDesk từ menu bar rồi kéo nó từ Applications vào Thùng rác. Dữ liệu vẫn nằm trong <code>~/Library/Application Support/click.quickdesk</code> cho tới khi bạn xoá thư mục đó.</p>`,
     },
   },
   {
@@ -288,3 +320,5 @@ export const sections: Section[] = [
     },
   },
 ];
+
+export const sections: Section[] = all.filter((s) => !s.mac || hasMac);

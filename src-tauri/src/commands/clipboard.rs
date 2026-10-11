@@ -76,6 +76,13 @@ pub async fn clip_paste(app: AppHandle, id: i64) -> CmdResult<()> {
     if let Some(w) = app.get_webview_window(crate::windows::CLIP_POPUP) {
         let _ = w.hide();
     }
+    // macOS drops our ⌘V without the Accessibility permission: it is copied,
+    // and macOS's own dialog asks for the permission.
+    #[cfg(target_os = "macos")]
+    if !qd_platform::macos::accessibility_trusted() {
+        qd_platform::macos::request_accessibility();
+        return Err(CmdError::new("accessibility_needed", "allow QuickDesk under Accessibility to paste"));
+    }
     // Give the compositor time to hand focus back to the previous window.
     tokio::time::sleep(Duration::from_millis(120)).await;
     crate::clipboard::paste_into_focused(&app, chord).await.map_err(|e| {
@@ -133,8 +140,10 @@ pub struct PasteInfo {
     can_enable: bool,
     /// Manual fallback that grants /dev/uinput (Linux).
     setup_command: Option<&'static str>,
-    /// Windows: pasted with the system's own key input; nothing to set up.
+    /// Windows, macOS: pasted with the system's own key input; no method to pick.
     native: bool,
+    /// macOS: the Accessibility permission is still missing.
+    needs_permission: bool,
 }
 
 #[tauri::command]
@@ -154,8 +163,31 @@ pub fn clip_paste_info(state: State<'_, AppState>) -> PasteInfo {
         rule_installed: installed,
         can_enable,
         setup_command: setup,
-        native: cfg!(windows),
+        native: cfg!(any(windows, target_os = "macos")),
+        #[cfg(target_os = "macos")]
+        needs_permission: !qd_platform::macos::accessibility_trusted(),
+        #[cfg(not(target_os = "macos"))]
+        needs_permission: false,
     }
+}
+
+/// macOS: ask for the Accessibility permission (macOS shows its dialog) and
+/// open its page in System Settings when it is still missing. Whether it is
+/// granted now.
+#[tauri::command]
+pub fn clip_accessibility_request() -> CmdResult<bool> {
+    #[cfg(target_os = "macos")]
+    {
+        let trusted = qd_platform::macos::request_accessibility();
+        if !trusted {
+            if let Err(e) = qd_platform::macos::open_accessibility_settings() {
+                tracing::warn!(error = %e, "could not open System Settings");
+            }
+        }
+        Ok(trusted)
+    }
+    #[cfg(not(target_os = "macos"))]
+    Err(CmdError::new("unsupported", "only needed on macOS"))
 }
 
 /// Install the uinput rule behind the desktop's password dialog.

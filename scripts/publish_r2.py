@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish the built Linux and Windows packages to the download host
+"""Publish the built Linux, Windows and macOS packages to the download host
 (Cloudflare R2, served at https://dl.quickdesk.click).
 
 Bucket layout:
@@ -8,6 +8,9 @@ Bucket layout:
     releases/<version>/QuickDesk-<version>-1.x86_64.rpm   (+ .sig)
     releases/<version>/QuickDesk_<version>_amd64.AppImage (+ .sig)
     releases/<version>/QuickDesk_<version>_x64-setup.exe  (+ .sig, Windows)
+    releases/<version>/QuickDesk_<version>_aarch64.dmg    (macOS, Apple Silicon)
+    releases/<version>/QuickDesk_<version>_aarch64.app.tar.gz (+ .sig, macOS
+                           update package; install.sh unpacks it too)
     releases/<version>/SHA256SUMS
     latest.json            the newest version, its files and release notes (read by the website)
     update.json            signed manifest the app's updater reads (tauri-plugin-updater)
@@ -41,6 +44,8 @@ CONTENT_TYPES = {
     ".rpm": "application/x-rpm",
     ".AppImage": "application/octet-stream",
     ".exe": "application/vnd.microsoft.portable-executable",
+    ".dmg": "application/x-apple-diskimage",
+    ".gz": "application/gzip",
     ".json": "application/json",
     ".sig": "text/plain; charset=utf-8",
     "": "text/plain; charset=utf-8",
@@ -76,6 +81,7 @@ def updater_manifest(version: str, published: str, public: str, files: dict, sig
         "rpm": ["linux-x86_64-rpm"],
         "appimage": ["linux-x86_64-appimage"],
         "windows": ["windows-x86_64-nsis", "windows-x86_64"],
+        "macos_app": ["darwin-aarch64-app", "darwin-aarch64"],
     }
     n = notes(version)
     return {
@@ -86,6 +92,7 @@ def updater_manifest(version: str, published: str, public: str, files: dict, sig
         "platforms": {
             key: {"signature": sigs[kind].read_text().strip(), "url": f"{public}/{f['url']}"}
             for kind, f in files.items()
+            if kind in platform
             for key in platform[kind]
         },
     }
@@ -98,14 +105,23 @@ def main() -> None:
         "rpm": BUNDLE / "rpm" / f"QuickDesk-{version}-1.x86_64.rpm",
         "appimage": BUNDLE / "appimage" / f"QuickDesk_{version}_amd64.AppImage",
         "windows": BUNDLE / "nsis" / f"QuickDesk_{version}_x64-setup.exe",
+        # macOS: the disk image to download, and the app archive the updater
+        # (and install.sh) use. Tauri names the archive without a version.
+        "macos": BUNDLE / "dmg" / f"QuickDesk_{version}_aarch64.dmg",
+        "macos_app": BUNDLE / "macos" / "QuickDesk.app.tar.gz",
     }
+    # Published under a name that says what it is, like the others.
+    names = {kind: path.name for kind, path in expected.items()}
+    names["macos_app"] = f"QuickDesk_{version}_aarch64.app.tar.gz"
+    # Only packages the updater installs carry a signature (not the .dmg).
+    signed = [kind for kind in expected if kind != "macos"]
     if not all(notes(version).values()):
         sys.exit(f"no release notes for {version}: add a '## {version}' section to CHANGELOG.md and CHANGELOG.vi.md")
     missing = [str(p) for p in expected.values() if not p.is_file()]
     if missing:
         sys.exit("build output not found:\n  " + "\n  ".join(missing))
     # Updater signatures sit next to each package.
-    sigs = {kind: path.with_name(path.name + ".sig") for kind, path in expected.items()}
+    sigs = {kind: expected[kind].with_name(expected[kind].name + ".sig") for kind in signed}
     unsigned = [str(p) for p in sigs.values() if not p.is_file()]
     if unsigned:
         sys.exit("updater signatures not found (build with TAURI_SIGNING_PRIVATE_KEY and createUpdaterArtifacts):\n  " + "\n  ".join(unsigned))
@@ -113,7 +129,7 @@ def main() -> None:
 
     prefix = f"releases/{version}"
     files = {
-        kind: {"name": path.name, "url": f"{prefix}/{path.name}", "sha256": sha256(path), "size": path.stat().st_size}
+        kind: {"name": names[kind], "url": f"{prefix}/{names[kind]}", "sha256": sha256(path), "size": path.stat().st_size}
         for kind, path in expected.items()
     }
     published = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
@@ -148,7 +164,8 @@ def main() -> None:
     immutable = "public, max-age=31536000, immutable"
     for kind, path in expected.items():
         upload(path, files[kind]["url"], immutable)
-        upload(sigs[kind], files[kind]["url"] + ".sig", immutable)
+        if kind in sigs:
+            upload(sigs[kind], files[kind]["url"] + ".sig", immutable)
     upload(sums, f"{prefix}/SHA256SUMS", immutable)
 
     # Pointers to "the newest" must not be cached for long.
@@ -157,7 +174,7 @@ def main() -> None:
     latest.write_text(json.dumps({"version": version, "publishedAt": published, "notes": notes(version), "files": files}, indent=2) + "\n")
     upload(latest, "latest.json", fresh)
 
-    # The app picks `<os>-x86_64-<bundle type>`, so each install updates with
+    # The app picks `<os>-<arch>-<bundle type>`, so each install updates with
     # the same kind of package it was installed from.
     update = out / "update.json"
     update.write_text(json.dumps(updater_manifest(version, published, public, files, sigs), indent=2) + "\n")

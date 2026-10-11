@@ -8,6 +8,15 @@ Each release is a `## <version> — <date>` section with up to three groups:
 a version that has no section here, and shows the section in the app, on the
 download page and on GitHub Releases.
 
+## Unreleased
+
+### New
+- QuickDesk for macOS (Apple Silicon, macOS 11 or later): notes with sync, clipboard history with text, images and files, auto-paste with ⌘V into the app you were using, ports, language versions and AI usage, from the menu bar. The shortcuts are ⌃⌥N / V / P. Install it from Terminal with `curl -fsSL https://quickdesk.click/install.sh | bash` or as a .dmg from the download page; it updates itself like on the other systems.
+- On a Mac, the AI tab can show your Claude limits too: Claude Code keeps its login in the Keychain there, and QuickDesk reads it only after you allow it.
+
+### Fixed
+- The install script says which package a release is missing instead of stopping without a word.
+
 ## 0.5.0 — 2026-10-11
 
 ### New
