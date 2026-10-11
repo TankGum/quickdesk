@@ -199,6 +199,15 @@ pub(crate) trait Manager {
     fn free_input(&self) -> bool {
         false
     }
+    /// Managers that update a toolchain where it is (rustup channels): what
+    /// is newer, asked of the manager. `None`: compare version lists instead.
+    fn channel_updates(&self, _run: &dyn Runner) -> Option<Result<Vec<Update>>> {
+        None
+    }
+    /// The command that updates `id` in place, for those managers.
+    fn update_in_place(&self, _id: &str) -> Option<Cmd> {
+        None
+    }
 }
 
 struct Lang {
@@ -377,8 +386,15 @@ impl System {
         out
     }
 
+    /// Updates found by the manager itself (rustup channels), or `None`
+    /// when this language compares version lists ([`System::updates`]).
+    pub fn channel_updates(&self, lang: &str, run: &dyn Runner) -> Option<Result<Vec<Update>>> {
+        self.manager(lang).ok()?.channel_updates(run)
+    }
+
     /// Install `to`; when `from` is the default, make `to` the default. The
-    /// old version stays installed.
+    /// old version stays installed. `from == to`: update that toolchain in
+    /// place (rustup channels).
     pub fn upgrade_commands(&self, lang: &str, from: &str, to: &str) -> Result<Vec<Cmd>> {
         validate_version(from)?;
         validate_version(to)?;
@@ -386,6 +402,12 @@ impl System {
         let installed = m.installed();
         if !installed.iter().any(|i| i.id == from) {
             return Err(Error::Invalid(format!("{from} is not installed")));
+        }
+        if from == to {
+            return m
+                .update_in_place(from)
+                .map(|c| vec![c])
+                .ok_or_else(|| Error::Unsupported(format!("{} cannot update {from} in place", m.id())));
         }
         let was_default = m.default_id(&installed).as_deref() == Some(from);
         Ok(match (was_default, m.id()) {

@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use qd_runtimes::{Action, Available, Runtime, System, SystemRunner};
+use qd_runtimes::{Action, Available, Runtime, System, SystemRunner, Update};
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager};
 
@@ -33,7 +33,8 @@ pub struct JobState {
     pub error: Option<String>,
     pub cancelled: bool,
     pub started_at: i64,
-    /// `upgrade`: the version being replaced (it stays installed).
+    /// `upgrade`: the version being replaced (it stays installed). The same
+    /// as `version` when a toolchain is updated in place (rustup).
     pub from: Option<String>,
 }
 
@@ -50,6 +51,8 @@ pub struct AvailableList {
 pub struct RuntimesService {
     system: Mutex<Option<(Instant, Arc<System>)>>,
     available: Mutex<HashMap<String, (Instant, AvailableList)>>,
+    /// What managers that update in place (rustup) said is newer.
+    channel_updates: Mutex<HashMap<String, (Instant, Vec<Update>)>>,
     job: Mutex<Option<JobState>>,
     runner: Arc<SystemRunner>,
 }
@@ -104,6 +107,31 @@ impl RuntimesService {
                 Some((_, list)) => Ok(AvailableList { stale: true, ..list }),
                 None => Err(e),
             },
+        }
+    }
+
+    /// Updates the manager finds itself (rustup channels), cached like the
+    /// version lists; `None` when `lang` compares version lists instead.
+    pub fn channel_updates(&self, lang: &str) -> Option<Vec<Update>> {
+        if let Some((at, ups)) = self.channel_updates.lock().unwrap_or_else(|e| e.into_inner()).get(lang) {
+            if at.elapsed() < AVAILABLE_TTL {
+                return Some(ups.clone());
+            }
+        }
+        let runner = SystemRunner::with_timeout(Duration::from_secs(60));
+        match self.system(false).channel_updates(lang, &runner)? {
+            Ok(ups) => {
+                self.channel_updates
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner())
+                    .insert(lang.to_owned(), (Instant::now(), ups.clone()));
+                Some(ups)
+            }
+            // Offline: no badges this time.
+            Err(e) => {
+                tracing::debug!(%lang, error = %e, "could not check for updates");
+                Some(Vec::new())
+            }
         }
     }
 
@@ -221,6 +249,7 @@ fn run_job(
             // What changed is visible right away in the tab.
             state.runtimes.rescan();
             state.runtimes.available.lock().unwrap_or_else(|e| e.into_inner()).clear();
+            state.runtimes.channel_updates.lock().unwrap_or_else(|e| e.into_inner()).clear();
             let snapshot = {
                 let mut job = state.runtimes.job.lock().unwrap_or_else(|e| e.into_inner());
                 let Some(j) = job.as_mut() else { return };

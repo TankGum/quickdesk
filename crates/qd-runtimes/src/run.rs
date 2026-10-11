@@ -241,6 +241,7 @@ mod tests {
         assert_eq!(percent("  12.3 MiB /  70.1 MiB ( 18 %)"), Some(18.0));
         assert_eq!(percent("Downloading https://nodejs.org/dist/v22"), None);
         assert_eq!(percent("100%"), Some(100.0));
+        assert_eq!(percent("Downloading mise-v2026.10.7-windows-x64.zip: 45%"), Some(45.0));
         assert_eq!(percent("250%"), None);
     }
 

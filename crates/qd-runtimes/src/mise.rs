@@ -268,29 +268,63 @@ pub fn install_dir(probe: &Probe) -> PathBuf {
     }
 }
 
-/// Windows: the same as [`installer`], in PowerShell. The folder comes in
-/// through `QD_MISE_DIR`, never spliced into the script.
+/// Windows: the same as [`installer`], in PowerShell. Takes the release's
+/// zip (a third of the bare .exe) and keeps the `mise-shim.exe` next to
+/// `mise.exe` that mise's Windows shims use. Prints `…: NN%` while
+/// downloading (Invoke-WebRequest in Windows PowerShell shows none and is
+/// slow). The folder comes in through `QD_MISE_DIR`, never spliced into the
+/// script.
 pub fn installer_windows(dir: &Path) -> Cmd {
     const SCRIPT: &str = r#"$ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+function Say([string]$line) { [Console]::Out.WriteLine($line); [Console]::Out.Flush() }
+function Get-File([string]$url, [string]$out, [string]$label) {
+  $req = [Net.HttpWebRequest]::Create($url)
+  $req.UserAgent = 'QuickDesk'
+  $res = $req.GetResponse()
+  try {
+    $total = $res.ContentLength
+    $in = $res.GetResponseStream()
+    $file = [IO.File]::Create($out)
+    try {
+      $buf = New-Object byte[] 1048576
+      $done = 0
+      $shown = -1
+      while (($n = $in.Read($buf, 0, $buf.Length)) -gt 0) {
+        $file.Write($buf, 0, $n)
+        $done += $n
+        if ($label -and $total -gt 0) {
+          $p = [math]::Floor($done * 100 / $total)
+          if ($p -ne $shown) { $shown = $p; Say "${label}: $p%" }
+        }
+      }
+    } finally { $file.Dispose(); $in.Dispose() }
+  } finally { $res.Dispose() }
+}
 $dir = $env:QD_MISE_DIR
 $arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'arm64' } else { 'x64' }
 $release = Invoke-RestMethod 'https://api.github.com/repos/jdx/mise/releases/latest' -Headers @{ 'User-Agent' = 'QuickDesk' }
 $v = $release.tag_name
 if ($v -notmatch '^v[0-9]') { throw 'could not find the latest mise release' }
-$name = "mise-$v-windows-$arch.exe"
+$name = "mise-$v-windows-$arch.zip"
+$base = "https://github.com/jdx/mise/releases/download/$v"
 $tmp = Join-Path ([IO.Path]::GetTempPath()) ("quickdesk-mise-" + [guid]::NewGuid())
 New-Item -ItemType Directory -Force -Path $tmp | Out-Null
 try {
-  Write-Output "Downloading $name"
-  Invoke-WebRequest "https://github.com/jdx/mise/releases/download/$v/$name" -OutFile "$tmp\mise.exe" -UseBasicParsing
-  Invoke-WebRequest "https://github.com/jdx/mise/releases/download/$v/SHASUMS256.txt" -OutFile "$tmp\SHASUMS256.txt" -UseBasicParsing
-  $want = Get-Content "$tmp\SHASUMS256.txt" | Where-Object { $_ -match ('\s\./' + [regex]::Escape($name) + '$') } | ForEach-Object { ($_ -split '\s+')[0] } | Select-Object -First 1
-  $got = (Get-FileHash "$tmp\mise.exe" -Algorithm SHA256).Hash.ToLowerInvariant()
+  Get-File "$base/SHASUMS256.txt" "$tmp\SHASUMS256.txt" ''
+  Get-File "$base/$name" "$tmp\mise.zip" "Downloading $name"
+  Say 'Checking the SHA-256 sum'
+  $want = Get-Content "$tmp\SHASUMS256.txt" | Where-Object { $_ -match ('\s(\./)?' + [regex]::Escape($name) + '$') } | ForEach-Object { ($_ -split '\s+')[0] } | Select-Object -First 1
+  $got = (Get-FileHash "$tmp\mise.zip" -Algorithm SHA256).Hash.ToLowerInvariant()
   if (-not $want -or $want -ne $got) { throw "checksum does not match for $name" }
+  Say 'Unpacking'
+  Add-Type -AssemblyName System.IO.Compression.FileSystem
+  [IO.Compression.ZipFile]::ExtractToDirectory("$tmp\mise.zip", "$tmp\x")
+  if (-not (Test-Path "$tmp\x\mise\bin\mise.exe")) { throw "$name has no mise\bin\mise.exe" }
   New-Item -ItemType Directory -Force -Path $dir | Out-Null
-  Move-Item -Force "$tmp\mise.exe" (Join-Path $dir 'mise.exe')
-  Write-Output "Installed mise $v in $dir"
+  Get-ChildItem "$tmp\x\mise\bin" -Filter '*.exe' | ForEach-Object { Move-Item -Force $_.FullName (Join-Path $dir $_.Name) }
+  Say "Installed mise $v in $dir"
 } finally {
   Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
 }

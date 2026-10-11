@@ -320,6 +320,8 @@ const available: Record<string, { id: string; version: string; tag: string | nul
   })),
 };
 let job: RuntimeJob | null = null;
+/** rustup has a newer stable until it is updated. */
+let rustStable = { now: "1.92.0", next: "1.93.0" as string | null };
 let autoApplyOn = false;
 
 /** Pretend the manager ran: progress for a couple of seconds, then the new state. */
@@ -341,6 +343,11 @@ function runJob(lang: string, action: RuntimeAction, version: string, from: stri
       for (const r of runtimes.filter((r) => r.installManager === "mise")) {
         Object.assign(r, { manager: "mise", managerVersion: "2026.10.6", installManager: null, projectFile: "mise.toml" });
       }
+      runtimes = [...runtimes];
+    } else if (rt && action === "upgrade" && from === version) {
+      // rustup update: the channel stays, its release moves on.
+      if (rustStable.next) rustStable = { now: rustStable.next, next: null };
+      if (rt.active) rt.active = { ...rt.active, version: rustStable.now };
       runtimes = [...runtimes];
     } else if (rt) {
       if ((action === "install" || action === "upgrade") && !rt.installed.some((i) => i.id === version)) {
@@ -477,8 +484,11 @@ const commands: Record<string, (a: Args) => unknown> = {
   },
   runtimes_run: (a) => runJob(a.lang, a.action, a.version),
   runtimes_upgrade: (a) => runJob(a.lang, "upgrade", a.to, a.from),
-  runtimes_updates: () =>
-    runtimes.flatMap((rt) =>
+  runtimes_updates: () => [
+    ...(rustStable.next
+      ? [{ lang: "rust", from: "stable-x86_64-unknown-linux-gnu", fromVersion: rustStable.now, to: "stable-x86_64-unknown-linux-gnu", toVersion: rustStable.next }]
+      : []),
+    ...runtimes.flatMap((rt) =>
       rt.installed.flatMap((i) => {
         const line = rt.id === "node" ? i.version.split(".")[0] : i.version.split(".").slice(0, 2).join(".");
         const newer = (available[rt.id] ?? []).find(
@@ -490,6 +500,7 @@ const commands: Record<string, (a: Args) => unknown> = {
           : [];
       }),
     ),
+  ],
   runtimes_cancel: () => {
     if (job?.running) {
       job = { ...job, running: false, cancelled: true };

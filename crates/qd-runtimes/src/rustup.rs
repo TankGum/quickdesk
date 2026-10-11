@@ -4,7 +4,7 @@
 use std::path::{Path, PathBuf};
 
 use crate::run::{Cmd, Runner};
-use crate::{dir_size, home_relative, Action, Available, Installed, Manager, Probe, Result};
+use crate::{dir_size, home_relative, Action, Available, Installed, Manager, Probe, Result, Update};
 
 pub struct Rustup {
     bin: PathBuf,
@@ -44,6 +44,37 @@ fn short_name(toolchain: &str) -> &str {
         }
     }
     toolchain
+}
+
+/// `rustup check`: `stable-x86_64-unknown-linux-gnu - update available: 1.98.0 (abc 2026-08-01) -> 1.99.0 (def 2026-09-28)`
+/// (rustup before 1.29 capitalises it: `Update available : …`).
+fn parse_check(output: &str, installed: &[Installed]) -> Vec<Update> {
+    // `1.99.0 (def 2026-09-28)` → `1.99.0`, and its date for nightlies, whose version can stay the same.
+    let parts = |s: &str| {
+        let s = s.trim();
+        let version = s.split_whitespace().next().unwrap_or("").to_owned();
+        let date = s.trim_end_matches(')').rsplit(' ').next().unwrap_or("").to_owned();
+        (version, date)
+    };
+    output
+        .lines()
+        .filter_map(|line| {
+            let (name, rest) = line.split_once(" - ")?;
+            let rest = rest.trim();
+            if !rest.to_lowercase().starts_with("update available") {
+                return None;
+            }
+            let i = installed.iter().find(|i| i.id == name.trim())?;
+            let (from, to) = rest.split_once(':')?.1.split_once("->")?;
+            let ((fv, fd), (tv, td)) = (parts(from), parts(to));
+            if tv.is_empty() {
+                return None;
+            }
+            let (from_version, to_version) =
+                if fv == tv { (format!("{fv} {fd}"), format!("{tv} {td}")) } else { (fv, tv) };
+            Some(Update { from: i.id.clone(), from_version, to: i.id.clone(), to_version })
+        })
+        .collect()
 }
 
 impl Manager for Rustup {
@@ -142,6 +173,29 @@ impl Manager for Rustup {
     fn free_input(&self) -> bool {
         true
     }
+
+    fn channel_updates(&self, run: &dyn Runner) -> Option<Result<Vec<Update>>> {
+        let mut cmd = Cmd::new(&self.bin, &["check"]);
+        cmd.env = self.env.clone();
+        // Newer rustup exits with 100 when there are updates: keep the lines either way.
+        let mut out = String::new();
+        let result = run.run(&cmd, &mut |l| {
+            out.push_str(l);
+            out.push('\n');
+        });
+        let installed = self.installed();
+        let found = parse_check(&out, &installed);
+        Some(match result {
+            Err(e) if found.is_empty() && !out.contains(" - ") => Err(e),
+            _ => Ok(found),
+        })
+    }
+
+    fn update_in_place(&self, id: &str) -> Option<Cmd> {
+        let mut cmd = Cmd::new(&self.bin, &["update", "--no-self-update", id]);
+        cmd.env = self.env.clone();
+        Some(cmd)
+    }
 }
 
 #[cfg(test)]
@@ -177,5 +231,36 @@ mod tests {
         );
         assert_eq!(r.init_lines(), [". \"$HOME/.cargo/env\""]);
         assert!(r.manages(&t.path().join(".cargo/bin/rustc").display().to_string()));
+    }
+
+    #[test]
+    fn reads_rustup_check() {
+        let inst = |id: &str| Installed {
+            id: id.into(),
+            version: short_name(id).into(),
+            path: String::new(),
+            bytes: 0,
+            is_default: false,
+        };
+        let installed = [
+            inst("stable-x86_64-unknown-linux-gnu"),
+            inst("nightly-x86_64-unknown-linux-gnu"),
+            inst("1.82.0-x86_64-unknown-linux-gnu"),
+        ];
+        let out = "stable-x86_64-unknown-linux-gnu - update available: 1.98.0 (aaa 2026-08-01) -> 1.99.0 (bbb 2026-09-28)\n\
+                   nightly-x86_64-unknown-linux-gnu - Update available : 1.100.0-nightly (ccc 2026-10-01) -> 1.100.0-nightly (ddd 2026-10-10)\n\
+                   1.82.0-x86_64-unknown-linux-gnu - up to date: 1.82.0 (eee 2024-10-15)\n\
+                   rustup - update available : 1.29.1 -> 1.30.0\n";
+        let ups = parse_check(out, &installed);
+        assert_eq!(ups.len(), 2, "{ups:?}");
+        assert_eq!(
+            (ups[0].from.as_str(), ups[0].to.as_str()),
+            ("stable-x86_64-unknown-linux-gnu", "stable-x86_64-unknown-linux-gnu")
+        );
+        assert_eq!((ups[0].from_version.as_str(), ups[0].to_version.as_str()), ("1.98.0", "1.99.0"));
+        assert_eq!(ups[1].to_version, "1.100.0-nightly 2026-10-10");
+        assert!(
+            parse_check("stable-x86_64-unknown-linux-gnu - up to date: 1.99.0 (b 2026-09-28)\n", &installed).is_empty()
+        );
     }
 }

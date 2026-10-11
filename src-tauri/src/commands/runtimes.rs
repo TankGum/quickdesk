@@ -38,8 +38,9 @@ pub struct LangUpdate {
     update: qd_runtimes::Update,
 }
 
-/// Newer patch releases for what is installed. Asks each manager for its
-/// list (cached for an hour); a manager that cannot answer is skipped.
+/// Newer patch releases for what is installed, and newer releases of rustup
+/// channels. Asks each manager (cached for an hour); a manager that cannot
+/// answer is skipped.
 #[tauri::command]
 pub async fn runtimes_updates(app: AppHandle) -> CmdResult<Vec<LangUpdate>> {
     blocking(move || {
@@ -47,7 +48,15 @@ pub async fn runtimes_updates(app: AppHandle) -> CmdResult<Vec<LangUpdate>> {
         let sys = svc.system(false);
         let mut out = Vec::new();
         for rt in sys.runtimes() {
-            if rt.manager.is_none() || rt.installed.is_empty() || rt.free_input {
+            if rt.manager.is_none() || rt.installed.is_empty() {
+                continue;
+            }
+            // rustup says itself which channels have a newer release.
+            if let Some(ups) = svc.channel_updates(&rt.id) {
+                out.extend(ups.into_iter().map(|update| LangUpdate { lang: rt.id.clone(), update }));
+                continue;
+            }
+            if rt.free_input {
                 continue;
             }
             let Ok(list) = svc.available(&rt.id) else { continue };

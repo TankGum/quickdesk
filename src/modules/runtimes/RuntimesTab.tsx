@@ -308,7 +308,11 @@ function VersionRow({
         <button
           className="btn rt-update"
           disabled={busy}
-          title={t(v.isDefault ? "rt.update.titleDefault" : "rt.update.title", { version: update.toVersion })}
+          title={
+            update.from === update.to
+              ? t("rt.update.titleInPlace", { channel: v.version, version: update.toVersion })
+              : t(v.isDefault ? "rt.update.titleDefault" : "rt.update.title", { version: update.toVersion })
+          }
           onClick={() => onUpgrade(update)}
         >
           ↑ {update.toVersion}
@@ -353,12 +357,14 @@ function JobLine({ rt, job, autoApply, onDismiss }: { rt: Runtime; job: RuntimeJ
   const shown = rt.installed.find((i) => i.id === job.version)?.version ?? job.version.replace(/^v/, "");
   const label = { name: rt.name, version: shown };
   const manager = job.action === "install_manager";
+  // rustup update: the same toolchain, a newer release.
+  const inPlace = job.action === "upgrade" && job.from === job.version;
   const from = job.from ? (rt.installed.find((i) => i.id === job.from)?.version ?? job.from.replace(/^v/, "")) : "";
   if (job.running) {
     return (
       <div className="rt-job">
         <div className="rt-job-head">
-          <span>{t(`rt.job.${job.action}` as const, label)}</span>
+          <span>{t(inPlace ? "rt.job.update" : (`rt.job.${job.action}` as const), label)}</span>
           {job.percent !== null && <span className="muted">{Math.round(job.percent)}%</span>}
           <span className="spacer" />
           <button className="btn" onClick={() => void api.runtimesCancel()}>
@@ -383,6 +389,8 @@ function JobLine({ rt, job, autoApply, onDismiss }: { rt: Runtime; job: RuntimeJ
           t("rt.job.cancelled")
         ) : manager ? (
           t("rt.job.doneManager", label)
+        ) : inPlace ? (
+          t("rt.job.doneUpdate", label)
         ) : job.action === "upgrade" ? (
           t("rt.job.doneUpgrade", { ...label, from })
         ) : (
