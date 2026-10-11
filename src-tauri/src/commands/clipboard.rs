@@ -79,9 +79,12 @@ pub async fn clip_paste(app: AppHandle, id: i64) -> CmdResult<()> {
     // macOS drops our ⌘V without the Accessibility permission: it is copied,
     // and macOS's own dialog asks for the permission.
     #[cfg(target_os = "macos")]
-    if !qd_platform::macos::accessibility_trusted() {
-        qd_platform::macos::request_accessibility();
-        return Err(CmdError::new("accessibility_needed", "allow QuickDesk under Accessibility to paste"));
+    {
+        crate::macos::give_back_focus(&app);
+        if !qd_platform::macos::accessibility_trusted() {
+            qd_platform::macos::request_accessibility();
+            return Err(CmdError::new("accessibility_needed", "allow QuickDesk under Accessibility to paste"));
+        }
     }
     // Give the compositor time to hand focus back to the previous window.
     tokio::time::sleep(Duration::from_millis(120)).await;

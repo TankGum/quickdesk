@@ -8,6 +8,11 @@ Each release is a `## <version> — <date>` section with up to three groups:
 a version that has no section here, and shows the section in the app, on the
 download page and on GitHub Releases.
 
+## Unreleased
+
+### Fixed
+- macOS: picking an entry in the clipboard popup pastes into the text field you were typing in again. QuickDesk now steps back so macOS returns the focus to that app and field, instead of asking for the app to be activated, which newer macOS versions may only half honour.
+
 ## 0.6.0 — 2026-10-11
 
 ### New

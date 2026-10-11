@@ -370,6 +370,18 @@ mod imp {
         TARGET.store(front_pid(), Ordering::SeqCst);
     }
 
+    /// Whether `pid` is the app in front within `limit`.
+    async fn wait_for_front(pid: i32, limit: Duration) -> bool {
+        let started = Instant::now();
+        while front_pid() != pid {
+            if started.elapsed() >= limit {
+                return false;
+            }
+            tokio::time::sleep(Duration::from_millis(15)).await;
+        }
+        true
+    }
+
     /// Bring the app back to the front; `false` if it quit meanwhile.
     fn activate(pid: i32) -> bool {
         NSRunningApplication::runningApplicationWithProcessIdentifier(pid)
@@ -415,18 +427,23 @@ mod imp {
             if target == 0 || target == std::process::id() as i32 {
                 return Err("no app to paste into".into());
             }
-            if !activate(target) {
-                return Err("the app to paste into is gone".into());
-            }
+            // QuickDesk has stepped back (src-tauri macos::give_back_focus), so
+            // macOS normally brings that app back by itself, with its text
+            // field focused. Ask for it only if it does not come.
             let started = Instant::now();
-            while front_pid() != target && started.elapsed() < Duration::from_millis(600) {
-                tokio::time::sleep(Duration::from_millis(15)).await;
+            let back = wait_for_front(target, Duration::from_millis(400)).await;
+            if !back {
+                tracing::debug!(target, "the app did not come back by itself; activating it");
+                if !activate(target) {
+                    return Err("the app to paste into is gone".into());
+                }
+                if !wait_for_front(target, Duration::from_millis(600)).await {
+                    return Err("could not bring the app back to the front".into());
+                }
             }
-            if front_pid() != target {
-                return Err("could not bring the app back to the front".into());
-            }
-            // Let it give the focus back to its text field first.
-            tokio::time::sleep(Duration::from_millis(60)).await;
+            // Let its window become key and its text field take the focus again.
+            tokio::time::sleep(Duration::from_millis(150)).await;
+            tracing::debug!(target, came_back = back, waited_ms = started.elapsed().as_millis() as u64, "pressing ⌘V");
             press_cmd_v().map(|()| None)
         }
 

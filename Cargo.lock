@@ -3558,6 +3558,7 @@ name = "quickdesk"
 version = "0.6.0"
 dependencies = [
  "keyring",
+ "objc2",
  "objc2-app-kit",
  "qd-ai-usage",
  "qd-clipboard",
