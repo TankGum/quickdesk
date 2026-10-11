@@ -58,9 +58,11 @@ the clipboard watcher (`crates/qd-platform/src/clipboard/windows.rs`), SendInput
 (`crates/qd-runtimes/src/winpath.rs`).
 
 **macOS.** CI runs clippy and the tests on `macos-14` (Apple Silicon). To try a Mac build, run
-**Actions → macOS preview → Run workflow**: the artifact has `QuickDesk-macos.zip` (the .app)
-and a `.dmg`, signed ad hoc (`xattr -dr com.apple.quarantine QuickDesk.app` after a browser
-download). Locally, clippy for `aarch64-apple-darwin` works through zig like for Windows
+**Actions → macOS preview → Run workflow**: the artifact is the `.dmg` itself (uploaded
+unzipped), signed ad hoc and not notarized, so macOS blocks the first launch ("Apple cannot
+check it for malicious software"): after dragging it to Applications, run
+`xattr -dr com.apple.quarantine /Applications/QuickDesk.app`, or System Settings → Privacy &
+Security → Open Anyway. Locally, clippy for `aarch64-apple-darwin` works through zig like for Windows
 (`rustup target add aarch64-apple-darwin`; `CC_aarch64_apple_darwin` = cargo-zigbuild's
 `zigcc-aarch64-apple-darwin-*.sh` wrapper; no linking). macOS-only code lives behind
 `cfg(target_os = "macos")`: the NSPasteboard watcher (`clipboard/macos.rs`), ⌘V paste and the

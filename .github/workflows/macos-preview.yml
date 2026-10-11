@@ -1,9 +1,8 @@
 name: macOS preview
 
 # Run by hand (Actions → macOS preview → Run workflow) to get a Mac build to
-# try, without publishing anything: QuickDesk.app (zipped) and a .dmg for
-# Apple Silicon, signed ad hoc. Attached to the run as the
-# "quickdesk-macos-preview" artifact.
+# try, without publishing anything: a .dmg for Apple Silicon, signed ad hoc.
+# Uploaded as is (not zipped), so the run's artifact downloads as the .dmg.
 on:
   workflow_dispatch:
 
@@ -20,12 +19,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx tauri build --bundles app,dmg
-      # A zip keeps the .app's signature and permissions intact in the artifact.
-      - name: Zip the app
-        run: ditto -c -k --keepParent target/release/bundle/macos/QuickDesk.app target/release/bundle/QuickDesk-macos.zip
-      - uses: actions/upload-artifact@v4
+      - name: Find the dmg
+        id: dmg
+        run: echo "path=$(ls target/release/bundle/dmg/*.dmg | head -n 1)" >> "$GITHUB_OUTPUT"
+      # archive: false uploads the single file as it is; the artifact takes
+      # the file's name (QuickDesk_<version>_aarch64.dmg).
+      - uses: actions/upload-artifact@v7
         with:
-          name: quickdesk-macos-preview
-          path: |
-            target/release/bundle/QuickDesk-macos.zip
-            target/release/bundle/dmg/*.dmg
+          path: ${{ steps.dmg.outputs.path }}
+          archive: false
