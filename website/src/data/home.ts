@@ -9,8 +9,8 @@ export const home = {
     "vi": "Cả bàn làm việc.<br><span class=\"grad\">Chỉ cách một phím tắt.</span>"
   },
   "t7": {
-    "en": "Download for Linux",
-    "vi": "Tải cho Linux"
+    "en": "Download",
+    "vi": "Tải về"
   },
   "t8": {
     "en": "Try the shortcuts <span aria-hidden=\"true\">›</span>",
@@ -145,8 +145,8 @@ export const home = {
     "vi": "Xem lại <span aria-hidden=\"true\">↺</span>"
   },
   "t49": {
-    "en": "<kbd>Top bar</kbd><kbd>◔</kbd>",
-    "vi": "<kbd>Thanh trên cùng</kbd><kbd>◔</kbd>"
+    "en": "<kbd>Tray</kbd><kbd>◔</kbd>",
+    "vi": "<kbd>Khay hệ thống</kbd><kbd>◔</kbd>"
   },
   "t2": {
     "en": "AI usage",
@@ -173,8 +173,8 @@ export const home = {
     "vi": "Biết hạn mức AI.<br>Trước khi chạm trần."
   },
   "t51": {
-    "en": "A small ring in the top bar shows how much of your Claude Code and Codex limits you’ve used, and when they reset — so you’re never cut off in the middle of a task.",
-    "vi": "Một vòng tròn nhỏ trên thanh trên cùng cho biết bạn đã dùng bao nhiêu hạn mức Claude Code và Codex, và khi nào được đặt lại — để không bị cắt ngang giữa chừng."
+    "en": "A small ring in the tray (the top bar on GNOME, the taskbar on Windows) shows how much of your Claude Code and Codex limits you’ve used, and when they reset — so you’re never cut off in the middle of a task.",
+    "vi": "Một vòng tròn nhỏ ở khay hệ thống (thanh trên cùng của GNOME, thanh taskbar của Windows) cho biết bạn đã dùng bao nhiêu hạn mức Claude Code và Codex, và khi nào được đặt lại — để không bị cắt ngang giữa chừng."
   },
   "faq-hi": {
     "en": "Hi! Ask me anything about QuickDesk: pick a question below.",
@@ -201,28 +201,28 @@ export const home = {
     "vi": "Câu hỏi thường gặp"
   },
   "t81": {
-    "en": "Which Linux distributions are supported?",
-    "vi": "Hỗ trợ những bản Linux nào?"
+    "en": "Which systems are supported?",
+    "vi": "Hỗ trợ những hệ điều hành nào?"
   },
   "t82": {
-    "en": "Any x86_64 distro from the last few years: Ubuntu 22.04 and newer, Debian 12, Fedora, Linux Mint and the like. QuickDesk works best on GNOME, where it registers its shortcuts for you. On other desktops, bind <code>quickdesk toggle notes</code>, <code>clipboard</code> or <code>ports</code> to a key in your desktop’s keyboard settings.",
-    "vi": "Mọi distro x86_64 trong vài năm gần đây: Ubuntu 22.04 trở lên, Debian 12, Fedora, Linux Mint… QuickDesk chạy tốt nhất trên GNOME, nơi app tự đăng ký phím tắt. Trên desktop khác, hãy gán <code>quickdesk toggle notes</code>, <code>clipboard</code> hoặc <code>ports</code> vào một phím trong cài đặt bàn phím."
+    "en": "Windows 10 and 11 (64-bit), where the shortcuts and auto-paste work right away, and any x86_64 Linux distro from the last few years: Ubuntu 22.04 and newer, Debian 12, Fedora, Linux Mint and the like. On Linux QuickDesk works best on GNOME, where it registers its shortcuts for you; on other desktops, bind <code>quickdesk toggle notes</code>, <code>clipboard</code> or <code>ports</code> to a key in your desktop’s keyboard settings. A macOS version is planned.",
+    "vi": "Windows 10 và 11 (64-bit), nơi phím tắt và tự động dán chạy ngay, và mọi distro Linux x86_64 trong vài năm gần đây: Ubuntu 22.04 trở lên, Debian 12, Fedora, Linux Mint… Trên Linux, QuickDesk chạy tốt nhất trên GNOME, nơi app tự đăng ký phím tắt; trên desktop khác, hãy gán <code>quickdesk toggle notes</code>, <code>clipboard</code> hoặc <code>ports</code> vào một phím trong cài đặt bàn phím. Bản macOS đang được lên kế hoạch."
   },
   "t83": {
     "en": "Do the shortcuts work on Wayland?",
     "vi": "Phím tắt có chạy trên Wayland không?"
   },
   "t84": {
-    "en": "Yes. QuickDesk adds them to GNOME’s custom keyboard shortcuts, so they work in both X11 and Wayland sessions, and removes them again when it quits.",
-    "vi": "Có. QuickDesk thêm chúng vào phím tắt tuỳ chỉnh của GNOME nên chạy được cả X11 lẫn Wayland, và gỡ đi khi thoát app."
+    "en": "Yes. On GNOME, QuickDesk adds them to the custom keyboard shortcuts, so they work in both X11 and Wayland sessions, and removes them again when it quits. On Windows they are ordinary system-wide shortcuts.",
+    "vi": "Có. Trên GNOME, QuickDesk thêm chúng vào phím tắt tuỳ chỉnh nên chạy được cả X11 lẫn Wayland, và gỡ đi khi thoát app. Trên Windows chúng là phím tắt toàn hệ thống bình thường."
   },
   "t85": {
     "en": "Why Super + Alt and not Super + Shift?",
     "vi": "Sao lại là Super + Alt mà không phải Super + Shift?"
   },
   "t86": {
-    "en": "Vietnamese input methods such as Unikey and Bamboo swallow Super + Shift + letter while you type in a text field; combinations with Alt keep working. You can rebind any shortcut in Settings → Hotkeys, and QuickDesk tells you if one is already taken.",
-    "vi": "Bộ gõ tiếng Việt như Unikey, Bamboo nuốt mất Super + Shift + chữ khi bạn đang gõ trong ô nhập; tổ hợp có Alt thì vẫn chạy. Bạn có thể đổi mọi phím tắt trong Cài đặt → Phím tắt, và QuickDesk sẽ báo nếu phím đã bị dùng."
+    "en": "Super is the Windows key on most keyboards. Vietnamese input methods such as Unikey and Bamboo swallow Super + Shift + letter while you type in a text field; combinations with Alt keep working. You can rebind any shortcut in Settings → Hotkeys, and QuickDesk tells you if one is already taken.",
+    "vi": "Super là phím Windows trên hầu hết bàn phím. Bộ gõ tiếng Việt như Unikey, Bamboo nuốt mất Super + Shift + chữ khi bạn đang gõ trong ô nhập; tổ hợp có Alt thì vẫn chạy. Bạn có thể đổi mọi phím tắt trong Cài đặt → Phím tắt, và QuickDesk sẽ báo nếu phím đã bị dùng."
   },
   "t87": {
     "en": "How do notes sync between machines?",
@@ -253,8 +253,8 @@ export const home = {
     "vi": "Tự động dán hoạt động thế nào?"
   },
   "t94": {
-    "en": "When you pick an entry, QuickDesk switches back to the app you were using and presses Shift + Insert, which also works in terminals. By default it does this through GNOME’s remote-desktop portal, which asks for permission once. You can instead enable instant paste through a virtual keyboard in Settings → Auto-paste (asks for your administrator password once), or turn auto-paste off and just copy.",
-    "vi": "Khi bạn chọn một mục, QuickDesk quay lại app bạn đang dùng và bấm Shift + Insert — cách này chạy được cả trong terminal. Mặc định app làm việc này qua portal remote desktop của GNOME, chỉ hỏi quyền một lần. Bạn cũng có thể bật dán tức thì qua bàn phím ảo trong Cài đặt → Tự động dán (hỏi mật khẩu quản trị một lần), hoặc tắt tự động dán và chỉ copy."
+    "en": "When you pick an entry, QuickDesk switches back to the app you were using and pastes it. On Windows this works right away, with no setup. On Linux it presses Shift + Insert, which also works in terminals, through GNOME’s remote-desktop portal, which asks for permission once; you can instead enable instant paste through a virtual keyboard in Settings → Auto-paste (asks for your administrator password once). Or turn auto-paste off and just copy.",
+    "vi": "Khi bạn chọn một mục, QuickDesk quay lại app bạn đang dùng và dán vào. Trên Windows việc này chạy ngay, không cần cài đặt gì. Trên Linux app bấm Shift + Insert — cách này chạy được cả trong terminal — qua portal remote desktop của GNOME, chỉ hỏi quyền một lần; bạn cũng có thể bật dán tức thì qua bàn phím ảo trong Cài đặt → Tự động dán (hỏi mật khẩu quản trị một lần). Hoặc tắt tự động dán và chỉ copy."
   },
   "t95": {
     "en": "What does the AI usage ring read?",
@@ -277,8 +277,8 @@ export const home = {
     "vi": "Gỡ cài đặt thế nào?"
   },
   "t100": {
-    "en": "Turn off “Start QuickDesk when I log in” in Settings, quit from the tray, then run <code>sudo apt remove quick-desk</code> (Debian/Ubuntu) or <code>sudo dnf remove QuickDesk</code> (Fedora), or just delete the AppImage. Your notes and clipboard history stay in <code>~/.local/share/click.quickdesk</code> until you delete that folder.",
-    "vi": "Tắt “Tự chạy QuickDesk khi đăng nhập” trong Cài đặt, thoát app từ khay hệ thống, rồi chạy <code>sudo apt remove quick-desk</code> (Debian/Ubuntu) hoặc <code>sudo dnf remove QuickDesk</code> (Fedora), hoặc chỉ cần xoá file AppImage. Ghi chú và lịch sử clipboard vẫn nằm trong <code>~/.local/share/click.quickdesk</code> cho tới khi bạn xoá thư mục đó."
+    "en": "Turn off “Start QuickDesk when I log in” in Settings and quit from the tray. On Windows, then open Settings → Apps → Installed apps → QuickDesk → Uninstall; your data stays in <code>%APPDATA%\\click.quickdesk</code>. On Linux, run <code>sudo apt remove quick-desk</code> (Debian/Ubuntu) or <code>sudo dnf remove QuickDesk</code> (Fedora), or just delete the AppImage; your notes and clipboard history stay in <code>~/.local/share/click.quickdesk</code>. Delete that folder to remove them too.",
+    "vi": "Tắt “Tự chạy QuickDesk khi đăng nhập” trong Cài đặt rồi thoát app từ khay hệ thống. Trên Windows, mở Settings → Apps → Installed apps → QuickDesk → Uninstall; dữ liệu vẫn nằm trong <code>%APPDATA%\\click.quickdesk</code>. Trên Linux, chạy <code>sudo apt remove quick-desk</code> (Debian/Ubuntu) hoặc <code>sudo dnf remove QuickDesk</code> (Fedora), hoặc chỉ cần xoá file AppImage; ghi chú và lịch sử clipboard vẫn nằm trong <code>~/.local/share/click.quickdesk</code>. Xoá thư mục đó nếu muốn xoá luôn dữ liệu."
   },
   "hero-new": {
     "en": "New",

@@ -1,0 +1,32 @@
+---
+// Linux / Windows / macOS buttons with their logos. main.js keeps every
+// picker on the page in step and remembers the choice (nothing is guessed
+// from the browser). `only` limits the systems shown; macOS is always last,
+// marked as coming.
+import { OS_ICONS } from "../data/os-icons";
+import type { Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+  label: string;
+  class?: string;
+  only?: ("linux" | "windows")[];
+}
+const { lang, label, class: cls, only = ["linux", "windows"] } = Astro.props;
+const names = { linux: "Linux", windows: "Windows", macos: "macOS" } as const;
+const systems = [...only, "macos" as const];
+const soon = lang === "vi" ? "sắp có" : "soon";
+---
+<div class:list={["ospick", cls]} role="group" aria-label={label}>
+  {
+    systems.map((id) => (
+      <button type="button" data-os-pick={id} aria-pressed={id === "linux" ? "true" : "false"}>
+        <svg class="ospick__logo" viewBox="0 0 24 24" aria-hidden="true">
+          <path d={OS_ICONS[id]} fill="currentColor" />
+        </svg>
+        {names[id]}
+        {id === "macos" && <span class="ospick__soon">{soon}</span>}
+      </button>
+    ))
+  }
+</div>

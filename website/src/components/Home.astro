@@ -2,6 +2,7 @@
 // Home page sections, converted from the original single-file page.
 // Strings live in ../data/home.ts as { en, vi } pairs.
 import DownloadCta from "./DownloadCta.astro";
+import OsPicker from "./OsPicker.astro";
 import { href } from "../i18n";
 import { home } from "../data/home";
 import type { Lang } from "../i18n";
@@ -12,6 +13,11 @@ interface Props {
   release: Release;
 }
 const { lang, release } = Astro.props;
+// The hero's download button (and the demo desktop below) follow the system picked here.
+const dl = {
+  en: { pick: "Your system", linux: "Download for Linux", windows: "Download for Windows", macos: "macOS: coming soon" },
+  vi: { pick: "Hệ điều hành của bạn", linux: "Tải cho Linux", windows: "Tải cho Windows", macos: "macOS: sắp có" },
+}[lang];
 const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", release.version).replaceAll("{{DATE}}", release.date);
 ---
 
@@ -30,9 +36,9 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
     <div class="kb" aria-hidden="true">
       <div class="kb__floor"></div>
       <div class="kb__keys">
-        <span class="kk kk--mod"><span class="kk__cap"><i>❖</i>super</span></span>
+        <span class="kk kk--mod"><span class="kk__cap" data-kb-super><i>❖</i>super</span></span>
         <span class="kk__plus">+</span>
-        <span class="kk kk--mod"><span class="kk__cap"><i>⌥</i>alt</span></span>
+        <span class="kk kk--mod"><span class="kk__cap" data-kb-alt><i></i>alt</span></span>
         <span class="kk__plus">+</span>
         <span class="kk kk--letter"><span class="kk__cap" data-kb-letter>N</span></span>
       </div>
@@ -42,11 +48,21 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
         <span data-kb-mod="ports"><Fragment set:html={t("kb-ports")} /></span>
       </p>
     </div>
-    <div class="hero__cta">
-      <a class="btn btn--primary btn--lg" href={href(lang, "/download")}><Fragment set:html={t("t7")} /></a>
-      <a class="btn btn--link" href="#demo"><Fragment set:html={t("t8")} /></a>
+    <div class="hero__get">
+      <OsPicker lang={lang} label={dl.pick} class="ospick--hero" />
+      <div class="hero__cta">
+        <a
+          class="btn btn--primary btn--lg"
+          href={href(lang, "/download")}
+          data-os-download
+          data-label-linux={dl.linux}
+          data-label-windows={dl.windows}
+          data-label-macos={dl.macos}
+        >{dl.linux}</a>
+        <a class="btn btn--link" href="#demo"><Fragment set:html={t("t8")} /></a>
+      </div>
     </div>
-    <p class="hero__meta"><Fragment set:html={t("t4")} /> · Ubuntu · Debian · Fedora</p>
+    <p class="hero__meta"><Fragment set:html={t("t4")} /> · v{release.version}</p>
   </section>
 
   <!-- ============ INTERACTIVE DEMO ============ -->
@@ -64,7 +80,7 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
         <span class="desktop__activities"><Fragment set:html={t("t14")} /></span>
         <span class="desktop__clock" id="clock">Tue Oct 7 09:41</span>
         <span class="desktop__sys">
-          <!-- QuickDesk's two tray icons, as on a real GNOME top bar -->
+          <!-- QuickDesk's two tray icons, as on a real GNOME top bar (restyled for Windows and macOS) -->
           <button type="button" class="desktop__tray" data-ring aria-label="AI usage ring">
             <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="rgba(255,255,255,.27)" stroke-width="2.4"/><circle cx="8" cy="8" r="6" fill="none" stroke="#f59e0b" stroke-width="2.4" stroke-dasharray="30.5 37.7" transform="rotate(-90 8 8)"/></svg>
           </button>
@@ -107,7 +123,7 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
           <iframe title="QuickDesk quick note popup (demo)" src="/demo/?window=note-popup&amp;theme=dark" width="480" height="140"></iframe>
         </div>
 
-        <!-- The tray menus are GNOME's own menus; these copy how they look. -->
+        <!-- The tray menus are the desktop's own menus; these copy how GNOME's look. -->
         <div class="shell-menu shell-menu--app" data-menu="app">
           <ul>
             <li data-open="note-popup"><Fragment set:html={t("t16")} /></li>
@@ -161,7 +177,7 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
           <span class="sync__badge"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.2" width="8" height="5.6" rx="1.4" fill="currentColor"/><path d="M3.9 5.2V3.9a2.1 2.1 0 0 1 4.2 0v1.3" fill="none" stroke="currentColor" stroke-width="1.3"/></svg><span data-sync-badge>Encrypted &amp; synced</span></span>
         </div>
         <div class="device">
-          <div class="device__bar"><i></i><i></i><i></i><span>thinkpad-x1</span></div>
+          <div class="device__bar"><i></i><i></i><i></i><span>windows-laptop</span></div>
           <div class="device__body"><p class="device__text" data-sync-dst></p></div>
         </div>
       </div>

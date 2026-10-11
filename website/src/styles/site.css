@@ -51,7 +51,15 @@ main.page { padding: calc(var(--nav-h) + 64px) 0 120px; min-height: 70vh; }
 .dlpage__head { text-align: center; margin-bottom: 40px; }
 .dlpage__head img { margin: 0 auto 22px; border-radius: 18px; }
 .dlpage__head .section-title { margin: 0 0 10px; font-size: clamp(34px, 5vw, 52px); }
-.dlpage__notlinux { margin: 18px auto 0; max-width: 560px; padding: 10px 14px; border-radius: 12px; background: rgba(255, 159, 10, .12); color: #ffb340; }
+/* Linux / Windows / macOS: the visitor picks (main.js remembers it). */
+.ospick { display: flex; justify-content: center; gap: 4px; width: max-content; max-width: 100%; margin: 0 auto 28px; padding: 4px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); }
+.ospick button { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border: 0; border-radius: 999px; background: none; color: var(--text-2); font-family: inherit; font-size: 14.5px; font-weight: 500; line-height: 1.2; cursor: pointer; transition: background-color .15s, color .15s; }
+.ospick button:hover { color: var(--text); }
+.ospick button[aria-pressed="true"] { background: #f5f5f7; color: #111113; box-shadow: 0 1px 8px rgba(0, 0, 0, .35); }
+.ospick button[aria-pressed="true"] .ospick__soon { background: rgba(0, 0, 0, .08); color: #55555c; }
+.ospick__logo { width: 16px; height: 16px; flex: none; }
+.ospick__soon { white-space: nowrap; padding: 1px 7px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(255, 255, 255, .1); }
+.oneline--soon { text-align: center; justify-items: center; }
 .pkgs { display: grid; gap: 16px; max-width: 1040px; margin: 0 auto; }
 .oneline { max-width: 1040px; margin: 0 auto 36px; padding: 24px 28px; border-radius: 22px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; border: 1px solid var(--line); background: var(--surface); }
 .oneline h2, .pkgs__title { margin: 0; font-size: 20px; letter-spacing: -0.01em; }
@@ -82,6 +90,20 @@ main.page { padding: calc(var(--nav-h) + 64px) 0 120px; min-height: 70vh; }
 .pkg__sha code { font: 12px/1.5 var(--mono); }
 .dlpage__after { max-width: 1040px; margin: 24px auto 40px; text-align: center; color: var(--text-3); font-size: 14px; }
 .dlpage .whatsnew { margin-top: 8px; }
+
+/* Site map */
+.sitemap__head { margin-bottom: 40px; }
+.sitemap__head .lead { margin: 0; max-width: none; }
+.sitemap__head h1 { margin: 0 0 8px; font-size: clamp(34px, 5vw, 52px); letter-spacing: -.035em; }
+.sitemap__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; align-items: start; }
+.sitemap__group { padding: 22px 24px; border-radius: 20px; border: 1px solid var(--line); background: var(--surface); }
+.sitemap__group h2 { margin: 0; font-size: 18px; letter-spacing: -.015em; }
+.sitemap__group h2 a { color: var(--text); }
+.sitemap__group h2 a:hover { color: var(--link); }
+.sitemap__group ul { display: grid; gap: 9px; margin: 14px 0 0; padding: 0; list-style: none; }
+.sitemap__group li a { color: var(--text-2); font-size: 14.5px; }
+.sitemap__group li a:hover { color: var(--text); }
+.sitemap__note { margin: 12px 0 0; color: var(--text-3); font-size: 14px; line-height: 1.55; }
 
 /* 404 */
 .notfound { text-align: center; }
@@ -206,7 +228,7 @@ html.drawer-open { overflow: hidden; }
 
 @media (max-width: 640px) {
   .nav__menu { display: block; }
-  .nav__end > .lang, .brand__ver { display: none; }
+  .nav__end > .lang { display: none; }
   .nav__inner { grid-template-columns: 1fr auto; padding: 0 10px 0 16px; }
   .nav.is-scrolled .nav__inner { padding: 0 6px 0 14px; }
 }
@@ -272,6 +294,11 @@ html.drawer-open { overflow: hidden; }
 
 /* Medium widths: keep the header on one line */
 @media (max-width: 900px) and (min-width: 641px) {
-  .brand__ver { display: none; }
   .nav__links a { padding: 6px 10px; }
+}
+
+/* Phones: the three systems still fit on one line. */
+@media (max-width: 480px) {
+  .ospick button { gap: 5px; padding: 8px 10px; font-size: 13px; white-space: nowrap; }
+  .ospick__soon { padding: 1px 5px; font-size: 10px; }
 }

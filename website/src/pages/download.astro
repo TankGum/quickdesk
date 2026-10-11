@@ -1,7 +1,8 @@
 ---
 import Base from "../layouts/Base.astro";
 import DownloadPage from "../components/DownloadPage.astro";
+import { softwareApp } from "../data/seo";
 ---
-<Base lang="en" title="Download QuickDesk for Linux" description="Download QuickDesk for Ubuntu, Debian, Fedora and other Linux distributions: .deb, .rpm and AppImage, with checksums.">
+<Base lang="en" title="Download QuickDesk for Linux and Windows (free)" jsonLd={[softwareApp("en")]} description="Download QuickDesk for Windows 10 and 11, Ubuntu, Debian, Fedora and other Linux distributions: the Windows installer, .deb, .rpm and AppImage, with checksums.">
   <DownloadPage lang="en" />
 </Base>

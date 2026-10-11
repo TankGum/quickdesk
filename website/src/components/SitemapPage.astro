@@ -1,0 +1,123 @@
+---
+// /sitemap: every page and section of the site, for people (sitemap.xml is
+// the one for search engines). Built from the same data as the pages, so new
+// docs sections and releases show up by themselves.
+import { changelog } from "../data/changelog";
+import { sections } from "../data/docs";
+import { home } from "../data/home";
+import { privacy } from "../data/privacy";
+import { GITHUB, href, ui, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const u = ui[lang];
+const strip = (html: string) => html.replace(/<[^>]+>/g, "").replace(/&amp;/g, "&");
+const s = {
+  en: {
+    title: "Site map",
+    lead: "Every page and section of quickdesk.click.",
+    home: "Home",
+    demo: "Try the shortcuts",
+    getIt: "Get QuickDesk",
+    soon: "coming soon",
+    oneLine: "Install scripts",
+    other: "Elsewhere",
+    machine: "sitemap.xml (for search engines)",
+    privacyNote: "No accounts, analytics or telemetry: what stays on your computer and what is sent where.",
+  },
+  vi: {
+    title: "Bản đồ trang web",
+    lead: "Mọi trang và mục của quickdesk.click.",
+    home: "Trang chủ",
+    demo: "Thử phím tắt",
+    getIt: "Tải QuickDesk",
+    soon: "sắp có",
+    oneLine: "Script cài đặt",
+    other: "Nơi khác",
+    machine: "sitemap.xml (cho công cụ tìm kiếm)",
+    privacyNote: "Không tài khoản, không analytics hay telemetry: dữ liệu nào ở trên máy và cái gì được gửi đi đâu.",
+  },
+}[lang];
+const at = (page: string, id = "") => `${href(lang, page)}${id ? `#${id}` : ""}`;
+const groups = [
+  {
+    title: s.home,
+    href: at("/"),
+    links: [
+      { label: s.demo, href: at("/", "demo") },
+      { label: strip(home.t0[lang]), href: at("/", "notes") },
+      { label: strip(home.t17[lang]), href: at("/", "clipboard") },
+      { label: strip(home.t1[lang]), href: at("/", "ports") },
+      { label: strip(home["rt-eyebrow"][lang]), href: at("/", "runtimes") },
+      { label: strip(home.t2[lang]), href: at("/", "ai") },
+      { label: strip(home.t80[lang]), href: at("/", "faq") },
+      { label: s.getIt, href: at("/", "download") },
+    ],
+  },
+  {
+    title: u.download,
+    href: at("/download"),
+    links: [
+      { label: "Linux (.deb, .rpm, AppImage)", href: at("/download", "linux") },
+      { label: "Windows 10 & 11", href: at("/download", "windows") },
+      { label: `macOS (${s.soon})`, href: at("/download", "macos") },
+    ],
+  },
+  {
+    title: u.docs,
+    href: at("/docs"),
+    links: sections.map((d) => ({ label: d.title[lang], href: at("/docs", d.id) })),
+  },
+  {
+    title: u.changelog,
+    href: at("/changelog"),
+    links: changelog(lang).map((e) => ({
+      label: `QuickDesk ${e.version}${e.date ? ` · ${e.date}` : ""}`,
+      href: at("/changelog", `v${e.version}`),
+    })),
+  },
+  {
+    title: privacy[lang].title,
+    href: at("/privacy"),
+    note: s.privacyNote,
+    links: [],
+  },
+  {
+    title: s.other,
+    links: [
+      { label: `${u.github} ↗`, href: GITHUB },
+      { label: `${u.issues} ↗`, href: `${GITHUB}/issues` },
+      { label: `${s.oneLine}: install.sh`, href: "/install.sh" },
+      { label: `${s.oneLine}: install.ps1`, href: "/install.ps1" },
+      { label: s.machine, href: "/sitemap.xml" },
+    ],
+  },
+];
+---
+<div class="wrap sitemap">
+  <header class="sitemap__head">
+    <h1>{s.title}</h1>
+    <p class="lead">{s.lead}</p>
+  </header>
+  <div class="sitemap__grid">
+    {
+      groups.map((g) => (
+        <section class="sitemap__group">
+          <h2>{g.href ? <a href={g.href}>{g.title}</a> : g.title}</h2>
+          {"note" in g && g.note && <p class="sitemap__note">{g.note}</p>}
+          {g.links.length > 0 && (
+            <ul>
+              {g.links.map((l) => (
+                <li>
+                  <a href={l.href}>{l.label}</a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ))
+    }
+  </div>
+</div>

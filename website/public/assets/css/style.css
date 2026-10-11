@@ -200,14 +200,6 @@ kbd {
   letter-spacing: -.02em;
 }
 .brand img { border-radius: 7px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), 0 6px 16px -6px rgba(10, 132, 255, .5); }
-.brand__ver {
-  padding: 2px 7px;
-  border-radius: 999px;
-  font: 500 11px/1.4 var(--mono);
-  color: var(--text-3);
-  background: rgba(255, 255, 255, .06);
-  border: 1px solid var(--line);
-}
 
 /* Centre links in a pill; the current page and hover get a soft highlight */
 .nav__links {
@@ -350,6 +342,7 @@ kbd {
 }
 .kk--mod .kk__cap { min-width: clamp(118px, 16vw, 188px); flex-direction: column; justify-content: space-between; align-items: flex-start; }
 .kk__cap i { font-style: normal; font-size: clamp(16px, 2vw, 22px); color: var(--text-2); }
+.kk__logo { display: block; width: .8em; height: .8em; }
 .kk--letter .kk__cap {
   justify-content: center;
   align-items: center;
@@ -419,6 +412,9 @@ kbd {
   font-size: 13px;
   color: var(--text-3);
 }
+.hero__get { margin-top: 40px; }
+.hero__get .hero__cta { margin-top: 18px; }
+.ospick.ospick--hero { margin: 0 auto; }
 
 /* ---------- Demo ---------- */
 
@@ -610,6 +606,129 @@ kbd {
 .desktop.has-panel .desktop__empty { opacity: 0; }
 
 .desktop__stage { position: absolute; inset: 30px 0 0; z-index: 2; }
+
+/* Windows visitors: the same desktop as a Windows 11 one. The taskbar sits at
+   the bottom with the pinned apps in the middle and QuickDesk's two icons in
+   the notification area; the tray menus open upwards. */
+html[data-os="windows"] .desktop {
+  background:
+    radial-gradient(60% 70% at 50% 110%, #2f7bff 0%, transparent 70%),
+    radial-gradient(70% 60% at 20% 0%, #14306e 0%, transparent 70%),
+    radial-gradient(60% 60% at 90% 20%, #0f2a5c 0%, transparent 70%),
+    #071430;
+}
+html[data-os="windows"] .desktop__bar {
+  inset: auto 0 0;
+  height: 44px;
+  justify-content: flex-end;
+  gap: 14px;
+  font-family: "Segoe UI Variable", "Segoe UI", var(--shell);
+  font-weight: 400;
+  background: rgba(28, 32, 44, .82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, .08);
+}
+html[data-os="windows"] .desktop__activities { display: none; }
+html[data-os="windows"] .desktop__sys { order: 1; }
+html[data-os="windows"] .desktop__clock { position: static; transform: none; order: 2; font-size: 12px; }
+html[data-os="windows"] .desktop__dock {
+  top: auto;
+  bottom: 5px;
+  left: 50%;
+  z-index: 4;
+  transform: translateX(-50%);
+  flex-direction: row;
+  gap: 6px;
+  padding: 0;
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html[data-os="windows"] .desktop__dock i { width: 34px; height: 34px; border-radius: 8px; }
+html[data-os="windows"] .desktop__dock::before {
+  content: "";
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background:
+    linear-gradient(#60b5ff, #60b5ff) 9px 9px / 7px 7px no-repeat,
+    linear-gradient(#60b5ff, #60b5ff) 18px 9px / 7px 7px no-repeat,
+    linear-gradient(#60b5ff, #60b5ff) 9px 18px / 7px 7px no-repeat,
+    linear-gradient(#60b5ff, #60b5ff) 18px 18px / 7px 7px no-repeat;
+}
+html[data-os="windows"] .desktop__stage { inset: 0 0 44px; }
+html[data-os="windows"] .shell-menu {
+  top: auto;
+  bottom: 8px;
+  border-radius: 8px;
+  font-family: "Segoe UI Variable", "Segoe UI", var(--shell);
+  font-size: 14px;
+  background: #2b2b2b;
+  transform: translateY(6px);
+}
+html[data-os="windows"] .shell-menu.is-open { transform: none; }
+html[data-os="windows"] .shell-menu li:not(.sep) { padding-block: 8px; border-radius: 4px; }
+html[data-os="windows"] .desktop__toast { bottom: 60px; }
+
+/* macOS (coming soon): menu bar at the top, the Dock at the bottom, traffic
+   lights on the left of the window. */
+html[data-os="macos"] .desktop {
+  background:
+    radial-gradient(70% 60% at 15% 100%, #f2a65a 0%, transparent 60%),
+    radial-gradient(70% 70% at 80% 90%, #c0508a 0%, transparent 65%),
+    radial-gradient(90% 80% at 50% 0%, #2a3f86 0%, transparent 70%),
+    #1b1e3f;
+}
+html[data-os="macos"] .desktop__bar {
+  height: 26px;
+  justify-content: flex-start;
+  gap: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--shell);
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(20, 20, 30, .35);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+html[data-os="macos"] .desktop__activities { font-size: 0; }
+html[data-os="macos"] .desktop__activities::before { content: "Finder"; font-size: 13px; font-weight: 700; }
+html[data-os="macos"] .desktop__sys { order: 1; margin-left: auto; }
+html[data-os="macos"] .desktop__clock { position: static; transform: none; order: 2; }
+html[data-os="macos"] .desktop__dock {
+  top: auto;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  flex-direction: row;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .16);
+  border: 1px solid rgba(255, 255, 255, .18);
+}
+html[data-os="macos"] .desktop__dock i { width: 38px; height: 38px; border-radius: 10px; }
+html[data-os="macos"] .desktop__stage { inset: 26px 0 0; }
+html[data-os="macos"] .shell-menu {
+  top: 2px;
+  border-radius: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--shell);
+  font-size: 13.5px;
+  background: rgba(40, 40, 46, .92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+html[data-os="macos"] .shell-menu ul { padding: 5px 0; }
+html[data-os="macos"] .shell-menu li:not(.sep) { margin: 0 5px; padding: 4px 12px; border-radius: 5px; }
+html[data-os="macos"] .shell-menu ul:has(.check) li:not(.sep) { padding-left: 28px; }
+html[data-os="macos"] .shell-menu li.check.is-on::before { left: 11px; }
+html[data-os="macos"] .shell-menu li.sep { margin: 4px 12px; }
+html[data-os="macos"] .appwin__btns { right: auto; left: 12px; top: 14px; gap: 8px; }
+html[data-os="macos"] .appwin__btns > * { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; }
+html[data-os="macos"] .appwin__btns > *:nth-child(1) { background: #febc2e; }
+html[data-os="macos"] .appwin__btns > *:nth-child(2) { background: #28c840; }
+html[data-os="macos"] .appwin__btns > *:nth-child(3) { order: -1; background: #ff5f57; }
+html[data-os="macos"] .appwin__btns svg { display: none; }
 
 .desktop__toast {
   position: absolute;
@@ -1362,13 +1481,59 @@ kbd {
 .faq details code { color: var(--text); }
 
 /* ---------- Footer ---------- */
-
-.footer { border-top: 1px solid var(--line); padding-block: 36px 48px; font-size: 13px; color: var(--text-3); }
-.footer__inner { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px; }
-.footer .brand { color: var(--text); font-size: 15px; }
-.footer__links { display: flex; flex-wrap: wrap; gap: 8px 22px; }
-.footer__links a:hover { color: var(--text); }
-.footer__copy { margin: 0 0 0 auto; }
+.footer {
+  position: relative;
+  overflow: hidden;
+  padding-top: 72px;
+  font-size: 14px;
+  color: var(--text-3);
+  background: radial-gradient(80% 60% at 50% 100%, rgba(191, 90, 242, .12), transparent 70%);
+}
+/* A thin line in the hero's colours instead of a grey border. */
+.footer::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #ffd60a 15%, #ff375f 40%, #bf5af2 60%, #0a84ff 85%, transparent);
+  opacity: .55;
+}
+.footer__grid { display: grid; grid-template-columns: minmax(0, 2.4fr) repeat(3, minmax(0, 1fr)); gap: 40px 32px; }
+.footer__brand { color: var(--text); font-size: 20px; gap: 12px; }
+.footer__brand img { border-radius: 10px; }
+.footer__tagline { max-width: 340px; margin: 16px 0 20px; color: var(--text-2); font-size: 15px; line-height: 1.55; }
+.footer__os { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.footer__os li { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255, 255, 255, .03); color: var(--text-2); font-size: 13px; font-weight: 500; }
+.footer__os svg { width: 14px; height: 14px; }
+.footer__soon { padding: 0 6px; border-radius: 999px; font-size: 10.5px; font-weight: 600; background: rgba(255, 255, 255, .08); }
+.footer__col { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.footer__col h2 { margin: 0 0 4px; color: var(--text); font-size: 13px; font-weight: 600; letter-spacing: .02em; }
+.footer__col a { color: var(--text-2); transition: color .15s; }
+.footer__col a:hover { color: var(--text); }
+.footer__lang { display: flex; flex-direction: column; gap: 12px; }
+.footer__lang a[aria-current="true"] { color: var(--text); }
+.footer__lang a[aria-current="true"]::after { content: " ✓"; color: var(--text-3); }
+.footer__bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 13px; }
+.footer__bottom p { margin: 0; }
+/* The name, huge, fading into the bottom of the page. */
+.footer__mark {
+  margin: 24px 0 0;
+  text-align: center;
+  font-weight: 800;
+  font-size: clamp(64px, 17vw, 240px);
+  line-height: .8;
+  letter-spacing: -.06em;
+  white-space: nowrap;
+  user-select: none;
+  background: linear-gradient(90deg, #ffd60a, #ff9f0a 20%, #ff375f 42%, #bf5af2 64%, #0a84ff 86%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: .5;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, .35) 45%, transparent 85%);
+  mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, .35) 45%, transparent 85%);
+  transform: translateY(18%);
+}
 
 /* ---------- Responsive ---------- */
 
@@ -1413,7 +1578,8 @@ kbd {
   .card { position: relative; left: auto; top: auto; width: 100%; max-width: none; transform: none; }
   .card--top { order: -1; }
 
-  .footer__copy { margin-left: 0; width: 100%; }
+  .footer__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .footer__about { grid-column: 1 / -1; }
 }
 
 @keyframes travel-y {

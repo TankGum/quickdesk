@@ -2,7 +2,8 @@
 import Base from "../../layouts/Base.astro";
 import Home from "../../components/Home.astro";
 import { release } from "../../data/release";
+import { faqPage, softwareApp } from "../../data/seo";
 ---
-<Base lang="vi" title="QuickDesk — Ghi chú, clipboard, cổng & hạn mức AI. Chỉ cách một phím tắt." description="QuickDesk là tiện ích desktop Linux miễn phí, mã nguồn mở: ghi chú mã hoá đầu-cuối, lịch sử clipboard, trình quản lý cổng và hạn mức AI, gọi ra bằng Super + Alt + N, V hoặc P." wide>
+<Base lang="vi" title="QuickDesk — Ghi chú, clipboard & cổng cho Linux và Windows" jsonLd={[softwareApp("vi"), faqPage("vi")]} description="QuickDesk là tiện ích desktop miễn phí, mã nguồn mở cho Linux và Windows: ghi chú mã hoá đầu-cuối, lịch sử clipboard, trình quản lý cổng và hạn mức AI, gọi ra bằng Super + Alt + N, V hoặc P." wide>
   <Home lang="vi" release={release} />
 </Base>

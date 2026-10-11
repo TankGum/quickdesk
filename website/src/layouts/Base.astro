@@ -1,8 +1,9 @@
 ---
 // Shared page shell: head (SEO, hreflang), nav, footer.
 import "../styles/site.css";
+import { OS_ICONS } from "../data/os-icons";
 import { release } from "../data/release";
-import { GITHUB, href, otherLang, pagePath, ui, type Lang } from "../i18n";
+import { GITHUB, href, pagePath, ui, type Lang } from "../i18n";
 
 interface Props {
   lang: Lang;
@@ -10,12 +11,31 @@ interface Props {
   description: string;
   /** Wide pages (home) use the full layout; others get a reading column. */
   wide?: boolean;
+  /** Not for search engines (404): no canonical, no language alternates. */
+  noindex?: boolean;
+  /** Structured data for this page (schema.org), besides the site's own. */
+  jsonLd?: Record<string, unknown>[];
 }
-const { lang, title, description, wide = false } = Astro.props;
+const { lang, title, description, wide = false, noindex = false, jsonLd = [] } = Astro.props;
 const s = ui[lang];
 const page = pagePath(Astro.url.pathname);
 const site = Astro.site!;
 const url = (l: Lang) => new URL(href(l, page), site).toString();
+// The preview image when a page is shared (1200×630, one per language).
+const ogImage = new URL(lang === "vi" ? "/og-vi.png" : "/og.png", site).toString();
+const ogAlt = lang === "vi" ? "QuickDesk: cả bàn làm việc, chỉ cách một phím tắt." : "QuickDesk: your whole desk, one shortcut away.";
+const structured = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "QuickDesk",
+    url: new URL(href(lang, "/"), site).toString(),
+    inLanguage: lang,
+  },
+  ...jsonLd,
+];
+// `</script>` inside a string must not end the tag.
+const ldJson = (data: unknown) => JSON.stringify(data).replace(/</g, "\\u003c");
 const nav = [
   { path: "/download", label: s.download },
   { path: "/docs", label: s.docs },
@@ -48,16 +68,37 @@ const ghMark =
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="theme-color" content="#000000" />
-    <link rel="canonical" href={url(lang)} />
-    <link rel="alternate" hreflang="en" href={url("en")} />
-    <link rel="alternate" hreflang="vi" href={url("vi")} />
-    <link rel="alternate" hreflang="x-default" href={url("en")} />
+    {
+      noindex ? (
+        <meta name="robots" content="noindex" />
+      ) : (
+        <>
+          <meta name="robots" content="index, follow, max-image-preview:large" />
+          <link rel="canonical" href={url(lang)} />
+          <link rel="alternate" hreflang="en" href={url("en")} />
+          <link rel="alternate" hreflang="vi" href={url("vi")} />
+          <link rel="alternate" hreflang="x-default" href={url("en")} />
+        </>
+      )
+    }
+    <meta property="og:site_name" content="QuickDesk" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={url(lang)} />
     <meta property="og:locale" content={lang === "vi" ? "vi_VN" : "en_US"} />
+    <meta property="og:locale:alternate" content={lang === "vi" ? "en_US" : "vi_VN"} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ogAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    {structured.map((d) => <script type="application/ld+json" set:html={ldJson(d)} />)}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -73,7 +114,6 @@ const ghMark =
         <a href={href(lang, "/")} class="brand" aria-label="QuickDesk">
           <img src="/favicon.svg" alt="" width="24" height="24" />
           <span>QuickDesk</span>
-          <span class="brand__ver">v{release.version}</span>
         </a>
         <nav class="nav__links" aria-label="Primary">
           {nav.map((n) => <a href={href(lang, n.path)} aria-current={page === n.path ? "page" : undefined}>{n.label}</a>)}
@@ -127,7 +167,7 @@ const ghMark =
         </div>
         <div class="drawer__foot" style={`--i: ${menu.length}`}>
           <a href={href(lang, "/download")} class="btn btn--primary drawer__cta">{s.download}</a>
-          <p class="drawer__ver">QuickDesk {release.version} · Linux</p>
+          <p class="drawer__ver">QuickDesk {release.version} · Linux · Windows · macOS</p>
         </div>
       </nav>
     </div>
@@ -137,21 +177,53 @@ const ghMark =
     </main>
 
     <footer class="footer">
-      <div class="wrap footer__inner">
-        <a href={href(lang, "/")} class="brand">
-          <img src="/favicon.svg" alt="" width="20" height="20" />
-          <span>QuickDesk</span>
-        </a>
-        <nav class="footer__links" aria-label="Footer">
-          <a href={href(lang, "/download")}>{s.download}</a>
-          <a href={href(lang, "/docs")}>{s.docs}</a>
-          <a href={href(lang, "/changelog")}>{s.changelog}</a>
-          <a href={href(lang, "/privacy")}>{s.privacy}</a>
-          <a href={GITHUB}>{s.github}</a>
-          <a href={href(otherLang(lang), page)} hreflang={otherLang(lang)}>{otherLang(lang) === "vi" ? "Tiếng Việt" : "English"}</a>
-        </nav>
-        <p class="footer__copy">© <span id="year">2026</span> {s.footer}</p>
+      <div class="wrap">
+        <div class="footer__grid">
+          <div class="footer__about">
+            <a href={href(lang, "/")} class="brand footer__brand">
+              <img src="/favicon.svg" alt="" width="36" height="36" />
+              <span>QuickDesk</span>
+            </a>
+            <p class="footer__tagline">{s.tagline}</p>
+            <ul class="footer__os" aria-label={s.systems}>
+              {
+                (["linux", "windows", "macos"] as const).map((id) => (
+                  <li>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d={OS_ICONS[id]} fill="currentColor" /></svg>
+                    {{ linux: "Linux", windows: "Windows", macos: "macOS" }[id]}
+                    {id === "macos" && <span class="footer__soon">{s.soon}</span>}
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+          <nav class="footer__col" aria-label={s.product}>
+            <h2>{s.product}</h2>
+            <a href={href(lang, "/download")}>{s.download}</a>
+            <a href={href(lang, "/docs")}>{s.docs}</a>
+            <a href={href(lang, "/changelog")}>{s.changelog}</a>
+          </nav>
+          <nav class="footer__col" aria-label={s.project}>
+            <h2>{s.project}</h2>
+            <a href={GITHUB}>{s.github} <span aria-hidden="true">↗</span></a>
+            <a href={`${GITHUB}/issues`}>{s.issues} <span aria-hidden="true">↗</span></a>
+            <a href={href(lang, "/privacy")}>{s.privacy}</a>
+            <a href={href(lang, "/sitemap")}>{s.sitemap}</a>
+          </nav>
+          <div class="footer__col">
+            <h2>{s.language}</h2>
+            <div class="footer__lang" role="group" aria-label={s.language}>
+              <a href={href("en", page)} hreflang="en" aria-current={lang === "en" ? "true" : undefined}>English</a>
+              <a href={href("vi", page)} hreflang="vi" aria-current={lang === "vi" ? "true" : undefined}>Tiếng Việt</a>
+            </div>
+          </div>
+        </div>
+        <div class="footer__bottom">
+          <p>© <span id="year">2026</span> {s.footer}</p>
+          <p>QuickDesk {release.version} · {release.date}</p>
+        </div>
       </div>
+      <p class="footer__mark" aria-hidden="true">QuickDesk</p>
     </footer>
 
     <script is:inline>

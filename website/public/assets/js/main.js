@@ -6,6 +6,60 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
+  /* ---------- Linux / Windows / macOS ---------- */
+  // The visitor picks a system ([data-os-pick]); nothing is guessed from the
+  // browser. The choice is remembered and changes the shortcut keys, the demo
+  // desktop and the download tab. #windows / #macos in the URL picks one too.
+  const OSES = ['linux', 'windows', 'macos'];
+  // The Windows key shows the Windows logo, in white like on the keycap.
+  const WIN_LOGO = '<svg class="kk__logo" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M0,0H11.377V11.372H0ZM12.623,0H24V11.372H12.623ZM0,12.623H11.377V24H0Zm12.623,0H24V24H12.623"/></svg>';
+  const KEYS = {
+    linux: { super: 'Super', alt: 'Alt', cap: '<i>❖</i>super', altCap: '<i></i>alt' },
+    windows: { super: 'Win', alt: 'Alt', cap: `<i>${WIN_LOGO}</i>win`, altCap: '<i></i>alt' },
+    macos: { super: '⌘', alt: '⌥', cap: '<i>⌘</i>cmd', altCap: '<i>⌥</i>option' },
+  };
+  // Mark the keys once, by what they say in the page.
+  $$('kbd').forEach((k) => {
+    const text = k.textContent.trim();
+    if (text === 'Super') k.dataset.key = 'super';
+    else if (text === 'Alt' && k.closest('.shortcut')) k.dataset.key = 'alt';
+  });
+  const storedOs = () => {
+    const hash = location.hash.slice(1);
+    if (OSES.includes(hash)) return hash;
+    try {
+      const v = localStorage.getItem('qd-os');
+      if (OSES.includes(v)) return v;
+    } catch { /* storage blocked: start on Linux */ }
+    return 'linux';
+  };
+  let os = storedOs();
+  const onOsChange = [];
+  function applyOs(next, remember) {
+    os = next;
+    document.documentElement.dataset.os = os;
+    const k = KEYS[os];
+    $$('kbd[data-key]').forEach((el) => { el.textContent = k[el.dataset.key]; });
+    const cap = $('[data-kb-super]');
+    if (cap) cap.innerHTML = k.cap;
+    const alt = $('[data-kb-alt]');
+    if (alt) alt.innerHTML = k.altCap;
+    $$('[data-os-pick]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.osPick === os)));
+    $$('[data-os-panel]').forEach((p) => { p.hidden = p.dataset.osPanel !== os; });
+    // Download buttons say which system and open its tab on /download.
+    $$('[data-os-download]').forEach((a) => {
+      a.dataset.base ??= a.getAttribute('href');
+      a.textContent = a.dataset[`label${os[0].toUpperCase()}${os.slice(1)}`];
+      a.setAttribute('href', `${a.dataset.base}#${os}`);
+    });
+    onOsChange.forEach((f) => f());
+    if (remember) {
+      try { localStorage.setItem('qd-os', os); } catch { /* fine: only this page */ }
+    }
+  }
+  $$('[data-os-pick]').forEach((b) => b.addEventListener('click', () => applyOs(b.dataset.osPick, true)));
+  applyOs(os, false);
+
   /* ---------- Nav border on scroll ---------- */
   const nav = $('#nav');
   const onScroll = () => nav.classList.toggle('is-scrolled', window.scrollY > 8);
@@ -326,13 +380,22 @@
 
   // Live clock in the top bar.
   const clock = $('#clock');
-  const clockFormat = () => new Intl.DateTimeFormat(lang === 'vi' ? 'vi-VN' : 'en-US', {
-    weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false,
-  });
+  // The Windows taskbar shows only the time.
+  const clockFormat = () => new Intl.DateTimeFormat(lang === 'vi' ? 'vi-VN' : 'en-US', os === 'windows'
+    ? { hour: '2-digit', minute: '2-digit', hour12: false }
+    : { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
+  // What the input-method indicator says on each system.
+  const imeLabel = () => ({ windows: lang === 'vi' ? 'VIE' : 'ENG', macos: lang === 'vi' ? 'VI' : 'ABC' })[os] ?? lang;
   let fmt = clockFormat();
   const tick = () => { clock.textContent = fmt.format(new Date()).replace(/,/g, ''); };
   tick();
-  $('.desktop__ime').textContent = lang;
+  $('.desktop__ime').textContent = imeLabel();
+  onOsChange.push(() => {
+    fmt = clockFormat();
+    tick();
+    $('.desktop__ime').textContent = imeLabel();
+    openMenu(menuOpen() ? Object.keys(menus).find((n) => menus[n].classList.contains('is-open')) : null);
+  });
   setInterval(tick, 15000);
 
   let toastTimer = null;

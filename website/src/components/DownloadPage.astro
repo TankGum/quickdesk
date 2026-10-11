@@ -1,9 +1,11 @@
 ---
-// /download: every package with size and checksum, install commands, and the
-// release notes. The browser marks the package that fits the visitor's distro.
+// /download: a tab per system (the visitor picks; nothing is guessed from the
+// browser), each with its one-line install and its packages with size and
+// checksum, then the release notes.
 import { changelog } from "../data/changelog";
 import { release } from "../data/release";
 import { href, type Lang } from "../i18n";
+import OsPicker from "./OsPicker.astro";
 
 interface Props {
   lang: Lang;
@@ -11,72 +13,70 @@ interface Props {
 const { lang } = Astro.props;
 const v = release.version;
 // Non-breaking hyphens: "2026-10-09" must not wrap across lines.
-const date = release.date.replaceAll("-", "\u2011");
+const date = release.date.replaceAll("-", "‑");
 const notes = changelog(lang).find((e) => e.version === v);
 const f = release.files;
 const s = {
   en: {
     title: `Download QuickDesk ${v}`,
-    lead: `For Linux on x86_64 · released ${date}. Free and open source (MIT).`,
-    recommended: "Recommended for you",
+    lead: `For Linux and Windows on x86_64, macOS coming soon · released ${date}. Free and open source (MIT).`,
+    pick: "Your system",
+    soon: "soon",
     deb: ["Ubuntu, Debian, Linux Mint, Pop!_OS", "Ubuntu 22.04 and newer, Debian 12 and newer."],
     rpm: ["Fedora and other RPM-based distros", "Fedora 36 and newer, openSUSE Tumbleweed."],
     appimage: ["Any other distribution", "Portable: no install needed. Needs FUSE 2 (libfuse2)."],
+    windows: ["Windows 10 and 11", "64-bit. Installs for your user only: no administrator rights needed."],
     get: "Download",
-    install: "Install",
     sha: "SHA-256",
     all: "All checksums (SHA256SUMS)",
     notes: `What’s new in ${v}`,
     allChanges: "All changes",
-    after: "Then open QuickDesk from your app menu. It lives in the top bar and updates itself from now on.",
-    notLinux: "QuickDesk runs on Linux for now. Windows and macOS versions are planned.",
+    afterLinux: "Then open QuickDesk from your app menu. It lives in the top bar and updates itself from now on.",
+    afterWindows: "Then open QuickDesk from the Start menu. It lives in the system tray and updates itself from now on.",
     copy: "Copy",
     oneTitle: "Install with one command",
-    oneLead: "Picks the right package for your distribution (.deb, .rpm or AppImage), checks its SHA-256 and installs it. It asks for your password only for the install step.",
+    oneLinux: "In a terminal. Picks the right package for your distribution (.deb, .rpm or AppImage), checks its SHA-256 and installs it. It asks for your password only for the install step.",
+    oneWindows: "In PowerShell. Downloads the installer, checks its SHA-256 and installs QuickDesk for your user, without administrator rights.",
     oneScript: "Read the script",
     orPick: "Or pick a package",
-    leadWin: `For Linux and Windows on x86_64 · released ${date}. Free and open source (MIT).`,
-    notSupported: "QuickDesk runs on Linux and Windows. A macOS version is planned.",
-    windows: ["Windows 10 and 11", "64-bit. Installs for your user only: no administrator rights needed."],
-    oneLinux: "Linux (terminal)",
-    oneWindows: "Windows (PowerShell)",
-    oneLeadWin: "Picks the right package (.deb, .rpm or AppImage on Linux, the installer on Windows), checks its SHA-256 and installs it.",
     smartscreen: "Windows may say it protected your PC: the installer is not signed yet. Choose More info → Run anyway.",
+    macTitle: "QuickDesk for macOS is on the way",
+    macLead: "Notes, clipboard history, ports and AI limits on the Mac. It will be announced on the changelog and in GitHub releases.",
+    macWatch: "Watch the releases on GitHub",
   },
   vi: {
     title: `Tải QuickDesk ${v}`,
-    lead: `Cho Linux x86_64 · phát hành ${date}. Miễn phí, mã nguồn mở (MIT).`,
-    recommended: "Phù hợp với máy bạn",
+    lead: `Cho Linux và Windows x86_64, macOS sắp có · phát hành ${date}. Miễn phí, mã nguồn mở (MIT).`,
+    pick: "Hệ điều hành của bạn",
+    soon: "sắp có",
     deb: ["Ubuntu, Debian, Linux Mint, Pop!_OS", "Ubuntu 22.04 trở lên, Debian 12 trở lên."],
     rpm: ["Fedora và các distro dùng RPM", "Fedora 36 trở lên, openSUSE Tumbleweed."],
     appimage: ["Mọi distro khác", "Chạy ngay, không cần cài. Cần FUSE 2 (libfuse2)."],
+    windows: ["Windows 10 và 11", "64-bit. Chỉ cài cho tài khoản của bạn: không cần quyền quản trị."],
     get: "Tải",
-    install: "Cài đặt",
     sha: "SHA-256",
     all: "Toàn bộ mã kiểm tra (SHA256SUMS)",
     notes: `Có gì mới trong ${v}`,
     allChanges: "Mọi thay đổi",
-    after: "Sau đó mở QuickDesk từ menu ứng dụng. App nằm trên thanh trên cùng và từ giờ sẽ tự cập nhật.",
-    notLinux: "Hiện QuickDesk chạy trên Linux. Bản cho Windows và macOS đang được lên kế hoạch.",
+    afterLinux: "Sau đó mở QuickDesk từ menu ứng dụng. App nằm trên thanh trên cùng và từ giờ sẽ tự cập nhật.",
+    afterWindows: "Sau đó mở QuickDesk từ menu Start. App nằm ở khay hệ thống và từ giờ sẽ tự cập nhật.",
     copy: "Copy",
-    leadWin: `Cho Linux và Windows x86_64 · phát hành ${date}. Miễn phí, mã nguồn mở (MIT).`,
-    notSupported: "QuickDesk chạy trên Linux và Windows. Bản macOS đang được lên kế hoạch.",
-    windows: ["Windows 10 và 11", "64-bit. Chỉ cài cho tài khoản của bạn: không cần quyền quản trị."],
-    oneLinux: "Linux (terminal)",
-    oneWindows: "Windows (PowerShell)",
-    oneLeadWin: "Tự chọn gói phù hợp (.deb, .rpm hoặc AppImage trên Linux, bộ cài trên Windows), kiểm tra SHA-256 rồi cài.",
-    smartscreen: "Windows có thể báo đã chặn để bảo vệ máy: bộ cài chưa được ký số. Chọn More info → Run anyway.",
     oneTitle: "Cài bằng một lệnh",
-    oneLead: "Tự chọn gói hợp với distro của bạn (.deb, .rpm hoặc AppImage), kiểm tra SHA-256 rồi cài. Chỉ hỏi mật khẩu ở bước cài đặt.",
+    oneLinux: "Chạy trong terminal. Tự chọn gói hợp với distro của bạn (.deb, .rpm hoặc AppImage), kiểm tra SHA-256 rồi cài. Chỉ hỏi mật khẩu ở bước cài đặt.",
+    oneWindows: "Chạy trong PowerShell. Tải bộ cài, kiểm tra SHA-256 rồi cài QuickDesk cho tài khoản của bạn, không cần quyền quản trị.",
     oneScript: "Xem script",
     orPick: "Hoặc chọn một gói",
+    smartscreen: "Windows có thể báo đã chặn để bảo vệ máy: bộ cài chưa được ký số. Chọn More info → Run anyway.",
+    macTitle: "QuickDesk cho macOS đang được làm",
+    macLead: "Ghi chú, lịch sử clipboard, cổng và hạn mức AI trên Mac. Bản macOS sẽ được báo trong trang thay đổi và trên GitHub releases.",
+    macWatch: "Theo dõi các bản phát hành trên GitHub",
   },
 }[lang];
-const oneLine = "curl -fsSL https://quickdesk.click/install.sh | bash";
-const oneLineWin = "irm https://quickdesk.click/install.ps1 | iex";
-const win = f.windows;
+const oneLinux = "curl -fsSL https://quickdesk.click/install.sh | bash";
+const oneWindows = "irm https://quickdesk.click/install.ps1 | iex";
+type Pkg = { kind: string; label: string; info: string[]; file: (typeof f)["deb"]; steps: string[] };
 // Download and install from a terminal: one step per line, copied as one command.
-const packages = [
+const linux: Pkg[] = [
   {
     kind: "deb",
     label: ".deb",
@@ -98,16 +98,14 @@ const packages = [
     file: f.appimage,
     steps: [`curl -fLO ${f.appimage.href}`, `chmod +x ${f.appimage.name} && ./${f.appimage.name}`],
   },
-  ...(win
-    ? [
-        {
-          kind: "windows",
-          label: "Windows",
-          info: s.windows,
-          file: win,
-          steps: [oneLineWin],
-        },
-      ]
+];
+const windows: Pkg[] = f.windows
+  ? [{ kind: "windows", label: "Windows", info: s.windows, file: f.windows, steps: [oneWindows] }]
+  : [];
+const systems = [
+  { id: "linux", label: "Linux", one: oneLinux, oneLead: s.oneLinux, script: "/install.sh", pkgs: linux, after: s.afterLinux },
+  ...(windows.length
+    ? [{ id: "windows", label: "Windows", one: oneWindows, oneLead: s.oneWindows, script: "/install.ps1", pkgs: windows, after: s.afterWindows }]
     : []),
 ];
 ---
@@ -116,68 +114,70 @@ const packages = [
     <header class="dlpage__head">
       <img src="/favicon.svg" alt="" width="72" height="72" />
       <h1 class="section-title">{s.title}</h1>
-      <p class="lead">{win ? s.leadWin : s.lead}</p>
-      <p class="dlpage__notlinux" data-notlinux hidden>{win ? s.notSupported : s.notLinux}</p>
+      <p class="lead">{s.lead}</p>
     </header>
 
-    <div class="oneline">
-      <h2>{s.oneTitle}</h2>
-      {win && <p class="oneline__os">{s.oneLinux}</p>}
-      <div class="pkg__cmd" data-one="linux">
-        <code>{oneLine}</code>
-        <button type="button" class="terminal__copy" data-copy={oneLine}>{s.copy}</button>
-      </div>
-      {
-        win && (
-          <>
-            <p class="oneline__os">{s.oneWindows}</p>
-            <div class="pkg__cmd" data-one="windows">
-              <code>{oneLineWin}</code>
-              <button type="button" class="terminal__copy" data-copy={oneLineWin}>{s.copy}</button>
-            </div>
-          </>
-        )
-      }
-      <p class="muted">
-        {win ? s.oneLeadWin : s.oneLead} <a class="btn--link" href="/install.sh">{s.oneScript}</a>
-        {win && <> · <a class="btn--link" href="/install.ps1">install.ps1</a></>}
-      </p>
-    </div>
+    <OsPicker lang={lang} label={s.pick} only={systems.map((o) => o.id as "linux" | "windows")} />
 
-    <h2 class="pkgs__title">{s.orPick}</h2>
-    <div class="pkgs">
-      {
-        packages.map((p) => (
-          <article class="pkg" data-pkg={p.kind}>
-            <div class="pkg__main">
-              <span class="pkg__badge" data-badge hidden>{s.recommended}</span>
-              <h2>{p.label}</h2>
-              <p class="pkg__for">{p.info[0]}</p>
-              <p class="muted">{p.info[1]}</p>
+    {
+      systems.map((o) => (
+        <div data-os-panel={o.id} hidden={o.id !== "linux"}>
+          <div class="oneline">
+            <h2>{s.oneTitle}</h2>
+            <div class="pkg__cmd">
+              <code>{o.one}</code>
+              <button type="button" class="terminal__copy" data-copy={o.one}>{s.copy}</button>
             </div>
-            <div class="pkg__get">
-              <a class="btn btn--primary" href={p.file.href} download>
-                {s.get} {p.label}
-              </a>
-              <span class="pkg__meta">v{v} · {p.file.sizeText}</span>
-            </div>
-            <div class="pkg__more">
-              <div class="pkg__cmd">
-                <code>{p.steps.join("\n")}</code>
-                <button type="button" class="terminal__copy" data-copy={p.steps.join(" && ")}>{s.copy}</button>
-              </div>
-              <p class="pkg__sha">
-                {s.sha}: <code>{p.file.sha256}</code>
-              </p>
-              {p.kind === "windows" && <p class="pkg__note">{s.smartscreen}</p>}
-            </div>
-          </article>
-        ))
-      }
+            <p class="muted">
+              {o.oneLead} <a class="btn--link" href={o.script}>{s.oneScript}</a>
+            </p>
+          </div>
+
+          <h2 class="pkgs__title">{s.orPick}</h2>
+          <div class="pkgs">
+            {o.pkgs.map((p) => (
+              <article class="pkg" data-pkg={p.kind}>
+                <div class="pkg__main">
+                  <h2>{p.label}</h2>
+                  <p class="pkg__for">{p.info[0]}</p>
+                  <p class="muted">{p.info[1]}</p>
+                </div>
+                <div class="pkg__get">
+                  <a class="btn btn--primary" href={p.file.href} download>
+                    {s.get} {p.label}
+                  </a>
+                  <span class="pkg__meta">v{v} · {p.file.sizeText}</span>
+                </div>
+                <div class="pkg__more">
+                  <div class="pkg__cmd">
+                    <code>{p.steps.join("\n")}</code>
+                    <button type="button" class="terminal__copy" data-copy={p.steps.join(" && ")}>{s.copy}</button>
+                  </div>
+                  <p class="pkg__sha">
+                    {s.sha}: <code>{p.file.sha256}</code>
+                  </p>
+                  {p.kind === "windows" && <p class="pkg__note">{s.smartscreen}</p>}
+                </div>
+              </article>
+            ))}
+          </div>
+          <p class="dlpage__after">{o.after}</p>
+        </div>
+      ))
+    }
+
+    <div data-os-panel="macos" hidden>
+      <div class="oneline oneline--soon">
+        <h2>{s.macTitle}</h2>
+        <p class="muted">{s.macLead}</p>
+        <p>
+          <a class="btn--link" href="https://github.com/TankGum/quickdesk/releases">{s.macWatch} <span aria-hidden="true">↗</span></a>
+        </p>
+      </div>
     </div>
 
     <p class="dlpage__after">
-      {s.after} <a class="btn--link" href={release.checksums}>{s.all}</a>
+      <a class="btn--link" href={release.checksums}>{s.all}</a>
     </p>
 
     {
@@ -195,28 +195,3 @@ const packages = [
     }
   </div>
 </section>
-
-<script is:inline>
-  // Mark the package for this distro. Firefox on Ubuntu and Fedora says so in
-  // its user agent; other browsers do not, and then nothing is marked.
-  (() => {
-    const ua = navigator.userAgent;
-    const windows = /Windows/.test(ua) && document.querySelector('[data-pkg="windows"]');
-    const kind = windows ? "windows" : /Ubuntu|Debian|Mint|Pop!_OS/i.test(ua) ? "deb" : /Fedora|openSUSE|Red Hat/i.test(ua) ? "rpm" : null;
-    if (!windows && (!/Linux|X11/.test(ua) || /Android/.test(ua))) document.querySelector("[data-notlinux]").hidden = false;
-    // On Windows the PowerShell line comes first.
-    if (windows) {
-      const box = document.querySelector('[data-one="windows"]');
-      const label = box?.previousElementSibling;
-      const first = document.querySelector('[data-one="linux"]')?.previousElementSibling;
-      if (box && label && first) {
-        first.before(label, box);
-      }
-    }
-    if (!kind) return;
-    const card = document.querySelector(`[data-pkg="${kind}"]`);
-    card.classList.add("is-recommended");
-    card.querySelector("[data-badge]").hidden = false;
-    card.parentElement.prepend(card);
-  })();
-</script>
