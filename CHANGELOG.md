@@ -11,7 +11,8 @@ download page and on GitHub Releases.
 ## Unreleased
 
 ### New
-- QuickDesk for Windows 10 and 11 (64-bit): notes with sync, clipboard history with text, images and files, auto-paste into the app you were using, ports and AI usage, with the same Win+Alt+N / V / P shortcuts. Install it from PowerShell with `irm https://quickdesk.click/install.ps1 | iex` or from the download page; it installs for your user without administrator rights and updates itself. The Runtimes tab comes to Windows later.
+- QuickDesk for Windows 10 and 11 (64-bit): notes with sync, clipboard history with text, images and files, auto-paste into the app you were using, ports and AI usage, with the same Win+Alt+N / V / P shortcuts. Install it from PowerShell with `irm https://quickdesk.click/install.ps1 | iex` or from the download page; it installs for your user without administrator rights and updates itself. The Runtimes tab works through mise, rustup and uv: install mise in one click, add Node, Python, Go and the rest, and “Fix PATH…” puts their folders in your account’s PATH without administrator rights.
+- Runtimes: languages that are not on the computer yet are listed under “Add a language”, ready to install through mise.
 
 ## 0.4.0 — 2026-10-10
 

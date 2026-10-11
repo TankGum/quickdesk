@@ -123,6 +123,11 @@ impl Manager for Nvm {
         probe.path.iter().any(|p| Path::new(p).starts_with(&versions))
     }
 
+    /// nvm is a shell function: there is no directory that would do.
+    fn path_dirs(&self) -> Vec<PathBuf> {
+        Vec::new()
+    }
+
     fn init_lines(&self) -> Vec<String> {
         vec![
             format!("export NVM_DIR=\"{}\"", self.home_dir),

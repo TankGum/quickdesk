@@ -28,6 +28,8 @@ const VARS: &[&str] = &[
     "MISE_CACHE_DIR",
     "MISE_STATE_DIR",
     "MISE_GLOBAL_CONFIG_FILE",
+    "LOCALAPPDATA",
+    "APPDATA",
 ];
 
 const START: &str = "@@QD-PROBE@@";
@@ -61,12 +63,35 @@ impl Probe {
     }
 
     pub fn on_path(&self, dir: &Path) -> bool {
-        self.path.iter().any(|p| Path::new(p) == dir)
+        self.path.iter().any(|p| same_dir(Path::new(p), dir))
     }
 
     /// Position of `dir` in PATH (first match).
     pub fn path_index(&self, dir: &Path) -> Option<usize> {
-        self.path.iter().position(|p| Path::new(p) == dir)
+        self.path.iter().position(|p| same_dir(Path::new(p), dir))
+    }
+}
+
+/// The same directory as PATH spells it: on Windows case and a trailing
+/// separator do not matter (`C:\Users\Me\.cargo\bin\` = `c:\users\me\.cargo\bin`).
+pub fn same_dir(a: &Path, b: &Path) -> bool {
+    if cfg!(windows) {
+        let norm = |p: &Path| p.to_string_lossy().trim_end_matches(['\\', '/']).replace('/', "\\").to_lowercase();
+        norm(a) == norm(b)
+    } else {
+        a == b
+    }
+}
+
+/// `path` lies inside `dir`, the way Windows compares paths when it runs there.
+pub fn under(path: &Path, dir: &Path) -> bool {
+    if cfg!(windows) {
+        let norm = |p: &Path| p.to_string_lossy().replace('/', "\\").to_lowercase();
+        let (p, d) = (norm(path), norm(dir));
+        let d = d.trim_end_matches('\\');
+        p == d || p.starts_with(&format!("{d}\\"))
+    } else {
+        path.starts_with(dir)
     }
 }
 
@@ -90,8 +115,48 @@ fn script() -> String {
     s
 }
 
-/// Ask the user's shell (bash or zsh; anything else is probed with bash).
+/// Windows: what a new PowerShell sees (its profile loaded, as in a real
+/// terminal). Store "app execution aliases" (WindowsApps\python.exe, which
+/// only opens the Store) are skipped. Fixed text: nothing from the user goes in.
+fn script_powershell() -> String {
+    let mut s = String::from(
+        "$ErrorActionPreference = 'SilentlyContinue'\n[Console]::OutputEncoding = [Text.Encoding]::UTF8\n",
+    );
+    // What a terminal opened now gets: QuickDesk's own PATH dates from login.
+    s.push_str(
+        "$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')\n",
+    );
+    s.push_str(&format!("Write-Output '{START}'\nWrite-Output (\"PATH`t\" + $env:Path)\n"));
+    for v in VARS {
+        s.push_str(&format!("Write-Output (\"VAR`t{v}`t\" + [Environment]::GetEnvironmentVariable('{v}'))\n"));
+    }
+    for b in BINARIES {
+        let version = match *b {
+            "go" => "version",
+            "java" => "-version",
+            _ => "--version",
+        };
+        s.push_str(&format!(
+            "$c = Get-Command '{b}' -CommandType Application | Where-Object {{ $_.Source -notlike '*\\WindowsApps\\*' }} | Select-Object -First 1\n\
+             if ($c) {{ $l = (& $c.Source {version} 2>&1 | Select-Object -First 1); Write-Output (\"BIN`t{b}`t\" + $c.Source + \"`t\" + $l) }}\n"
+        ));
+    }
+    s.push_str(&format!("Write-Output '{END}'\n"));
+    s
+}
+
+/// Ask the user's shell: bash or zsh (anything else is probed with bash), or
+/// PowerShell on Windows.
 pub fn run(home: &Path, shell_env: Option<&str>) -> Probe {
+    if cfg!(windows) {
+        let runner = SystemRunner::with_timeout(Duration::from_secs(15));
+        let cmd = Cmd::new("powershell.exe", &["-NoLogo", "-NonInteractive", "-Command", &script_powershell()]);
+        let out = runner.run(&cmd, &mut |_| {}).unwrap_or_default();
+        let mut probe = parse_with(&out, ';');
+        probe.home = home.to_path_buf();
+        probe.shell = "powershell".into();
+        return probe;
+    }
     let shell = match shell_env.and_then(|s| Path::new(s).file_name()?.to_str().map(str::to_owned)) {
         Some(s) if s == "zsh" => "zsh".to_owned(),
         _ => "bash".to_owned(),
@@ -106,6 +171,11 @@ pub fn run(home: &Path, shell_env: Option<&str>) -> Probe {
 }
 
 pub fn parse(out: &str) -> Probe {
+    parse_with(out, ':')
+}
+
+/// `sep`: how PATH is joined (`:`, or `;` on Windows).
+pub fn parse_with(out: &str, sep: char) -> Probe {
     let mut probe = Probe::default();
     let body = out.split_once(START).map(|(_, b)| b).unwrap_or("");
     let body = body.split_once(END).map(|(b, _)| b).unwrap_or(body);
@@ -113,7 +183,7 @@ pub fn parse(out: &str) -> Probe {
         let mut parts = line.splitn(4, '\t');
         match (parts.next(), parts.next(), parts.next(), parts.next()) {
             (Some("PATH"), Some(p), _, _) => {
-                probe.path = p.split(':').filter(|s| !s.is_empty()).map(str::to_owned).collect()
+                probe.path = p.split(sep).filter(|s| !s.is_empty()).map(str::to_owned).collect()
             }
             (Some("VAR"), Some(k), v, _) => {
                 probe.vars.insert(k.to_owned(), v.unwrap_or("").to_owned());
@@ -171,6 +241,17 @@ mod tests {
         assert_eq!(p.found["node"].path, "/home/u/.nvm/versions/node/v22.1.0/bin/node");
         assert_eq!(p.found["go"].version_line, "go version go1.22.2 linux/amd64");
         assert!(parse("garbage").found.is_empty());
+    }
+
+    #[test]
+    fn parses_powershell_output_with_windows_paths() {
+        let out = "@@QD-PROBE@@\r\nPATH\tC:\\Users\\Me\\.cargo\\bin;C:\\WINDOWS\\system32;\r\nVAR\tLOCALAPPDATA\tC:\\Users\\Me\\AppData\\Local\r\nBIN\tgo\tC:\\Program Files\\Go\\bin\\go.exe\tgo version go1.23.4 windows/amd64\r\n@@QD-PROBE-END@@\r\n";
+        let p = parse_with(out, ';');
+        assert_eq!(p.path, ["C:\\Users\\Me\\.cargo\\bin", "C:\\WINDOWS\\system32"]);
+        assert_eq!(p.var("LOCALAPPDATA"), Some("C:\\Users\\Me\\AppData\\Local"));
+        assert_eq!(p.found["go"].path, "C:\\Program Files\\Go\\bin\\go.exe");
+        assert_eq!(version_in(&p.found["go"].version_line).as_deref(), Some("1.23.4"));
+        assert!(script_powershell().contains("-notlike '*\\WindowsApps\\*'"));
     }
 
     #[test]

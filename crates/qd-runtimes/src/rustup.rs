@@ -23,7 +23,7 @@ impl Rustup {
             .found
             .get("rustup")
             .map(|f| PathBuf::from(&f.path))
-            .or_else(|| Some(cargo_bin.join("rustup")).filter(|p| p.is_file()))?;
+            .or_else(|| Some(cargo_bin.join(crate::exe("rustup"))).filter(|p| p.is_file()))?;
         let version = probe.found.get("rustup").and_then(|f| crate::probe::version_in(&f.version_line));
         Some(Rustup {
             bin,
@@ -61,12 +61,12 @@ impl Manager for Rustup {
         let Ok(entries) = std::fs::read_dir(self.rustup_home.join("toolchains")) else { return Vec::new() };
         let mut list: Vec<Installed> = entries
             .flatten()
-            .filter(|e| e.path().join("bin").join("rustc").exists())
+            .filter(|e| e.path().join("bin").join(crate::exe("rustc")).exists())
             .filter_map(|e| {
                 let id = e.file_name().to_str()?.to_owned();
                 Some(Installed {
                     version: short_name(&id).to_owned(),
-                    path: e.path().join("bin").join("rustc").display().to_string(),
+                    path: e.path().join("bin").join(crate::exe("rustc")).display().to_string(),
                     bytes: dir_size(&e.path()),
                     is_default: false,
                     id,
@@ -124,7 +124,7 @@ impl Manager for Rustup {
     }
 
     fn manages(&self, path: &str) -> bool {
-        Path::new(path).starts_with(&self.cargo_bin) || Path::new(path).starts_with(&self.rustup_home)
+        crate::probe::under(Path::new(path), &self.cargo_bin) || crate::probe::under(Path::new(path), &self.rustup_home)
     }
 
     fn loaded(&self, probe: &Probe) -> bool {
@@ -133,6 +133,10 @@ impl Manager for Rustup {
 
     fn init_lines(&self) -> Vec<String> {
         vec![format!(". \"{}\"", self.cargo_env)]
+    }
+
+    fn path_dirs(&self) -> Vec<PathBuf> {
+        vec![self.cargo_bin.clone()]
     }
 
     fn free_input(&self) -> bool {
@@ -148,13 +152,13 @@ mod tests {
     #[test]
     fn lists_toolchains_and_reads_the_default() {
         let t = TempDir::new("rustup");
-        t.file(".cargo/bin/rustup", "#!");
+        t.file(&format!(".cargo/bin/{}", crate::exe("rustup")), "#!");
         for tc in [
             "stable-x86_64-unknown-linux-gnu",
             "1.82.0-x86_64-unknown-linux-gnu",
             "nightly-2026-01-01-x86_64-unknown-linux-gnu",
         ] {
-            t.file(&format!(".rustup/toolchains/{tc}/bin/rustc"), "#!");
+            t.file(&format!(".rustup/toolchains/{tc}/bin/{}", crate::exe("rustc")), "#!");
         }
         t.file(
             ".rustup/settings.toml",

@@ -219,6 +219,7 @@ let runtimes: Runtime[] = [
     freeInput: false,
     projectFile: ".nvmrc",
     installManager: null,
+    addable: false,
   },
   {
     id: "python",
@@ -234,6 +235,7 @@ let runtimes: Runtime[] = [
     freeInput: false,
     projectFile: ".python-version",
     installManager: null,
+    addable: false,
   },
   {
     id: "rust",
@@ -250,6 +252,7 @@ let runtimes: Runtime[] = [
     freeInput: true,
     projectFile: "rust-toolchain.toml",
     installManager: null,
+    addable: false,
   },
   {
     id: "go",
@@ -263,7 +266,31 @@ let runtimes: Runtime[] = [
     freeInput: false,
     projectFile: null,
     installManager: "mise",
+    addable: false,
   },
+  // Not on this computer: offered under "Add a language".
+  ...(
+    [
+      ["java", "Java"],
+      ["ruby", "Ruby"],
+      ["deno", "Deno"],
+      ["bun", "Bun"],
+      ["php", "PHP"],
+    ] as const
+  ).map(([id, name]) => ({
+    id,
+    name,
+    manager: null,
+    managerVersion: null,
+    active: null,
+    default: null,
+    installed: [],
+    issue: null,
+    freeInput: false,
+    projectFile: null,
+    installManager: "mise",
+    addable: true,
+  })),
 ];
 const nodeVersions = ["26.11.1", "26.10.0", "25.9.0", "24.21.0", "24.20.0", "23.11.1", "22.24.1", "22.23.3", "22.22.0", "21.7.3", "20.19.4", "20.19.3", "18.20.8"];
 const available: Record<string, { id: string; version: string; tag: string | null; line: string }[]> = {
@@ -280,6 +307,11 @@ const available: Record<string, { id: string; version: string; tag: string | nul
     line: v.split(".").slice(0, 2).join("."),
   })),
   rust: ["stable", "beta", "nightly"].map((v) => ({ id: v, version: v, tag: null, line: "" })),
+  java: ["25.0.2", "24.0.2", "21.0.10", "17.0.18"].map((v, i) => ({ id: v, version: v, tag: i === 0 ? "latest" : null, line: v.split(".")[0] })),
+  ruby: ["3.5.1", "3.4.8", "3.3.10"].map((v, i) => ({ id: v, version: v, tag: i === 0 ? "latest" : null, line: v.split(".").slice(0, 2).join(".") })),
+  deno: ["2.6.3", "2.5.6"].map((v, i) => ({ id: v, version: v, tag: i === 0 ? "latest" : null, line: v.split(".").slice(0, 2).join(".") })),
+  bun: ["1.3.5", "1.2.23"].map((v, i) => ({ id: v, version: v, tag: i === 0 ? "latest" : null, line: v.split(".").slice(0, 2).join(".") })),
+  php: ["8.5.1", "8.4.16", "8.3.29"].map((v, i) => ({ id: v, version: v, tag: i === 0 ? "latest" : null, line: v.split(".").slice(0, 2).join(".") })),
   go: ["1.27.2", "1.27.1", "1.26.8", "1.25.11", "1.24.13", "1.23.12"].map((v, i) => ({
     id: v,
     version: v,
@@ -305,7 +337,11 @@ function runJob(lang: string, action: RuntimeAction, version: string, from: stri
     clearInterval(timer);
     const rt = runtimes.find((r) => r.id === lang);
     if (rt && action === "install_manager") {
-      Object.assign(rt, { manager: "mise", managerVersion: "2026.10.6", installManager: null, projectFile: "mise.toml" });
+      // mise now manages every language it knows.
+      for (const r of runtimes.filter((r) => r.installManager === "mise")) {
+        Object.assign(r, { manager: "mise", managerVersion: "2026.10.6", installManager: null, projectFile: "mise.toml" });
+      }
+      runtimes = [...runtimes];
     } else if (rt) {
       if ((action === "install" || action === "upgrade") && !rt.installed.some((i) => i.id === version)) {
         const path = rt.manager === "mise" ? `/home/demo/.local/share/mise/installs/${lang}/${version}` : nvmBin(version);
@@ -314,6 +350,7 @@ function runJob(lang: string, action: RuntimeAction, version: string, from: stri
         );
       }
       if (action === "uninstall") rt.installed = rt.installed.filter((i) => i.id !== version);
+      rt.addable = rt.installed.length === 0 && !rt.active;
       const wasDefault = action === "upgrade" && rt.installed.some((i) => i.id === from && i.isDefault);
       if (action === "set_default" || wasDefault) {
         rt.default = version;
@@ -460,7 +497,7 @@ const commands: Record<string, (a: Args) => unknown> = {
     }
   },
   runtimes_job: () => job,
-  runtimes_shell_fix: (a) => ({ file: "/home/demo/.bashrc", lines: runtimes.find((r) => r.id === a.lang)?.issue?.fix ?? [], current: [] }),
+  runtimes_shell_fix: (a) => ({ kind: "rc", file: "/home/demo/.bashrc", lines: runtimes.find((r) => r.id === a.lang)?.issue?.fix ?? [], current: [] }),
   runtimes_shell_apply: (a) => {
     const rt = runtimes.find((r) => r.id === a.lang);
     if (rt?.issue) {

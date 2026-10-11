@@ -70,8 +70,24 @@ fn kill_group(pgid: i32, hard: bool) {
     }
 }
 
-#[cfg(not(unix))]
+/// Windows has no process groups: stop the process and its children by tree.
+#[cfg(windows)]
+fn kill_group(pid: i32, hard: bool) {
+    use std::os::windows::process::CommandExt;
+    let mut cmd = Command::new("taskkill");
+    cmd.args(["/PID", &pid.to_string(), "/T"]);
+    if hard {
+        cmd.arg("/F");
+    }
+    let _ = cmd.creation_flags(CREATE_NO_WINDOW).stdout(Stdio::null()).stderr(Stdio::null()).status();
+}
+
+#[cfg(not(any(unix, windows)))]
 fn kill_group(_pgid: i32, _hard: bool) {}
+
+/// Console tools started from a GUI app would flash a window otherwise.
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
 /// After a polite stop, how long before the group is killed outright.
 const KILL_GRACE: Duration = Duration::from_secs(5);
@@ -102,6 +118,11 @@ impl Runner for SystemRunner {
                     Ok(())
                 });
             }
+        }
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            command.creation_flags(CREATE_NO_WINDOW);
         }
         let mut child = command.spawn().map_err(|e| Error::Io(format!("{}: {e}", cmd.program.display())))?;
         self.pgid.store(child.id() as i32, Ordering::SeqCst);

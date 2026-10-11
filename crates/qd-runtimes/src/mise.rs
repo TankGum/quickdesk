@@ -35,18 +35,28 @@ pub struct Mise {
 
 impl Mise {
     pub fn detect(probe: &Probe) -> Option<Arc<Self>> {
+        let local = local_app_data(probe);
         let bin = probe.found.get("mise").map(|f| PathBuf::from(&f.path)).or_else(|| {
-            [".local/bin/mise", ".local/share/mise/bin/mise", ".cargo/bin/mise"]
-                .into_iter()
-                .map(|p| probe.home.join(p))
-                .find(|p| p.is_file())
+            let mut candidates: Vec<PathBuf> = [".local/bin", ".local/share/mise/bin", ".cargo/bin"]
+                .iter()
+                .map(|d| probe.home.join(d).join(crate::exe("mise")))
+                .collect();
+            if cfg!(windows) {
+                // Where QuickDesk's installer puts it, and winget's links.
+                candidates.push(local.join("mise").join("bin").join("mise.exe"));
+                candidates.push(local.join("Microsoft").join("WinGet").join("Links").join("mise.exe"));
+            }
+            candidates.into_iter().find(|p| p.is_file())
         })?;
         let xdg =
             |key: &str, default: &str| probe.var(key).map(PathBuf::from).unwrap_or_else(|| probe.home.join(default));
-        let data_dir = probe
-            .var("MISE_DATA_DIR")
-            .map(PathBuf::from)
-            .unwrap_or_else(|| xdg("XDG_DATA_HOME", ".local/share").join("mise"));
+        let data_dir = probe.var("MISE_DATA_DIR").map(PathBuf::from).unwrap_or_else(|| {
+            if cfg!(windows) {
+                local.join("mise")
+            } else {
+                xdg("XDG_DATA_HOME", ".local/share").join("mise")
+            }
+        });
         let config_dir = probe
             .var("MISE_CONFIG_DIR")
             .map(PathBuf::from)
@@ -220,12 +230,22 @@ impl Manager for MiseTool {
 
     fn manages(&self, path: &str) -> bool {
         let p = Path::new(path);
-        p.starts_with(self.mise.shims()) || p.starts_with(self.mise.data_dir.join("installs"))
+        crate::probe::under(p, &self.mise.shims()) || crate::probe::under(p, &self.mise.data_dir.join("installs"))
     }
 
     fn loaded(&self, probe: &Probe) -> bool {
         let installs = self.mise.data_dir.join("installs");
-        probe.on_path(&self.mise.shims()) || probe.path.iter().any(|p| Path::new(p).starts_with(&installs))
+        probe.on_path(&self.mise.shims()) || probe.path.iter().any(|p| crate::probe::under(Path::new(p), &installs))
+    }
+
+    /// Shims run whatever version is the default (or the folder's), and the
+    /// `mise` command itself next to them.
+    fn path_dirs(&self) -> Vec<PathBuf> {
+        let mut dirs = vec![self.mise.shims()];
+        if let Some(bin_dir) = self.mise.bin.parent() {
+            dirs.push(bin_dir.to_path_buf());
+        }
+        dirs
     }
 
     fn init_lines(&self) -> Vec<String> {
@@ -234,9 +254,49 @@ impl Manager for MiseTool {
     }
 }
 
+/// `%LOCALAPPDATA%` (Windows), from the shell or the usual place.
+fn local_app_data(probe: &Probe) -> PathBuf {
+    probe.var("LOCALAPPDATA").map(PathBuf::from).unwrap_or_else(|| probe.home.join("AppData").join("Local"))
+}
+
 /// Where QuickDesk puts mise when it installs it.
 pub fn install_dir(probe: &Probe) -> PathBuf {
-    probe.home.join(".local/bin")
+    if cfg!(windows) {
+        local_app_data(probe).join("mise").join("bin")
+    } else {
+        probe.home.join(".local/bin")
+    }
+}
+
+/// Windows: the same as [`installer`], in PowerShell. The folder comes in
+/// through `QD_MISE_DIR`, never spliced into the script.
+pub fn installer_windows(dir: &Path) -> Cmd {
+    const SCRIPT: &str = r#"$ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
+$dir = $env:QD_MISE_DIR
+$arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'arm64' } else { 'x64' }
+$release = Invoke-RestMethod 'https://api.github.com/repos/jdx/mise/releases/latest' -Headers @{ 'User-Agent' = 'QuickDesk' }
+$v = $release.tag_name
+if ($v -notmatch '^v[0-9]') { throw 'could not find the latest mise release' }
+$name = "mise-$v-windows-$arch.exe"
+$tmp = Join-Path ([IO.Path]::GetTempPath()) ("quickdesk-mise-" + [guid]::NewGuid())
+New-Item -ItemType Directory -Force -Path $tmp | Out-Null
+try {
+  Write-Output "Downloading $name"
+  Invoke-WebRequest "https://github.com/jdx/mise/releases/download/$v/$name" -OutFile "$tmp\mise.exe" -UseBasicParsing
+  Invoke-WebRequest "https://github.com/jdx/mise/releases/download/$v/SHASUMS256.txt" -OutFile "$tmp\SHASUMS256.txt" -UseBasicParsing
+  $want = Get-Content "$tmp\SHASUMS256.txt" | Where-Object { $_ -match ('\s\./' + [regex]::Escape($name) + '$') } | ForEach-Object { ($_ -split '\s+')[0] } | Select-Object -First 1
+  $got = (Get-FileHash "$tmp\mise.exe" -Algorithm SHA256).Hash.ToLowerInvariant()
+  if (-not $want -or $want -ne $got) { throw "checksum does not match for $name" }
+  New-Item -ItemType Directory -Force -Path $dir | Out-Null
+  Move-Item -Force "$tmp\mise.exe" (Join-Path $dir 'mise.exe')
+  Write-Output "Installed mise $v in $dir"
+} finally {
+  Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
+}
+"#;
+    Cmd::new("powershell.exe", &["-NoProfile", "-NonInteractive", "-Command", SCRIPT])
+        .env("QD_MISE_DIR", dir.display().to_string())
 }
 
 /// Download the latest mise for this CPU from its GitHub releases, check it
@@ -274,7 +334,7 @@ mod tests {
     use crate::testutil::{FakeRunner, TempDir};
 
     fn tool(t: &TempDir, lang: &'static str) -> MiseTool {
-        t.file(".local/bin/mise", "#!");
+        t.file(&format!(".local/bin/{}", crate::exe("mise")), "#!");
         let probe = Probe { home: t.path().to_path_buf(), shell: "bash".into(), ..Default::default() };
         MiseTool { mise: Mise::detect(&probe).unwrap(), lang }
     }
@@ -341,6 +401,14 @@ mod tests {
         let probe = Probe { path: vec![shims.display().to_string(), "/usr/bin".into()], ..Default::default() };
         assert!(go.loaded(&probe));
         assert!(!go.loaded(&Probe { path: vec!["/usr/bin".into()], ..Default::default() }));
+    }
+
+    #[test]
+    fn windows_installer_takes_the_folder_from_the_environment() {
+        let dir = r"C:\Users\O'Brien\AppData\Local\mise\bin";
+        let cmd = installer_windows(Path::new(dir));
+        assert!(cmd.args[3].contains("Get-FileHash") && !cmd.args[3].contains("O'Brien"));
+        assert_eq!(cmd.env, [("QD_MISE_DIR".to_owned(), dir.to_owned())]);
     }
 
     #[test]

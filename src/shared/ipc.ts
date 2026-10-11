@@ -196,6 +196,8 @@ export interface Runtime {
   projectFile: string | null;
   /** No manager yet; this one ("mise") can be installed to manage it. */
   installManager: string | null;
+  /** Not on this computer yet: offered under "Add a language" (through mise). */
+  addable: boolean;
 }
 
 export interface InstalledVersion {
@@ -209,7 +211,7 @@ export interface InstalledVersion {
 export interface RuntimeIssue {
   kind: "not_loaded" | "shadowed" | "other";
   expected: string;
-  /** Lines that fix it in the shell's rc file (empty: no automatic fix). */
+  /** Lines for the shell's rc file, or on Windows folders for the user PATH (empty: no automatic fix). */
   fix: string[];
 }
 
@@ -263,6 +265,8 @@ export interface AutoApplyState {
 }
 
 export interface ShellFix {
+  /** rc: a block in a shell file; path: folders in the Windows user PATH (file names the registry value). */
+  kind: "rc" | "path";
   file: string;
   lines: string[];
   current: string[];

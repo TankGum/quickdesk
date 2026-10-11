@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use qd_runtimes::{shellrc, Action, Runtime};
+use qd_runtimes::{shellrc, winpath, Action, Runtime};
 use serde::Serialize;
 use tauri::{AppHandle, Manager, State};
 use tauri_plugin_dialog::DialogExt;
@@ -73,7 +73,9 @@ pub fn runtimes_job(state: State<'_, AppState>) -> Option<JobState> {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ShellFix {
-    /// `~/.bashrc` as an absolute path.
+    /// "rc": lines in a shell file; "path": folders in the Windows user PATH.
+    kind: &'static str,
+    /// `~/.bashrc` as an absolute path (on Windows, the registry value).
     file: String,
     /// What QuickDesk's block will hold after the change.
     lines: Vec<String>,
@@ -81,9 +83,16 @@ pub struct ShellFix {
     current: Vec<String>,
 }
 
+/// The user PATH in the registry, as the UI names it.
+const USER_PATH: &str = r"HKEY_CURRENT_USER\Environment\Path";
+
 fn rc_path(app: &AppHandle) -> PathBuf {
     let sys = app.state::<AppState>().runtimes.system(false);
     shellrc::rc_file(&sys.probe.home, &sys.probe.shell)
+}
+
+fn home(app: &AppHandle) -> PathBuf {
+    app.state::<AppState>().runtimes.system(false).probe.home.clone()
 }
 
 /// What fixing `lang`'s PATH would write, for the user to read first.
@@ -91,11 +100,20 @@ fn rc_path(app: &AppHandle) -> PathBuf {
 pub async fn runtimes_shell_fix(app: AppHandle, lang: String) -> CmdResult<ShellFix> {
     blocking(move || {
         let add = app.state::<AppState>().runtimes.system(false).shell_fix(&lang)?;
+        if cfg!(windows) {
+            let current = winpath::added(&winpath::state_dir(&home(&app)));
+            let lines = winpath::with_dirs(&current.join(";"), &add)
+                .split(';')
+                .filter(|l| !l.is_empty())
+                .map(str::to_owned)
+                .collect();
+            return Ok(ShellFix { kind: "path", file: USER_PATH.to_owned(), lines, current });
+        }
         let file = rc_path(&app);
         let content = std::fs::read_to_string(&file).unwrap_or_default();
         let current = shellrc::block_lines(&content);
         let lines = shellrc::block_lines(&shellrc::with_lines(&content, &add));
-        Ok(ShellFix { file: file.display().to_string(), lines, current })
+        Ok(ShellFix { kind: "rc", file: file.display().to_string(), lines, current })
     })
     .await
 }
@@ -117,6 +135,12 @@ pub async fn runtimes_shell_apply(app: AppHandle, lang: String) -> CmdResult<She
     blocking(move || {
         let state = app.state::<AppState>();
         let add = state.runtimes.system(false).shell_fix(&lang)?;
+        if cfg!(windows) {
+            let backup = winpath::apply(&home(&app), &add, &stamp())?;
+            tracing::info!(%lang, dirs = ?add, "added folders to the user PATH");
+            state.runtimes.rescan();
+            return Ok(ShellApplied { file: USER_PATH.to_owned(), backup: backup.map(|b| b.display().to_string()) });
+        }
         let file = rc_path(&app);
         let backup = shellrc::apply(&file, &add, &stamp())?;
         tracing::info!(file = %file.display(), %lang, "added QuickDesk's PATH block");
@@ -129,7 +153,11 @@ pub async fn runtimes_shell_apply(app: AppHandle, lang: String) -> CmdResult<She
 #[tauri::command]
 pub async fn runtimes_shell_undo(app: AppHandle) -> CmdResult<bool> {
     blocking(move || {
-        let removed = shellrc::undo(&rc_path(&app), &stamp())?;
+        let removed = if cfg!(windows) {
+            winpath::undo(&home(&app), &stamp())?
+        } else {
+            shellrc::undo(&rc_path(&app), &stamp())?
+        };
         app.state::<AppState>().runtimes.rescan();
         Ok(removed)
     })

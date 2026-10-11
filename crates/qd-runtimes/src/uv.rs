@@ -1,6 +1,8 @@
 //! Python through uv (docs.astral.sh/uv). uv keeps interpreters in
 //! `~/.local/share/uv/python/<key>` and, for the default one, puts `python3`
-//! and `python` in `~/.local/bin`.
+//! and `python` in `~/.local/bin`. On Windows uv says where those are
+//! (`uv python dir [--bin]`), interpreters are `<key>\python.exe` and the
+//! default ones are small launchers, so the default is told by its version.
 
 use std::path::{Path, PathBuf};
 
@@ -14,12 +16,25 @@ pub struct Uv {
     bin_dir_rc: String,
     version: Option<String>,
     env: Vec<(String, String)>,
+    /// What a terminal's `python` is (path, version), to find the default on Windows.
+    terminal_python: Option<(PathBuf, String)>,
+}
+
+/// One line printed by `uv <args>`, e.g. `uv python dir` (Windows only).
+fn ask_uv(bin: &Path, args: &[&str], env: &[(String, String)]) -> Option<PathBuf> {
+    let mut cmd = Cmd::new(bin, args);
+    cmd.env = env.to_vec();
+    let out = crate::SystemRunner::with_timeout(std::time::Duration::from_secs(10)).run(&cmd, &mut |_| {}).ok()?;
+    out.lines().map(str::trim).find(|l| !l.is_empty()).map(PathBuf::from)
 }
 
 impl Uv {
     pub fn detect(probe: &Probe) -> Option<Self> {
         let bin = probe.found.get("uv").map(|f| PathBuf::from(&f.path)).or_else(|| {
-            [".local/bin/uv", ".cargo/bin/uv"].into_iter().map(|p| probe.home.join(p)).find(|p| p.is_file())
+            [".local/bin", ".cargo/bin"]
+                .into_iter()
+                .map(|d| probe.home.join(d).join(crate::exe("uv")))
+                .find(|p| p.is_file())
         })?;
         let data = probe.var("XDG_DATA_HOME").map(PathBuf::from).unwrap_or_else(|| probe.home.join(".local/share"));
         let install_dir =
@@ -32,7 +47,28 @@ impl Uv {
         let version = probe.found.get("uv").and_then(|f| crate::probe::version_in(&f.version_line));
         let env =
             crate::shell_env(probe, &["UV_PYTHON_INSTALL_DIR", "UV_PYTHON_BIN_DIR", "XDG_DATA_HOME", "XDG_BIN_HOME"]);
-        Some(Uv { bin_dir_rc: home_relative(probe, &bin_dir), bin, install_dir, bin_dir, version, env })
+        // Windows keeps these elsewhere (under %APPDATA%); uv knows exactly where.
+        let (install_dir, bin_dir) = if cfg!(windows) {
+            (
+                ask_uv(&bin, &["python", "dir"], &env).unwrap_or(install_dir),
+                ask_uv(&bin, &["python", "dir", "--bin"], &env).unwrap_or(bin_dir),
+            )
+        } else {
+            (install_dir, bin_dir)
+        };
+        let terminal_python = ["python", "python3"]
+            .iter()
+            .find_map(|b| probe.found.get(*b))
+            .and_then(|f| Some((PathBuf::from(&f.path), crate::probe::version_in(&f.version_line)?)));
+        Some(Uv {
+            bin_dir_rc: home_relative(probe, &bin_dir),
+            bin,
+            install_dir,
+            bin_dir,
+            version,
+            env,
+            terminal_python,
+        })
     }
 
     /// The installation (directory name under `install_dir`) that `path` belongs to.
@@ -79,9 +115,11 @@ impl Manager for Uv {
                 if id.starts_with('.') || !id.contains('-') {
                     return None;
                 }
+                let python =
+                    if cfg!(windows) { e.path().join("python.exe") } else { e.path().join("bin").join("python3") };
                 Some(Installed {
                     version: display_version(&id),
-                    path: e.path().join("bin").join("python3").display().to_string(),
+                    path: python.display().to_string(),
                     bytes: dir_size(&e.path()),
                     is_default: false,
                     id,
@@ -93,6 +131,15 @@ impl Manager for Uv {
     }
 
     fn default_id(&self, installed: &[Installed]) -> Option<String> {
+        if cfg!(windows) {
+            // The default `python.exe` is a launcher, not a link: match the
+            // version the terminal's python reports when it is uv's.
+            let (path, version) = self.terminal_python.as_ref()?;
+            if !crate::probe::under(path, &self.bin_dir) {
+                return None;
+            }
+            return installed.iter().find(|i| crate::runs_version(version, &i.version)).map(|i| i.id.clone());
+        }
         let key = self.installation_of(&self.bin_dir.join("python3"))?;
         installed.iter().find(|i| i.id == key).map(|i| i.id.clone())
     }
@@ -124,10 +171,17 @@ impl Manager for Uv {
     }
 
     fn manages(&self, path: &str) -> bool {
+        if cfg!(windows) {
+            let p = Path::new(path);
+            return crate::probe::under(p, &self.install_dir) || crate::probe::under(p, &self.bin_dir);
+        }
         self.installation_of(Path::new(path)).is_some()
     }
 
     fn loaded(&self, probe: &Probe) -> bool {
+        if cfg!(windows) {
+            return probe.on_path(&self.bin_dir);
+        }
         // Loaded and first: before /usr/bin, where the system python3 lives.
         match (probe.path_index(&self.bin_dir), probe.path_index(Path::new("/usr/bin"))) {
             (Some(ours), Some(system)) => ours < system,
@@ -138,6 +192,10 @@ impl Manager for Uv {
 
     fn init_lines(&self) -> Vec<String> {
         vec![format!("export PATH=\"{}:$PATH\"", self.bin_dir_rc)]
+    }
+
+    fn path_dirs(&self) -> Vec<PathBuf> {
+        vec![self.bin_dir.clone()]
     }
 }
 
@@ -189,7 +247,7 @@ mod tests {
     #[test]
     fn lists_installs_and_finds_the_default_through_links() {
         let t = TempDir::new("uv");
-        t.file(".local/bin/uv", "#!");
+        t.file(&format!(".local/bin/{}", crate::exe("uv")), "#!");
         let py312 = t.file(".local/share/uv/python/cpython-3.12.4-linux-x86_64-gnu/bin/python3.12", "#!");
         t.file(".local/share/uv/python/cpython-3.13.1-linux-x86_64-gnu/bin/python3.13", "#!");
         t.file(".local/share/uv/python/.lock", "");
@@ -221,7 +279,7 @@ mod tests {
     #[test]
     fn needs_its_bin_dir_before_usr_bin() {
         let t = TempDir::new("uv-path");
-        t.file(".local/bin/uv", "#!");
+        t.file(&format!(".local/bin/{}", crate::exe("uv")), "#!");
         let local = t.path().join(".local/bin").display().to_string();
         let uv = Uv::detect(&Probe { home: t.path().to_path_buf(), ..Default::default() }).unwrap();
         let probe =
@@ -234,7 +292,7 @@ mod tests {
     #[test]
     fn parses_downloads_newest_first() {
         let t = TempDir::new("uv-list");
-        t.file(".local/bin/uv", "#!");
+        t.file(&format!(".local/bin/{}", crate::exe("uv")), "#!");
         let uv = Uv::detect(&Probe { home: t.path().to_path_buf(), ..Default::default() }).unwrap();
         let run = FakeRunner {
             output: r#"[{"version":"3.15.0b2","implementation":"cpython","variant":"default"},

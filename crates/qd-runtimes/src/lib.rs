@@ -11,6 +11,7 @@ pub mod run;
 mod rustup;
 pub mod shellrc;
 mod uv;
+pub mod winpath;
 
 use std::path::{Path, PathBuf};
 
@@ -84,6 +85,8 @@ pub struct Runtime {
     pub project_file: Option<String>,
     /// No manager yet, but this one could be installed to manage it (`mise`).
     pub install_manager: Option<String>,
+    /// Not on this computer yet; mise (or installing mise) can add it.
+    pub addable: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -191,6 +194,8 @@ pub(crate) trait Manager {
     fn loaded(&self, probe: &Probe) -> bool;
     /// rc lines that put the manager on PATH, first.
     fn init_lines(&self) -> Vec<String>;
+    /// Windows: the directories that must be in the user PATH (the fix there).
+    fn path_dirs(&self) -> Vec<PathBuf>;
     fn free_input(&self) -> bool {
         false
     }
@@ -226,7 +231,11 @@ pub struct System {
 impl System {
     /// Probe the user's shell. Takes a few hundred milliseconds.
     pub fn detect() -> Self {
-        let home = std::env::var_os("HOME").map(PathBuf::from).unwrap_or_else(|| PathBuf::from("/"));
+        let home = std::env::var_os("HOME")
+            .or_else(|| std::env::var_os("USERPROFILE"))
+            .filter(|h| !h.is_empty())
+            .map(PathBuf::from)
+            .unwrap_or_else(|| PathBuf::from("/"));
         let shell = std::env::var("SHELL").ok();
         Self::from_probe(probe::run(&home, shell.as_deref()))
     }
@@ -279,8 +288,9 @@ impl System {
     fn runtime(&self, lang: &Lang) -> Option<Runtime> {
         let manager = self.pick(lang.id);
         let found = self.found(lang.id);
-        // mise could manage any language; list only the ones it has or the terminal runs.
-        if found.is_none() && manager.is_none_or(|m| m.id() == "mise" && m.installed().is_empty()) {
+        // Not here yet: offered under "Add a language", through mise.
+        let addable = found.is_none() && manager.is_none_or(|m| m.id() == "mise" && m.installed().is_empty());
+        if addable && !mise::TOOLS.contains(&lang.id) {
             return None;
         }
         let active = found.map(|f| Active {
@@ -301,6 +311,7 @@ impl System {
             project_file: None,
             install_manager: (manager.is_none() && !self.has_mise && mise::TOOLS.contains(&lang.id))
                 .then(|| "mise".to_owned()),
+            addable,
         };
         if let Some(m) = manager {
             let mut installed = m.installed();
@@ -392,7 +403,8 @@ impl System {
             if self.has_mise {
                 return Err(Error::Invalid("mise is already installed".into()));
             }
-            return Ok(mise::installer(&mise::install_dir(&self.probe)));
+            let dir = mise::install_dir(&self.probe);
+            return Ok(if cfg!(windows) { mise::installer_windows(&dir) } else { mise::installer(&dir) });
         }
         validate_version(version)?;
         let m = self.manager(lang)?;
@@ -455,9 +467,10 @@ impl System {
         }
     }
 
-    /// Lines to add to the rc file so the terminal runs `lang`'s default.
+    /// What fixing PATH for `lang` needs: rc-file lines, or on Windows the
+    /// directories to put in front of the user PATH.
     pub fn shell_fix(&self, lang: &str) -> Result<Vec<String>> {
-        Ok(self.manager(lang)?.init_lines())
+        Ok(fix_for(self.manager(lang)?))
     }
 }
 
@@ -481,8 +494,26 @@ fn issue(
         }
         _ => {
             let kind = if m.loaded(probe) { "shadowed" } else { "not_loaded" };
-            Some(Issue { kind, expected, fix: m.init_lines() })
+            Some(Issue { kind, expected, fix: fix_for(m) })
         }
+    }
+}
+
+/// What fixes PATH: rc-file lines, or on Windows directories for the user PATH.
+fn fix_for(m: &dyn Manager) -> Vec<String> {
+    if cfg!(windows) {
+        m.path_dirs().iter().map(|d| d.display().to_string()).collect()
+    } else {
+        m.init_lines()
+    }
+}
+
+/// `name` as an executable file name here (`rustc.exe` on Windows).
+pub(crate) fn exe(name: &str) -> String {
+    if cfg!(windows) {
+        format!("{name}.exe")
+    } else {
+        name.to_owned()
     }
 }
 
@@ -494,7 +525,7 @@ fn same_version(a: &str, b: &str) -> bool {
 /// What the binary reports (`21.0.4`) matches the installed name
 /// (`21.0.4+7`, `temurin-21.0.4+7`), as far as both say. A channel
 /// (`stable`, `latest`) cannot be compared, so it counts as a match.
-fn runs_version(reported: &str, installed: &str) -> bool {
+pub(crate) fn runs_version(reported: &str, installed: &str) -> bool {
     let (r, i) = (version_key(reported), version_key(installed));
     if r.is_empty() || i.is_empty() {
         return true;
@@ -655,9 +686,12 @@ mod tests {
     fn reports_runtimes_with_and_without_a_manager() {
         let (_t, sys) =
             nvm_system(&["~/.nvm/versions/node/v22.10.0/bin", "/usr/bin"], "~/.nvm/versions/node/v22.10.0/bin/node");
-        let rts = sys.runtimes();
+        let rts: Vec<Runtime> = sys.runtimes().into_iter().filter(|r| !r.addable).collect();
         let ids: Vec<&str> = rts.iter().map(|r| r.id.as_str()).collect();
         assert_eq!(ids, ["node", "go"]);
+        // The others can be added (after installing mise, which is not here).
+        let add: Vec<Runtime> = sys.runtimes().into_iter().filter(|r| r.addable).collect();
+        assert!(add.iter().any(|r| r.id == "java" && r.install_manager.as_deref() == Some("mise")));
         let node = &rts[0];
         assert_eq!(node.manager.as_deref(), Some("nvm"));
         assert_eq!(node.default.as_deref(), Some("v22.10.0"));

@@ -423,6 +423,13 @@ const en = {
   "rt.pick.lines": "Newest of each line",
   "rt.pick.lts": "LTS",
   "rt.pick.all": "All ({n})",
+  "rt.add.title": "Add a language",
+  "rt.add.hint": "Not on this computer yet; mise installs them for your account only.",
+  "rt.issue.not_loaded.win": "New terminals run {active}, not the default {expected}: {manager}'s folders are not in PATH.",
+  "rt.fix.titlePath": "Add to your account's PATH",
+  "rt.fix.introPath": "QuickDesk puts these folders at the front of your user PATH (the one in Settings → Environment Variables) and keeps the old value in {dir}. Nothing else changes; no administrator rights needed.",
+  "rt.fix.undoPath": "Remove the folders QuickDesk added to PATH",
+  "rt.mise.introWin": "mise (mise.jdx.dev) is a version manager for Node, Python, Go, Java, Ruby, Deno, Bun, PHP and more. QuickDesk downloads the latest release from github.com/jdx/mise, checks it against the release's SHA-256 sums and puts it in {dir}. Nothing else is changed; afterwards, “Fix PATH…” offers to add mise's folders to your account's PATH.",
   "rt.footnote": "QuickDesk changes versions only through nvm, rustup, uv and mise, and never installs or removes system packages. Version lists and downloads come from those tools' own servers.",
 
   // Relative time
@@ -833,6 +840,13 @@ const vi: Record<Key, string> = {
   "rt.pick.lines": "Mới nhất mỗi dòng",
   "rt.pick.lts": "LTS",
   "rt.pick.all": "Tất cả ({n})",
+  "rt.add.title": "Thêm ngôn ngữ",
+  "rt.add.hint": "Chưa có trên máy; mise cài chúng chỉ cho tài khoản của bạn.",
+  "rt.issue.not_loaded.win": "Terminal mới chạy {active}, không phải bản mặc định {expected}: thư mục của {manager} chưa có trong PATH.",
+  "rt.fix.titlePath": "Thêm vào PATH của tài khoản",
+  "rt.fix.introPath": "QuickDesk đặt các thư mục này lên đầu PATH của tài khoản (PATH trong Settings → Environment Variables) và lưu giá trị cũ trong {dir}. Ngoài ra không đổi gì; không cần quyền administrator.",
+  "rt.fix.undoPath": "Gỡ các thư mục QuickDesk đã thêm vào PATH",
+  "rt.mise.introWin": "mise (mise.jdx.dev) là trình quản lý version cho Node, Python, Go, Java, Ruby, Deno, Bun, PHP và nhiều ngôn ngữ khác. QuickDesk tải bản mới nhất từ github.com/jdx/mise, kiểm tra với mã SHA-256 của bản phát hành rồi đặt vào {dir}. Ngoài ra không đổi gì; sau đó “Sửa PATH…” sẽ đề xuất thêm các thư mục của mise vào PATH của tài khoản.",
   "rt.footnote": "QuickDesk chỉ đổi version thông qua nvm, rustup, uv và mise, và không bao giờ cài hay gỡ gói của hệ thống. Danh sách version và file tải về đến từ máy chủ của chính các công cụ đó.",
 
   "time.justNow": "vừa xong",

@@ -14,6 +14,7 @@ import {
   ShellFix,
   useBackendEvent,
 } from "../../shared/ipc";
+import { isWindows } from "../../shared/platform";
 import { relativeTime } from "../../shared/time";
 
 /** Shown rows before the filter has to narrow the list. */
@@ -26,8 +27,8 @@ export function size(bytes: number): string {
   return `${Math.max(1, Math.round(bytes / 1024 ** 2))} MB`;
 }
 
-/** `/home/me/.nvm/…` → `~/.nvm/…` */
-const tidy = (path: string) => path.replace(/^\/home\/[^/]+/, "~");
+/** `/home/me/.nvm/…` → `~/.nvm/…`, `C:\Users\me\.cargo…` → `~\.cargo…` */
+const tidy = (path: string) => path.replace(/^\/home\/[^/]+/, "~").replace(/^[A-Za-z]:\\Users\\[^\\]+/i, "~");
 
 export function RuntimesTab({ focusSignal }: { focusSignal: number }) {
   useI18n();
@@ -39,7 +40,11 @@ export function RuntimesTab({ focusSignal }: { focusSignal: number }) {
   const [updates, setUpdates] = useState<RuntimeUpdate[]>([]);
   // Asks each manager for its version list (cached an hour); errors only mean no badges.
   const loadUpdates = useCallback(() => void api.runtimesUpdates().then(setUpdates, () => setUpdates([])), []);
-  const loadAuto = useCallback(() => void api.runtimesAutoApply().then(setAuto, () => setAuto(null)), []);
+  // The prompt hook is for bash and zsh; Windows terminals pick up changes through PATH.
+  const loadAuto = useCallback(() => {
+    if (!isWindows) void api.runtimesAutoApply().then(setAuto, () => setAuto(null));
+  }, []);
+  const [adding, setAdding] = useState<string | null>(null);
 
   const scan = useCallback(async (force: boolean) => {
     setScanning(true);
@@ -72,6 +77,9 @@ export function RuntimesTab({ focusSignal }: { focusSignal: number }) {
     api.runtimesRun(lang, action, version).catch((e) => setError(errorMessage(e)));
 
   if (!runtimes) return <div className="empty">{t("rt.scanning")}</div>;
+  // The one being added stays a card while it installs, until it is no longer addable.
+  const cards = runtimes.filter((rt) => !rt.addable || rt.id === adding);
+  const addable = runtimes.filter((rt) => rt.addable && rt.id !== adding);
 
   return (
     <div className="rt">
@@ -82,14 +90,16 @@ export function RuntimesTab({ focusSignal }: { focusSignal: number }) {
         </button>
       </div>
       {error && <div className="banner error">{error}</div>}
-      {runtimes.length === 0 ? (
+      {cards.length === 0 ? (
         <div className="empty">{t("rt.none")}</div>
       ) : (
         <div className="rt-cards">
-          {runtimes.map((rt) => (
+          {cards.map((rt) => (
             <RuntimeCard
               key={rt.id}
               rt={rt}
+              adding={rt.addable}
+              onCloseAdd={() => setAdding(null)}
               job={job?.lang === rt.id ? job : null}
               busy={Boolean(job?.running)}
               run={run}
@@ -102,6 +112,19 @@ export function RuntimesTab({ focusSignal }: { focusSignal: number }) {
           ))}
         </div>
       )}
+      {addable.length > 0 && (
+        <div className="rt-add">
+          <h4>{t("rt.add.title")}</h4>
+          <div className="row tight">
+            {addable.map((rt) => (
+              <button key={rt.id} className="chip" onClick={() => setAdding(rt.id)}>
+                + {rt.name}
+              </button>
+            ))}
+          </div>
+          <p className="muted small">{t("rt.add.hint")}</p>
+        </div>
+      )}
       <p className="muted small">{t("rt.footnote")}</p>
     </div>
   );
@@ -109,6 +132,8 @@ export function RuntimesTab({ focusSignal }: { focusSignal: number }) {
 
 function RuntimeCard({
   rt,
+  adding,
+  onCloseAdd,
   job,
   busy,
   run,
@@ -119,6 +144,9 @@ function RuntimeCard({
   onUpgrade,
 }: {
   rt: Runtime;
+  /** Picked under "Add a language": opens on installing. */
+  adding: boolean;
+  onCloseAdd: () => void;
   job: RuntimeJob | null;
   busy: boolean;
   run: (lang: string, action: RuntimeAction, version: string) => void;
@@ -128,8 +156,12 @@ function RuntimeCard({
   updates: RuntimeUpdate[];
   onUpgrade: (u: RuntimeUpdate) => void;
 }) {
-  const [panel, setPanel] = useState<Panel>(null);
+  const [panel, setPanel] = useState<Panel>(adding ? (rt.manager ? "install" : "mise") : null);
   const toggle = (p: Panel) => setPanel((cur) => (cur === p ? null : p));
+  // mise just arrived for a language being added: go on to its versions.
+  useEffect(() => {
+    if (adding && rt.manager) setPanel((cur) => (cur === "mise" || cur === null ? "install" : cur));
+  }, [adding, rt.manager]);
   const expected = rt.installed.find((i) => i.isDefault)?.version;
   return (
     <section className="rt-card">
@@ -141,7 +173,15 @@ function RuntimeCard({
             {rt.managerVersion && ` ${rt.managerVersion}`}
           </span>
         ) : (
-          <span className="badge">{t("rt.system")}</span>
+          !adding && <span className="badge">{t("rt.system")}</span>
+        )}
+        {adding && !job?.running && (
+          <>
+            <span className="spacer" />
+            <button className="btn" onClick={onCloseAdd}>
+              {t("common.close")}
+            </button>
+          </>
         )}
       </header>
 
@@ -162,7 +202,7 @@ function RuntimeCard({
       {rt.issue && (
         <div className="banner warn rt-issue">
           <span>
-            {t(`rt.issue.${rt.issue.kind}` as const, {
+            {t(isWindows && rt.issue.kind === "not_loaded" ? "rt.issue.not_loaded.win" : (`rt.issue.${rt.issue.kind}` as const), {
               active: rt.active?.version ?? t("rt.nothing"),
               expected: rt.issue.expected,
               manager: rt.manager ?? "",
@@ -221,7 +261,7 @@ function RuntimeCard({
         </>
       ) : rt.installManager && job?.running ? null : rt.installManager ? (
         <>
-          <p className="muted small">{t("rt.readOnly")}</p>
+          {!adding && <p className="muted small">{t("rt.readOnly")}</p>}
           <div className="row tight">
             <button className="btn" disabled={busy} onClick={() => toggle("mise")}>
               {t("rt.mise.offer", { name: rt.name })}
@@ -541,7 +581,9 @@ function MisePanel({ busy, onInstall, onClose }: { busy: boolean; onInstall: () 
   return (
     <div className="rt-panel">
       <h4>{t("rt.mise.title")}</h4>
-      <p className="muted small">{t("rt.mise.intro", { dir: "~/.local/bin" })}</p>
+      <p className="muted small">
+        {isWindows ? t("rt.mise.introWin", { dir: "%LOCALAPPDATA%\\mise\\bin" }) : t("rt.mise.intro", { dir: "~/.local/bin" })}
+      </p>
       <div className="row tight">
         <button className="btn primary" disabled={busy} onClick={onInstall}>
           {t("rt.mise.install")}
@@ -558,6 +600,8 @@ function MisePanel({ busy, onInstall, onClose }: { busy: boolean; onInstall: () 
 function appliedHint(rt: Runtime, autoApply: boolean): string | null {
   // rustup's proxies stay at one path and read the default at every run.
   if (rt.manager === "rustup") return t("rt.applied.now");
+  // Windows: mise's shims and uv's python.exe also read the default at every run (no hash cache).
+  if (isWindows) return rt.manager === "mise" || rt.manager === "uv" ? t("rt.applied.now") : null;
   if (autoApply) return t("rt.applied.next");
   if (rt.manager === "nvm") return t("rt.applied.newOnly");
   if (rt.manager === "uv" || rt.manager === "mise") return t("rt.applied.hashR");
@@ -629,18 +673,19 @@ function FixPanel({ lang, onClose, onSaved }: { lang: string; onClose: () => voi
 
   if (error) return <div className="banner error">{error}</div>;
   if (!fix) return null;
+  const path = fix.kind === "path";
   return (
     <div className="rt-panel">
-      <h4>{t("rt.fix.title", { file: tidy(fix.file) })}</h4>
-      <p className="muted small">{t("rt.fix.intro")}</p>
+      <h4>{path ? t("rt.fix.titlePath") : t("rt.fix.title", { file: tidy(fix.file) })}</h4>
+      <p className="muted small">{path ? t("rt.fix.introPath", { dir: "~\\.config\\quickdesk\\path" }) : t("rt.fix.intro")}</p>
       <pre className="rt-pre">
-        {"# >>> quickdesk >>>\n"}
+        {!path && "# >>> quickdesk >>>\n"}
         {fix.lines.map((l) => (
           <span key={l} className={fix.current.includes(l) ? "" : "rt-added"}>
-            {l + "\n"}
+            {tidy(l) + "\n"}
           </span>
         ))}
-        {"# <<< quickdesk <<<"}
+        {!path && "# <<< quickdesk <<<"}
       </pre>
       {saved ? (
         <div className="banner info">
@@ -691,7 +736,7 @@ function FixPanel({ lang, onClose, onSaved }: { lang: string; onClose: () => voi
             )
           }
         >
-          {t("rt.fix.undo", { file: tidy(fix.file) })}
+          {path ? t("rt.fix.undoPath") : t("rt.fix.undo", { file: tidy(fix.file) })}
         </button>
       )}
     </div>
