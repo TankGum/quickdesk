@@ -1,0 +1,19 @@
+// Download counts for dl.quickdesk.click: a Worker on the host's route that
+// passes requests through to the R2 bucket and keeps daily download totals in
+// D1. Every download and update goes through it once deployed: see
+// docs/RELEASING.md ("Download counts") before changing or redeploying it.
+{
+  "name": "quickdesk-dl",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "routes": [{ "pattern": "dl.quickdesk.click/*", "zone_name": "quickdesk.click" }],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "quickdesk-downloads",
+      "database_id": "c1ac56d5-43cf-44bc-b5ed-e66156f0a0cb",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "observability": { "enabled": true }
+}

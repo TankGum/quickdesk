@@ -5,7 +5,7 @@ import type { Lang } from "../i18n";
 export const privacy: Record<Lang, { title: string; updated: string; html: string }> = {
   en: {
     title: "Privacy",
-    updated: "Last updated 9 October 2026 (QuickDesk Cloud sync)",
+    updated: "Last updated 11 October 2026 (download counts)",
     html: `<p class="lead">QuickDesk has no accounts, no analytics and no telemetry. Your notes and clipboard history live on your computer. This page lists everything that leaves it.</p>
 <h2>What stays on your computer</h2>
 <ul>
@@ -27,12 +27,14 @@ export const privacy: Record<Lang, { title: string; updated: string; html: strin
 <p>Codex and Antigravity usage is read from log files on your computer; nothing is sent.</p>
 <h2>This website</h2>
 <p>quickdesk.click is a static site on Cloudflare Pages, with no cookies, no analytics and no tracking. It loads fonts from Google Fonts, so Google sees your IP address. The demo runs entirely in your browser on sample data. The system you pick (Linux, Windows or macOS) and the light or dark theme, if you switch it, are remembered in your browser’s local storage and never sent anywhere.</p>
+<h2>Download counts</h2>
+<p>To know how many people install and update QuickDesk, <code>dl.quickdesk.click</code> counts each download and update check: which file (its version and system), the kind of client that asked (a browser coming from this website or elsewhere, a terminal, PowerShell, or the app’s updater) and the country Cloudflare reports for the request. Only daily totals are kept (in a Cloudflare D1 database): no IP address, browser string, cookie, other identifier or per-request record, so the counts cannot be linked to a person or to a computer.</p>
 <h2>Questions</h2>
 <p>QuickDesk is open source: every claim here can be checked in the <a href="https://github.com/TankGum/quickdesk">source code</a>. Ask or report a problem in <a href="https://github.com/TankGum/quickdesk/issues">GitHub issues</a>.</p>`,
   },
   vi: {
     title: "Quyền riêng tư",
-    updated: "Cập nhật lần cuối ngày 9/10/2026",
+    updated: "Cập nhật lần cuối ngày 11/10/2026 (đếm lượt tải)",
     html: `<p class="lead">QuickDesk không có tài khoản, không có analytics và không gửi telemetry. Ghi chú và lịch sử clipboard nằm trên máy bạn. Trang này liệt kê mọi thứ được gửi ra ngoài.</p>
 <h2>Những gì ở lại trên máy bạn</h2>
 <ul>
@@ -54,6 +56,8 @@ export const privacy: Record<Lang, { title: string; updated: string; html: strin
 <p>Usage của Codex và Antigravity được đọc từ file log trên máy; không gửi gì cả.</p>
 <h2>Trang web này</h2>
 <p>quickdesk.click là trang tĩnh trên Cloudflare Pages: không cookie, không analytics, không theo dõi. Trang tải font từ Google Fonts nên Google thấy địa chỉ IP của bạn. Demo chạy hoàn toàn trong trình duyệt với dữ liệu mẫu. Hệ điều hành bạn chọn (Linux, Windows hay macOS) và giao diện sáng hoặc tối, nếu bạn đổi, được nhớ trong local storage của trình duyệt và không gửi đi đâu.</p>
+<h2>Đếm lượt tải</h2>
+<p>Để biết có bao nhiêu người cài và cập nhật QuickDesk, <code>dl.quickdesk.click</code> đếm mỗi lượt tải và mỗi lần kiểm tra bản mới: file nào (phiên bản và hệ điều hành), loại trình gửi yêu cầu (trình duyệt đi từ trang này hay nơi khác, terminal, PowerShell, hay trình cập nhật của app) và quốc gia mà Cloudflare ghi nhận cho yêu cầu đó. Chỉ lưu tổng theo ngày (trong một cơ sở dữ liệu Cloudflare D1): không lưu địa chỉ IP, chuỗi trình duyệt, cookie, định danh nào khác hay bản ghi cho từng yêu cầu, nên số liệu không thể gắn với một người hay một máy.</p>
 <h2>Câu hỏi</h2>
 <p>QuickDesk là mã nguồn mở: mọi điều ghi ở đây đều kiểm chứng được trong <a href="https://github.com/TankGum/quickdesk">mã nguồn</a>. Hỏi hoặc báo lỗi tại <a href="https://github.com/TankGum/quickdesk/issues">GitHub issues</a>.</p>`,
   },

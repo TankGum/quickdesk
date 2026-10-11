@@ -29,6 +29,7 @@ only when the user clicks Update Now.
 |---|---|---|
 | Website | `quickdesk.click`, Cloudflare Pages, source `website/` | Rebuilds on every push to `main` and after every release |
 | Sync server | `sync.quickdesk.click`, Cloudflare Worker + R2 bucket `quickdesk-sync`, source `sync-server/` | Deployed by hand: `cd sync-server && npx wrangler deploy`. Stores only ciphertext |
+| Download counts | Worker `quickdesk-dl` on the route `dl.quickdesk.click/*`, source `dl-worker/`; daily totals in D1 `quickdesk-downloads` | Deployed by hand (RELEASING.md §6). See them in the dashboard (D1 → Console) or with `npm run stats` |
 | Download host | `dl.quickdesk.click`, R2 bucket `quickdesk-downloads` | **Keep the `r2.dev` public URL on**: 0.2.2 only knows that address |
 | Old links | `quickdesk.click/update.json`, `/latest.json`, `/releases/*` | Redirected to `dl.` by `website/public/_redirects` |
 | Updater signing key | `~/.tauri/quickdesk.key` + GitHub secrets | Public half in `src-tauri/tauri.conf.json`. **Back it up**: losing it means installed apps can never update again |

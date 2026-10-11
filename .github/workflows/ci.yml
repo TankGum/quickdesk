@@ -41,6 +41,11 @@ jobs:
       # The sync server (Cloudflare Worker): typecheck only; deploys are manual.
       - run: npm ci --prefix sync-server
       - run: npm run check --prefix sync-server
+      # Download counts (Cloudflare Worker on dl.quickdesk.click): typecheck and
+      # the classifier's tests; deploys are manual.
+      - run: npm ci --prefix dl-worker
+      - run: npm run check --prefix dl-worker
+      - run: npm test --prefix dl-worker
 
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets -- -D warnings

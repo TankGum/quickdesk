@@ -121,6 +121,59 @@ the site, and pull requests get preview URLs.
 
 Run it locally (Node 22): `npm run build:demo && cd website && npm install && npm run dev`.
 
+### 6. Download counts (dl-worker)
+
+`dl-worker/` is a Cloudflare Worker (`quickdesk-dl`) on the route
+`dl.quickdesk.click/*`. It passes every request through to the R2 bucket
+unchanged (a Worker's `fetch()` to its own host goes to the origin, and any
+error falls through to it too), then adds one to a daily total in the D1
+database `quickdesk-downloads`, table `downloads`: day, kind (install, update,
+`update.json` check…), system, version, source (website, terminal = curl/wget
+e.g. `install.sh`, PowerShell = `install.ps1`, the app's updater, GitHub, direct
+link, bot), country, n. No IP address, identifier or per-request row is stored;
+`/privacy` says so. The classification is `dl-worker/src/classify.ts` (tested
+with `npm test`). The old `r2.dev` URL, which QuickDesk 0.2.2's updater falls
+back to, is not counted.
+
+**Every download and update goes through it.** After changing it (Node 22):
+
+```sh
+cd dl-worker && npm install
+npx wrangler login              # once
+npm run migrate                 # if migrations/ changed
+npm run deploy
+```
+
+then check that the host still serves exactly what the bucket holds:
+`curl -fsSL https://dl.quickdesk.click/update.json | sha256sum` (and a package)
+before and after, `curl -fsS -r 1000-1999 <package URL> | wc -c` (1000: ranges
+work) and a few `curl -fsSI` requests (200). Right after a deploy the route can
+answer 500 for a few seconds.
+
+In Workers & Pages → `quickdesk-dl` → **Settings → Domains & Routes**, keep the
+route's request limit failure mode on **Fail open**, so requests go straight to
+the bucket if the free plan's daily Worker requests ever run out. Undo: remove
+the route there; requests go straight to the bucket again.
+
+**Reading the counts**
+
+- Dashboard: **Storage & Databases → D1 → quickdesk-downloads → Console**, e.g.
+  ```sql
+  -- installs per version and system
+  SELECT version, system, SUM(n) AS installs FROM downloads
+  WHERE kind = 'install' GROUP BY version, system ORDER BY installs DESC;
+  -- installs per day and source, last 30 days
+  SELECT day, source, SUM(n) AS installs FROM downloads
+  WHERE kind = 'install' AND day >= date('now', '-30 days') GROUP BY day, source ORDER BY day;
+  -- installs per country
+  SELECT country, SUM(n) AS installs FROM downloads WHERE kind = 'install' GROUP BY country ORDER BY installs DESC;
+  -- update checks per day (about four per running app)
+  SELECT day, SUM(n) AS checks FROM downloads WHERE kind = 'check' GROUP BY day ORDER BY day;
+  ```
+- Terminal: `npm run stats` (last 30 days: installs, updates, update checks, by
+  system, source, version, country and day), `npm run stats -- --days 7`,
+  `--json` for the raw rows. It uses wrangler's login; no token needed.
+
 ## Each release
 
 1. Write what changed for users in `CHANGELOG.md` **and** `CHANGELOG.vi.md`: a

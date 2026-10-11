@@ -20,6 +20,10 @@ Rules that are easy to break:
   `api.anthropic.com`; never print, store or refresh it.
 - Sync goes through QuickDesk Cloud (`sync-server/`, `crates/qd-sync/src/cloud.rs`); notes stay
   end-to-end encrypted on the client. Deploying the Worker affects every installed app.
+- Download counts: `dl-worker/` is a Worker on `dl.quickdesk.click/*` that passes requests through
+  to R2 and keeps daily totals in D1 (no IP or other identifier). Every download and update goes
+  through it: after a deploy, check the host still serves the same files (docs/RELEASING.md §6).
+  `npm run stats` or the D1 console in the dashboard shows the counts.
 - QuickDesk ships for Linux, Windows and macOS (Apple Silicon). Platform code sits behind
   `cfg(target_os = "linux")` / `cfg(windows)` / `cfg(target_os = "macos")`; the UI checks
   `isWindows` / `isMac` (`src/shared/platform.ts`). Releases build all three, and publish only when

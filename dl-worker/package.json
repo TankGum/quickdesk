@@ -1,0 +1,20 @@
+{
+  "name": "quickdesk-dl",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "migrate": "wrangler d1 migrations apply quickdesk-downloads --remote",
+    "check": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test src/classify.test.ts"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261009.1",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.149.0"
+  }
+}
