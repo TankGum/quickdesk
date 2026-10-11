@@ -31,7 +31,19 @@ const s = {
     macos: ["macOS 11 or later", "Apple Silicon (M1 and newer). Open the disk image and drag QuickDesk to Applications."],
     oneMac: "In Terminal. Downloads QuickDesk.app, checks its SHA-256, puts it in Applications and opens it. Installed this way, macOS does not warn about it.",
     afterMac: "QuickDesk lives in the menu bar and updates itself from now on. For auto-paste, allow it under Privacy & Security → Accessibility when macOS asks.",
-    gatekeeper: "Downloaded in a browser, macOS says it cannot check QuickDesk for malware: the app is not signed with an Apple Developer ID yet. Open System Settings → Privacy & Security and choose Open Anyway, or install with the command above, which avoids the warning.",
+    gatekeeper: "Downloaded in a browser, macOS blocks the first launch: QuickDesk is not notarized by Apple yet.",
+    gatekeeperHow: "How to open it",
+    openTitle: "Opening QuickDesk the first time",
+    openLead: "QuickDesk is not notarized by Apple yet (that needs a paid Apple Developer ID). When the .dmg was downloaded in a browser, macOS stops the first launch with “Apple cannot check it for malicious software”. Nothing is wrong with the app: do one of these once. Installed with the command above, you can skip this.",
+    openA: "In System Settings",
+    openASteps: [
+      "Drag QuickDesk to Applications and open it. When macOS warns, click Done.",
+      "Open System Settings → Privacy & Security and scroll down to Security.",
+      "Next to “QuickDesk was blocked to protect your Mac”, click Open Anyway, confirm with your password or Touch ID, then click Open.",
+    ],
+    openOld: "On macOS 14 or earlier, Control-click QuickDesk in Applications and choose Open, then Open again.",
+    openB: "Or in Terminal",
+    openBLead: "After dragging QuickDesk to Applications, run this, then open QuickDesk as usual:",
     get: "Download",
     sha: "SHA-256",
     all: "All checksums (SHA256SUMS)",
@@ -64,7 +76,19 @@ const s = {
     macos: ["macOS 11 trở lên", "Apple Silicon (M1 trở lên). Mở file disk image rồi kéo QuickDesk vào Applications."],
     oneMac: "Chạy trong Terminal. Tải QuickDesk.app, kiểm tra SHA-256, đặt vào Applications rồi mở. Cài theo cách này thì macOS không cảnh báo.",
     afterMac: "QuickDesk nằm trên menu bar và từ giờ sẽ tự cập nhật. Để tự động dán, hãy cho phép trong Privacy & Security → Accessibility khi macOS hỏi.",
-    gatekeeper: "Nếu tải bằng trình duyệt, macOS sẽ báo không kiểm tra được QuickDesk: app chưa được ký bằng Apple Developer ID. Mở System Settings → Privacy & Security và chọn Open Anyway, hoặc cài bằng lệnh ở trên để khỏi bị cảnh báo.",
+    gatekeeper: "Nếu tải bằng trình duyệt, macOS sẽ chặn lần mở đầu tiên: QuickDesk chưa được Apple notarize.",
+    gatekeeperHow: "Cách mở app",
+    openTitle: "Mở QuickDesk lần đầu",
+    openLead: "QuickDesk chưa được Apple notarize (việc này cần tài khoản Apple Developer trả phí). Nếu bạn tải file .dmg bằng trình duyệt, lần đầu mở macOS sẽ chặn và báo “Apple cannot check it for malicious software”. App không có vấn đề gì: chỉ cần làm một trong hai cách dưới đây một lần. Cài bằng lệnh ở trên thì bỏ qua bước này.",
+    openA: "Trong System Settings",
+    openASteps: [
+      "Kéo QuickDesk vào Applications rồi mở nó. Khi macOS cảnh báo, bấm Done.",
+      "Mở System Settings → Privacy & Security, kéo xuống phần Security.",
+      "Ở dòng “QuickDesk was blocked to protect your Mac”, bấm Open Anyway, xác nhận bằng mật khẩu hoặc Touch ID, rồi bấm Open.",
+    ],
+    openOld: "Trên macOS 14 trở về trước, bạn cũng có thể Control-click QuickDesk trong Applications, chọn Open, rồi bấm Open lần nữa.",
+    openB: "Hoặc trong Terminal",
+    openBLead: "Sau khi kéo QuickDesk vào Applications, chạy lệnh này rồi mở QuickDesk như bình thường:",
     get: "Tải",
     sha: "SHA-256",
     all: "Toàn bộ mã kiểm tra (SHA256SUMS)",
@@ -86,6 +110,7 @@ const s = {
 }[lang];
 const oneLinux = "curl -fsSL https://quickdesk.click/install.sh | bash";
 const oneWindows = "irm https://quickdesk.click/install.ps1 | iex";
+const unquarantine = "xattr -dr com.apple.quarantine /Applications/QuickDesk.app";
 type Pkg = { kind: string; label: string; info: string[]; file: (typeof f)["deb"]; steps: string[] };
 // Download and install from a terminal: one step per line, copied as one command.
 const linux: Pkg[] = [
@@ -184,11 +209,40 @@ const systems = [
                     {s.sha}: <code>{p.file.sha256}</code>
                   </p>
                   {p.kind === "windows" && <p class="pkg__note">{s.smartscreen}</p>}
-                  {p.kind === "macos" && <p class="pkg__note">{s.gatekeeper}</p>}
+                  {p.kind === "macos" && (
+                    <p class="pkg__note">
+                      {s.gatekeeper} <a class="btn--link" href="#macos-open">{s.gatekeeperHow}</a>
+                    </p>
+                  )}
                 </div>
               </article>
             ))}
           </div>
+          {o.id === "macos" && (
+            <div class="oneline macopen" id="macos-open">
+              <h2>{s.openTitle}</h2>
+              <p class="muted">{s.openLead}</p>
+              <div class="macopen__ways">
+                <div>
+                  <h3>{s.openA}</h3>
+                  <ol>
+                    {s.openASteps.map((step) => (
+                      <li>{step}</li>
+                    ))}
+                  </ol>
+                  <p class="muted">{s.openOld}</p>
+                </div>
+                <div>
+                  <h3>{s.openB}</h3>
+                  <p class="muted">{s.openBLead}</p>
+                  <div class="pkg__cmd">
+                    <code>{unquarantine}</code>
+                    <button type="button" class="terminal__copy" data-copy={unquarantine}>{s.copy}</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           <p class="dlpage__after">{o.after}</p>
         </div>
       ))

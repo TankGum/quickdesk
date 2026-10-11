@@ -307,6 +307,8 @@ const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", 
         <dl class="chat__data" data-chat-data data-typing={t("faq-typing")} data-again={t("faq-again")}>
           <dt><Fragment set:html={t("t81")} /></dt>
           <dd><Fragment set:html={t(hasMac ? "t82-mac" : "t82")} /></dd>
+          {hasMac && <dt><Fragment set:html={t("mac-open-q")} /></dt>}
+          {hasMac && <dd><Fragment set:html={t("mac-open-a")} /></dd>}
           <dt><Fragment set:html={t("t83")} /></dt>
           <dd><Fragment set:html={t("t84")} /></dd>
           <dt><Fragment set:html={t("t85")} /></dt>

@@ -43,6 +43,7 @@ export function softwareApp(lang: Lang) {
 export function faqPage(lang: Lang) {
   const pairs: [keyof typeof home, keyof typeof home][] = [
     ["t81", hasMac ? "t82-mac" : "t82"],
+    ...(hasMac ? ([["mac-open-q", "mac-open-a"]] as [keyof typeof home, keyof typeof home][]) : []),
     ["t83", "t84"],
     ["t85", hasMac ? "t86-mac" : "t86"],
     ["t87", "t88"],

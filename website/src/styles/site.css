@@ -66,6 +66,12 @@ main.page { padding: calc(var(--nav-h) + 64px) 0 120px; min-height: 70vh; }
 .oneline p { margin: 0; font-size: 14px; }
 .oneline .oneline__os { margin: 4px 0 -4px; color: var(--text-2); font-size: 13px; font-weight: 500; }
 .pkg__note { margin: 8px 0 0; color: var(--text-3); font-size: 13px; }
+.macopen { margin-top: 28px; scroll-margin-top: 96px; }
+.macopen__ways { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-top: 4px; }
+.macopen__ways > div { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 10px; min-width: 0; }
+.macopen h3 { margin: 0; font-size: 15px; }
+.macopen .pkg__cmd code { white-space: pre-wrap; overflow-wrap: anywhere; }
+.macopen ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; font-size: 14px; }
 .pkgs__title { max-width: 1040px; margin: 0 auto 14px; color: var(--text-2); font-weight: 500; font-size: 15px; }
 .pkg {
   display: grid;
@@ -248,6 +254,7 @@ html.drawer-open { overflow: hidden; }
   .pkg__get .btn { justify-content: center; }
   .pkg__cmd { padding: 8px 8px 8px 12px; }
   .oneline { padding: 18px 16px; }
+  .macopen__ways { grid-template-columns: minmax(0, 1fr); }
   .pkg__cmd code { font-size: 12.5px; }
   .dlpage__head .section-title { font-size: 32px; }
 

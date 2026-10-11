@@ -26,7 +26,8 @@
     else if (text === 'Alt' && k.closest('.shortcut')) k.dataset.key = 'alt';
   });
   const storedOs = () => {
-    const hash = location.hash.slice(1);
+    // "#macos" or a place in its tab, such as "#macos-open".
+    const hash = location.hash.slice(1).split('-')[0];
     if (OSES.includes(hash)) return hash;
     try {
       const v = localStorage.getItem('qd-os');
@@ -60,6 +61,8 @@
   }
   $$('[data-os-pick]').forEach((b) => b.addEventListener('click', () => applyOs(b.dataset.osPick, true)));
   applyOs(os, false);
+  // The target of "#macos-open" was hidden until its tab was shown above.
+  if (location.hash.includes('-')) document.getElementById(location.hash.slice(1))?.scrollIntoView();
 
   /* ---------- Nav border on scroll ---------- */
   const nav = $('#nav');
