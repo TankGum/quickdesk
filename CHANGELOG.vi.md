@@ -6,10 +6,10 @@ Mỗi bản phát hành QuickDesk có gì mới. Bản tiếng Anh là
 Mỗi bản là một mục `## <phiên bản> — <ngày>` với tối đa ba nhóm:
 `### Mới`, `### Cải thiện`, `### Sửa lỗi`.
 
-## Unreleased
+## 0.6.0 — 2026-10-11
 
 ### Mới
-- QuickDesk cho macOS (Apple Silicon, macOS 11 trở lên): ghi chú có đồng bộ, lịch sử clipboard gồm chữ, ảnh và file, tự dán bằng ⌘V vào app bạn đang dùng, cổng, version ngôn ngữ lập trình và usage AI, ngay trên menu bar. Phím tắt là ⌃⌥N / V / P. Cài từ Terminal bằng `curl -fsSL https://quickdesk.click/install.sh | bash` hoặc bằng file .dmg ở trang tải về; app tự cập nhật như trên các hệ điều hành khác.
+- QuickDesk cho macOS (Apple Silicon, macOS 11 trở lên): ghi chú có đồng bộ, lịch sử clipboard gồm chữ, ảnh và file, tự dán bằng ⌘V vào app bạn đang dùng, cổng, version ngôn ngữ lập trình và usage AI, ngay trên menu bar. Phím tắt là ⌃⌥N / V / P. Cài từ Terminal bằng `curl -fsSL https://quickdesk.click/install.sh | bash` hoặc bằng file .dmg ở trang tải về; app tự cập nhật như trên các hệ điều hành khác. App chưa được Apple notarize: nếu tải file .dmg bằng trình duyệt, macOS sẽ chặn lần mở đầu tiên, và trang tải về có hướng dẫn cách mở (System Settings → Privacy & Security → Open Anyway).
 - Trên Mac, tab AI cũng hiện được hạn mức Claude: ở đó Claude Code giữ phiên đăng nhập trong Keychain, và QuickDesk chỉ đọc nó sau khi bạn cho phép.
 
 ### Sửa lỗi
