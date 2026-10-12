@@ -15,7 +15,7 @@ Rules that are easy to break:
 - Every new Tauri command needs a demo answer in `src/demo/core.ts`; every UI string needs
   English and Vietnamese (`src/shared/i18n.ts`, tray: `src-tauri/src/i18n.rs`).
 - The website is in English, Vietnamese and the languages in `website/src/locales/` (zh, ja, hi, es, fr,
-  ar, bn, ru so far; ar is right to left). Site words are in `website/src/locales/<lang>`; TypeScript
+  ar, bn, ru, pt (Brazilian), id; ar is right to left). Site words are in `website/src/locales/<lang>`; TypeScript
   fails if a language misses one. Long content (home, docs, privacy) for English/Vietnamese is in
   `website/src/data/`, for the others in `website/src/locales/<lang>/`; a release missing from a
   language's `CHANGELOG.md` there shows in English. The app itself stays English/Vietnamese.

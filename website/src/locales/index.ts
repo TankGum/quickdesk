@@ -14,6 +14,8 @@ import fr from "./fr";
 import hi from "./hi";
 import ja from "./ja";
 import ru from "./ru";
+import pt from "./pt";
+import id from "./id";
 import zh from "./zh";
 
 export interface Content {
@@ -43,4 +45,6 @@ export const LOCALES: Partial<Record<Lang, Locale>> = {
   ar,
   bn,
   ru,
+  pt,
+  id,
 };
