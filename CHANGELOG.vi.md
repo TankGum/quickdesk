@@ -6,7 +6,7 @@ Mỗi bản phát hành QuickDesk có gì mới. Bản tiếng Anh là
 Mỗi bản là một mục `## <phiên bản> — <ngày>` với tối đa ba nhóm:
 `### Mới`, `### Cải thiện`, `### Sửa lỗi`.
 
-## Unreleased
+## 0.6.3 — 2026-10-12
 
 ### Cải thiện
 - macOS: QuickDesk được ký bằng chứng chỉ riêng. Sau bản cập nhật này macOS hỏi Keychain (chọn “Always Allow”) và quyền Accessibility lần cuối; các bản cập nhật sau giữ nguyên cả hai, không còn phải nhập mật khẩu sau mỗi lần cập nhật.
