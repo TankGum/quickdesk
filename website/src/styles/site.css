@@ -311,6 +311,7 @@ main.page { padding: calc(var(--nav-h) + 64px) 0 120px; min-height: 70vh; }
 .ospick button[aria-pressed="true"] { background: #f5f5f7; color: #111113; box-shadow: 0 1px 8px rgba(0, 0, 0, .35); }
 .ospick button[aria-pressed="true"] .ospick__soon { background: rgba(0, 0, 0, .08); color: #55555c; }
 .ospick__logo { width: 16px; height: 16px; flex: none; }
+.ospick__soon[hidden] { display: none; }
 .ospick__soon { white-space: nowrap; padding: 1px 7px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(var(--fg), .1); }
 .oneline--soon { text-align: center; justify-items: center; }
 .pkgs { display: grid; gap: 16px; max-width: 1040px; margin: 0 auto; }

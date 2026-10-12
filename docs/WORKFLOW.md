@@ -113,6 +113,23 @@ npm run build:demo                      # repo root: the demo the home page embe
 cd website && nvm use && npm install && npm run dev   # http://localhost:4321
 ```
 
+### Feature flags (GrowthBook)
+
+The "beta" chip next to macOS in the OS picker can be switched from
+[GrowthBook](https://www.growthbook.io) without a deploy:
+
+1. In GrowthBook create an SDK connection (client key `sdk-…`, a public key) and a boolean
+   feature **`mac-beta-chip`** (on = chip shown, off = hidden). Not defined = shown.
+2. Give the key to the build: environment variable `QD_GROWTHBOOK_CLIENT_KEY` in Cloudflare
+   Pages (add `QD_GROWTHBOOK_API_HOST` only for a self-hosted GrowthBook).
+
+With no key nothing is loaded or sent, and the privacy page does not mention GrowthBook. With
+a key, visitors' browsers ask GrowthBook for the features (it sees their IP; no cookies or
+identifiers) and `website/src/data/privacy-flags.ts` adds that sentence to the privacy page
+in every language. The chip stays shown if GrowthBook cannot be reached; it is hidden after
+the flag loads (a short flash when the flag is off). Only the picker's chip is flagged: the
+"(beta)" in the download button and the notes on the download page are not.
+
 ## 3. Releasing
 
 1. Write the notes for users in **both** `CHANGELOG.md` and `CHANGELOG.vi.md`:

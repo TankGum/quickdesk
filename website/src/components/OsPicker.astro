@@ -16,6 +16,10 @@ const { lang, label, class: cls, only = ["linux", "windows"] } = Astro.props;
 const names = { linux: "Linux", windows: "Windows", macos: "macOS" } as const;
 const systems = [...only.filter((id) => id !== "macos"), "macos" as const];
 const badge = macBadge(lang);
+// GrowthBook can hide the "beta" chip (the feature "mac-beta-chip"). Only when
+// a client key was given at build time; without one nothing is loaded or sent.
+const gbKey = import.meta.env.QD_GROWTHBOOK_CLIENT_KEY as string | undefined;
+const gbHost = import.meta.env.QD_GROWTHBOOK_API_HOST as string | undefined;
 ---
 <div class:list={["ospick", cls]} role="group" aria-label={label}>
   {
@@ -25,8 +29,30 @@ const badge = macBadge(lang);
           <path d={OS_ICONS[id]} fill="currentColor" />
         </svg>
         {names[id]}
-        {id === "macos" && badge && <span class="ospick__soon">{badge}</span>}
+        {id === "macos" && badge && (
+          <span class="ospick__soon" data-beta-chip={badge === "beta" && gbKey ? "" : undefined} data-gb-key={badge === "beta" ? gbKey : undefined} data-gb-host={gbHost}>
+            {badge}
+          </span>
+        )}
       </button>
     ))
   }
 </div>
+
+<script>
+  // Show or hide the "beta" chip next to macOS from the GrowthBook feature
+  // "mac-beta-chip" (on = shown). Any failure leaves the chip as built (shown).
+  const chips = document.querySelectorAll<HTMLElement>("[data-beta-chip]");
+  const key = chips[0]?.dataset.gbKey;
+  if (key) {
+    import("@growthbook/growthbook")
+      .then(async ({ GrowthBook }) => {
+        const gb = new GrowthBook({ apiHost: chips[0].dataset.gbHost || "https://cdn.growthbook.io", clientKey: key });
+        await gb.init({ timeout: 2000 });
+        const show = gb.getFeatureValue("mac-beta-chip", true) !== false;
+        chips.forEach((c) => (c.hidden = !show));
+        gb.destroy();
+      })
+      .catch(() => {});
+  }
+</script>

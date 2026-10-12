@@ -2,6 +2,7 @@
 // network connection or stored data.
 import { localLinks, type Lang } from "../i18n";
 import { LOCALES } from "../locales";
+import { withGrowthbook } from "./privacy-flags";
 
 export interface Privacy {
   title: string;
@@ -73,7 +74,7 @@ export const privacy: Record<"en" | "vi", Privacy> = {
 
 /** The privacy page in a language (English where a translation is missing). */
 export function privacyText(lang: Lang): Privacy {
-  if (lang === "en" || lang === "vi") return privacy[lang];
+  if (lang === "en" || lang === "vi") return { ...privacy[lang], html: withGrowthbook(privacy[lang].html, lang) };
   const t = LOCALES[lang]?.content?.privacy ?? privacy.en;
-  return { ...t, html: localLinks(t.html, lang) };
+  return { ...t, html: withGrowthbook(localLinks(t.html, lang), lang) };
 }
