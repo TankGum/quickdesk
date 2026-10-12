@@ -87,6 +87,26 @@
   .download__btn::after { animation: none; }
 }
 
+/* macOS in development: a notice on its download tab, a note in the docs. */
+.macdev {
+  max-width: 1040px; margin: 0 auto 20px; padding: 18px 22px; border-radius: 18px;
+  display: flex; align-items: flex-start; gap: 14px;
+  border: 1px solid color-mix(in srgb, #ff9f0a 38%, transparent);
+  background: color-mix(in srgb, #ff9f0a 9%, var(--surface));
+}
+.macdev h2 { margin: 0 0 4px; font-size: 16px; letter-spacing: -.01em; }
+.macdev p { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.55; }
+.macdev .btn--link { padding-inline: 0; }
+.macdev__tag {
+  flex: none; margin-top: 1px; padding: 2px 9px; border-radius: 999px;
+  background: #ff9f0a; color: #000; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+}
+.prose .note {
+  padding: 12px 16px; border-radius: 12px; font-size: .95em;
+  border: 1px solid color-mix(in srgb, #ff9f0a 38%, transparent);
+  background: color-mix(in srgb, #ff9f0a 9%, transparent);
+}
+
 /* ---------- Themes ---------- */
 /* Dark is the default (style.css :root). Light follows the system or the
    switch in the header (html[data-theme], set in <head> before the first

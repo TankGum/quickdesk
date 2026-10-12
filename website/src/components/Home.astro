@@ -6,7 +6,7 @@ import OsPicker from "./OsPicker.astro";
 import { href } from "../i18n";
 import { home } from "../data/home";
 import type { Lang } from "../i18n";
-import { hasMac, type Release } from "../data/release";
+import { hasMac, macBeta, type Release } from "../data/release";
 
 interface Props {
   lang: Lang;
@@ -15,8 +15,8 @@ interface Props {
 const { lang, release } = Astro.props;
 // The hero's download button (and the demo desktop below) follow the system picked here.
 const dl = {
-  en: { pick: "Your system", linux: "Download for Linux", windows: "Download for Windows", macos: hasMac ? "Download for macOS" : "macOS: coming soon" },
-  vi: { pick: "Hệ điều hành của bạn", linux: "Tải cho Linux", windows: "Tải cho Windows", macos: hasMac ? "Tải cho macOS" : "macOS: sắp có" },
+  en: { pick: "Your system", linux: "Download for Linux", windows: "Download for Windows", macos: hasMac ? `Download for macOS${macBeta ? " (beta)" : ""}` : "macOS: coming soon" },
+  vi: { pick: "Hệ điều hành của bạn", linux: "Tải cho Linux", windows: "Tải cho Windows", macos: hasMac ? `Tải cho macOS${macBeta ? " (beta)" : ""}` : "macOS: sắp có" },
 }[lang];
 const t = (key: keyof typeof home) => home[key][lang].replaceAll("{{VERSION}}", release.version).replaceAll("{{DATE}}", release.date);
 ---

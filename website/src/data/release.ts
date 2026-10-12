@@ -56,3 +56,16 @@ export const release: Release = await load();
 
 /** The newest release has a Mac build; until then the site says "coming soon". */
 export const hasMac = Boolean(release.files.macos && release.files.macos_app);
+
+/**
+ * The Mac version works but is still being built: the site marks it "beta"
+ * and says it is in development (download page, docs, FAQ). Set to false once
+ * it is finished.
+ */
+export const macBeta = true;
+
+/** The badge next to "macOS": "soon" before a Mac build, "beta" while in development. */
+export function macBadge(lang: "en" | "vi"): string | null {
+  if (!hasMac) return lang === "vi" ? "sắp có" : "soon";
+  return macBeta ? "beta" : null;
+}

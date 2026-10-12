@@ -3,7 +3,7 @@
 // browser), each with its one-line install and its packages with size and
 // checksum, then the release notes.
 import { changelog } from "../data/changelog";
-import { hasMac, release } from "../data/release";
+import { hasMac, macBeta, release } from "../data/release";
 import { href, type Lang } from "../i18n";
 import OsPicker from "./OsPicker.astro";
 
@@ -20,9 +20,12 @@ const s = {
   en: {
     title: `Download QuickDesk ${v}`,
     lead: hasMac
-      ? `For Linux and Windows (x86_64) and macOS (Apple Silicon) · released ${date}. Free and open source (MIT).`
+      ? `For Linux and Windows (x86_64) and macOS (Apple Silicon${macBeta ? ", beta" : ""}) · released ${date}. Free and open source (MIT).`
       : `For Linux and Windows on x86_64, macOS coming soon · released ${date}. Free and open source (MIT).`,
     pick: "Your system",
+    devTitle: "The Mac version is still in development",
+    devText: "QuickDesk for macOS works, but it is new: not everything has been tried on every Mac yet, and auto-paste and the shortcuts are still being refined. If something does not work, please tell us.",
+    devLink: "Report a problem on GitHub",
     soon: "soon",
     deb: ["Ubuntu, Debian, Linux Mint, Pop!_OS", "Ubuntu 22.04 and newer, Debian 12 and newer."],
     rpm: ["Fedora and other RPM-based distros", "Fedora 36 and newer, openSUSE Tumbleweed."],
@@ -65,9 +68,12 @@ const s = {
   vi: {
     title: `Tải QuickDesk ${v}`,
     lead: hasMac
-      ? `Cho Linux và Windows (x86_64) và macOS (Apple Silicon) · phát hành ${date}. Miễn phí, mã nguồn mở (MIT).`
+      ? `Cho Linux và Windows (x86_64) và macOS (Apple Silicon${macBeta ? ", beta" : ""}) · phát hành ${date}. Miễn phí, mã nguồn mở (MIT).`
       : `Cho Linux và Windows x86_64, macOS sắp có · phát hành ${date}. Miễn phí, mã nguồn mở (MIT).`,
     pick: "Hệ điều hành của bạn",
+    devTitle: "Bản macOS vẫn đang được phát triển",
+    devText: "QuickDesk cho macOS đã dùng được, nhưng còn mới: chưa phải mọi thứ đều được thử trên mọi máy Mac, và phần tự động dán cùng phím tắt vẫn đang được hoàn thiện. Nếu có gì không chạy, hãy báo cho chúng tôi.",
+    devLink: "Báo lỗi trên GitHub",
     soon: "sắp có",
     deb: ["Ubuntu, Debian, Linux Mint, Pop!_OS", "Ubuntu 22.04 trở lên, Debian 12 trở lên."],
     rpm: ["Fedora và các distro dùng RPM", "Fedora 36 trở lên, openSUSE Tumbleweed."],
@@ -174,6 +180,20 @@ const systems = [
     {
       systems.map((o) => (
         <div data-os-panel={o.id} hidden={o.id !== "linux"}>
+          {o.id === "macos" && macBeta && (
+            <div class="macdev" role="note">
+              <span class="macdev__tag">beta</span>
+              <div>
+                <h2>{s.devTitle}</h2>
+                <p>
+                  {s.devText}{" "}
+                  <a class="btn--link" href="https://github.com/TankGum/quickdesk/issues">
+                    {s.devLink} <span aria-hidden="true">↗</span>
+                  </a>
+                </p>
+              </div>
+            </div>
+          )}
           <div class="oneline">
             <h2>{s.oneTitle}</h2>
             <div class="pkg__cmd">

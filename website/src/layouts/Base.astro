@@ -3,7 +3,7 @@
 import "../styles/site.css";
 import Intro from "../components/Intro.astro";
 import { OS_ICONS } from "../data/os-icons";
-import { hasMac, release } from "../data/release";
+import { macBadge, release } from "../data/release";
 import { GITHUB, href, pagePath, ui, type Lang } from "../i18n";
 
 interface Props {
@@ -278,7 +278,7 @@ const ghMark =
                   <li>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d={OS_ICONS[id]} fill="currentColor" /></svg>
                     {{ linux: "Linux", windows: "Windows", macos: "macOS" }[id]}
-                    {id === "macos" && !hasMac && <span class="footer__soon">{s.soon}</span>}
+                    {id === "macos" && macBadge(lang) && <span class="footer__soon">{macBadge(lang)}</span>}
                   </li>
                 ))
               }

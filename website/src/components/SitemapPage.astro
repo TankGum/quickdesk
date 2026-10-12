@@ -1,4 +1,5 @@
 ---
+import { macBadge } from "../data/release";
 // /sitemap: every page and section of the site, for people (sitemap.xml is
 // the one for search engines). Built from the same data as the pages, so new
 // docs sections and releases show up by themselves.
@@ -21,7 +22,6 @@ const s = {
     home: "Home",
     demo: "Try the shortcuts",
     getIt: "Get QuickDesk",
-    soon: "coming soon",
     oneLine: "Install scripts",
     other: "Elsewhere",
     machine: "sitemap.xml (for search engines)",
@@ -33,7 +33,6 @@ const s = {
     home: "Trang chủ",
     demo: "Thử phím tắt",
     getIt: "Tải QuickDesk",
-    soon: "sắp có",
     oneLine: "Script cài đặt",
     other: "Nơi khác",
     machine: "sitemap.xml (cho công cụ tìm kiếm)",
@@ -62,7 +61,7 @@ const groups = [
     links: [
       { label: "Linux (.deb, .rpm, AppImage)", href: at("/download", "linux") },
       { label: "Windows 10 & 11", href: at("/download", "windows") },
-      { label: `macOS (${s.soon})`, href: at("/download", "macos") },
+      { label: macBadge(lang) ? `macOS (${macBadge(lang)})` : "macOS", href: at("/download", "macos") },
     ],
   },
   {

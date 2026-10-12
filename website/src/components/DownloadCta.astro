@@ -6,7 +6,7 @@
 // shows the finished install when motion is reduced or scripts are off.
 import { OS_ICONS } from "../data/os-icons";
 import { href, type Lang } from "../i18n";
-import { hasMac, type Release } from "../data/release";
+import { hasMac, macBadge, type Release } from "../data/release";
 
 interface Props {
   lang: Lang;
@@ -20,7 +20,6 @@ const s = {
   en: {
     title: "Ready when you are.",
     lead: "Install it once and everything is a shortcut away: your notes, what you copied, the ports in use and your AI limits.",
-    soon: "soon",
     download: "Download",
     changes: "What’s new",
     meta: `Version ${v} · ${date} · Free and open source (MIT)`,
@@ -33,7 +32,6 @@ const s = {
   vi: {
     title: "Sẵn sàng khi bạn cần.",
     lead: "Cài một lần, mọi thứ chỉ cách một phím tắt: ghi chú, những gì bạn đã copy, các cổng đang mở và hạn mức AI.",
-    soon: "sắp có",
     download: "Tải về",
     changes: "Có gì mới",
     meta: `Phiên bản ${v} · ${date} · Miễn phí, mã nguồn mở (MIT)`,
@@ -85,7 +83,7 @@ const first = scripts.linux;
                   <path d={OS_ICONS[o.id]} fill="currentColor" />
                 </svg>
                 {o.label}
-                {!o.ready && <span class="download__soon">{s.soon}</span>}
+                {o.id === "macos" && macBadge(lang) && <span class="download__soon">{macBadge(lang)}</span>}
               </a>
             </li>
           ))

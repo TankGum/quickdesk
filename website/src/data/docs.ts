@@ -1,7 +1,7 @@
 // /docs content. Each section is HTML in both languages; keep facts in step
 // with the app (defaults, limits, paths) when they change.
 import type { Lang } from "../i18n";
-import { hasMac } from "./release";
+import { hasMac, macBeta } from "./release";
 
 export interface Section {
   id: string;
@@ -45,7 +45,7 @@ const all: Section[] = [
     mac: true,
     title: { en: "macOS", vi: "macOS" },
     html: {
-      en: `<p>QuickDesk runs on macOS 11 or later on Apple Silicon (M1 and newer). In Terminal, run <code>curl -fsSL https://quickdesk.click/install.sh | bash</code>: it puts QuickDesk.app in Applications and opens it. Or download the <code>.dmg</code> from the <a href="/download#macos">download page</a> and drag QuickDesk to Applications.</p>
+      en: `${macBeta ? '<p class="note"><strong>Still in development.</strong> The Mac version works, but it is new: not everything has been tried on every Mac yet, and auto-paste and the shortcuts are still being refined. Please <a href="https://github.com/TankGum/quickdesk/issues">report</a> what does not work.</p>\n' : ""}<p>QuickDesk runs on macOS 11 or later on Apple Silicon (M1 and newer). In Terminal, run <code>curl -fsSL https://quickdesk.click/install.sh | bash</code>: it puts QuickDesk.app in Applications and opens it. Or download the <code>.dmg</code> from the <a href="/download#macos">download page</a> and drag QuickDesk to Applications.</p>
 <p><strong>Opening it the first time.</strong> QuickDesk is not notarized by Apple yet, so when the <code>.dmg</code> was downloaded in a browser, macOS stops the first launch with “Apple cannot check it for malicious software”. Nothing is wrong with the app; do one of these once (installed with the command, there is no warning):</p>
 <ol>
 <li>Open QuickDesk from Applications and click <em>Done</em> when macOS warns. Then open System Settings → Privacy &amp; Security, scroll down to Security, click <em>Open Anyway</em> next to “QuickDesk was blocked to protect your Mac”, confirm with your password or Touch ID and click <em>Open</em>. On macOS 14 or earlier, Control-click QuickDesk → <em>Open</em> → <em>Open</em> also works.</li>
@@ -62,7 +62,7 @@ const all: Section[] = [
 <li>The Runtimes tab works as on Linux, with your login shell (zsh: <code>~/.zshrc</code>). Copies installed with Homebrew are shown but not changed.</li>
 </ul>
 <p><strong>Uninstall:</strong> quit QuickDesk from the menu bar and move it from Applications to the Trash. Your data stays in <code>~/Library/Application Support/click.quickdesk</code> until you delete that folder.</p>`,
-      vi: `<p>QuickDesk chạy trên macOS 11 trở lên với Apple Silicon (M1 trở lên). Trong Terminal, chạy <code>curl -fsSL https://quickdesk.click/install.sh | bash</code>: lệnh này đặt QuickDesk.app vào Applications rồi mở nó. Hoặc tải file <code>.dmg</code> ở <a href="/vi/download#macos">trang tải về</a> rồi kéo QuickDesk vào Applications.</p>
+      vi: `${macBeta ? '<p class="note"><strong>Vẫn đang phát triển.</strong> Bản Mac đã dùng được, nhưng còn mới: chưa phải mọi thứ đều được thử trên mọi máy Mac, và phần tự động dán cùng phím tắt vẫn đang được hoàn thiện. Có gì không chạy, hãy <a href="https://github.com/TankGum/quickdesk/issues">báo lỗi</a> giúp chúng tôi.</p>\n' : ""}<p>QuickDesk chạy trên macOS 11 trở lên với Apple Silicon (M1 trở lên). Trong Terminal, chạy <code>curl -fsSL https://quickdesk.click/install.sh | bash</code>: lệnh này đặt QuickDesk.app vào Applications rồi mở nó. Hoặc tải file <code>.dmg</code> ở <a href="/vi/download#macos">trang tải về</a> rồi kéo QuickDesk vào Applications.</p>
 <p><strong>Mở app lần đầu.</strong> QuickDesk chưa được Apple notarize, nên nếu bạn tải file <code>.dmg</code> bằng trình duyệt, lần đầu mở macOS sẽ chặn và báo “Apple cannot check it for malicious software”. App không có vấn đề gì; chỉ cần làm một trong hai cách sau một lần (cài bằng lệnh thì không bị cảnh báo):</p>
 <ol>
 <li>Mở QuickDesk từ Applications, bấm <em>Done</em> khi macOS cảnh báo. Sau đó mở System Settings → Privacy &amp; Security, kéo xuống phần Security, bấm <em>Open Anyway</em> ở dòng “QuickDesk was blocked to protect your Mac”, xác nhận bằng mật khẩu hoặc Touch ID rồi bấm <em>Open</em>. Trên macOS 14 trở về trước, Control-click QuickDesk → <em>Open</em> → <em>Open</em> cũng được.</li>
