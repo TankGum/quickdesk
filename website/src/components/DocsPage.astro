@@ -1,21 +1,18 @@
 ---
-import { sections } from "../data/docs";
-import { href, type Lang } from "../i18n";
+import { sectionText, sections } from "../data/docs";
+import { href, localLinks, strings, type Lang } from "../i18n";
 
 interface Props {
   lang: Lang;
 }
 const { lang } = Astro.props;
-const title = lang === "vi" ? "Tài liệu" : "Documentation";
-const lead =
-  lang === "vi"
-    ? "Cài đặt, phím tắt, đồng bộ, clipboard, cổng, usage AI và cập nhật."
-    : "Installing, shortcuts, sync, clipboard, ports, AI usage and updates.";
-const contents = lang === "vi" ? "Nội dung" : "Contents";
+const d = strings(lang).docs;
+const u = strings(lang).ui;
+const { title, lead, contents } = d;
 // The contents, in three groups, each entry with an icon and a short name
 // (the heading itself can be longer).
-type Meta = { group: 0 | 1 | 2; icon: string; short?: Record<Lang, string> };
-const groups = lang === "vi" ? ["Bắt đầu", "Tính năng", "Trợ giúp"] : ["Get started", "Features", "Help"];
+type Meta = { group: 0 | 1 | 2; icon: string; short?: string };
+const groups = d.groups;
 const meta: Record<string, Meta> = {
   install: { group: 0, icon: "M12 4v11m-4.5-4.5L12 15l4.5-4.5M5 19h14" },
   macos: { group: 0, icon: "M5 5.5h14v9.5H5zM3 18.5h18" },
@@ -27,12 +24,12 @@ const meta: Record<string, Meta> = {
   sync: {
     group: 1,
     icon: "M4.5 12a7.5 7.5 0 0 1 12.8-5.3L19.5 9M19.5 4.5V9H15M19.5 12a7.5 7.5 0 0 1-12.8 5.3L4.5 15M4.5 19.5V15H9",
-    short: { en: "Sync", vi: "Đồng bộ" },
+    short: d.sync,
   },
-  clipboard: { group: 1, icon: "M9 3.5h6v3H9zM8 5H6v15h12V5h-2M9 11.5h6M9 15h4", short: { en: "Clipboard", vi: "Clipboard" } },
+  clipboard: { group: 1, icon: "M9 3.5h6v3H9zM8 5H6v15h12V5h-2M9 11.5h6M9 15h4", short: d.clipboard },
   "auto-paste": { group: 1, icon: "M6.5 4.5 18 10.8l-5.3 1.5-2.4 5.2z" },
   ports: { group: 1, icon: "M9 3v5M15 3v5M7 8h10v3a5 5 0 0 1-10 0zM12 16v5" },
-  versions: { group: 1, icon: "M8.5 7 4 12l4.5 5M15.5 7 20 12l-4.5 5M13.5 5l-3 14", short: { en: "Runtimes", vi: "Runtime" } },
+  versions: { group: 1, icon: "M8.5 7 4 12l4.5 5M15.5 7 20 12l-4.5 5M13.5 5l-3 14", short: d.versions },
   ai: { group: 1, icon: "M4 16.5a8 8 0 1 1 16 0M12 16.5l4-5" },
   updates: { group: 2, icon: "M12 7v5l3 2M20 12a8 8 0 1 1-2.34-5.66M20 4v4h-4" },
   uninstall: { group: 2, icon: "M5 7h14M10 7V4.5h4V7M7 7l1 13h8l1-13" },
@@ -42,9 +39,7 @@ const meta: Record<string, Meta> = {
   },
 };
 const fallback: Meta = { group: 2, icon: "M6 4.5h9l3 3v12H6z" };
-const toc = sections.map((s) => ({ ...s, ...(meta[s.id] ?? fallback) }));
-// Section HTML links to /download etc.; point them at this language.
-const local = (html: string) => (lang === "vi" ? html.replace(/href="\/(?!vi\/)([a-z]+)"/g, 'href="/vi/$1"') : html);
+const toc = sections.map((s) => ({ ...s, ...sectionText(s, lang), ...(meta[s.id] ?? fallback) }));
 ---
 <div class="wrap docs">
   <aside class="docs__toc" aria-label={contents}>
@@ -63,7 +58,7 @@ const local = (html: string) => (lang === "vi" ? html.replace(/href="\/(?!vi\/)(
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d={s.icon} />
                 </svg>
-                <span>{s.short?.[lang] ?? s.title[lang]}</span>
+                <span>{s.short ?? s.title}</span>
               </a>
             </li>
           </>
@@ -71,27 +66,27 @@ const local = (html: string) => (lang === "vi" ? html.replace(/href="\/(?!vi\/)(
       }
     </ol>
     <a class="docs__toc-help" href="https://github.com/TankGum/quickdesk/issues">
-      <b>{lang === "vi" ? "Còn thắc mắc?" : "Still stuck?"}</b>
-      <span>{lang === "vi" ? "Hỏi trên GitHub" : "Ask on GitHub"} <span aria-hidden="true">↗</span></span>
+      <b>{d.stuck}</b>
+      <span>{d.ask} <span aria-hidden="true">↗</span></span>
     </a>
   </aside>
   <article class="prose">
     <h1>{title}</h1>
     <p class="lead">{lead}</p>
     {
-      sections.map((s) => (
+      toc.map((s) => (
         <section id={s.id}>
           <h2>
-            <a href={`#${s.id}`}>{s.title[lang]}</a>
+            <a href={`#${s.id}`}>{s.title}</a>
           </h2>
-          <Fragment set:html={local(s.html[lang])} />
+          <Fragment set:html={localLinks(s.html, lang)} />
         </section>
       ))
     }
     <p class="muted docs__more">
-      {lang === "vi" ? "Còn thắc mắc?" : "Still stuck?"}{" "}
-      <a href="https://github.com/TankGum/quickdesk/issues">{lang === "vi" ? "Hỏi trên GitHub" : "Ask on GitHub"}</a> ·{" "}
-      <a href={href(lang, "/privacy")}>{lang === "vi" ? "Quyền riêng tư" : "Privacy"}</a>
+      {d.stuck}{" "}
+      <a href="https://github.com/TankGum/quickdesk/issues">{d.ask}</a> ·{" "}
+      <a href={href(lang, "/privacy")}>{u.privacy}</a>
     </p>
   </article>
 </div>

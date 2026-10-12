@@ -1,7 +1,7 @@
 ---
 import { changelog } from "../data/changelog";
 import { release } from "../data/release";
-import type { Lang } from "../i18n";
+import { strings, type Lang } from "../i18n";
 
 interface Props {
   lang: Lang;
@@ -15,11 +15,8 @@ const newer = (a: string, b: string) => {
   return false;
 };
 const entries = changelog(lang).filter((e) => !newer(e.version, release.version));
-const s =
-  lang === "vi"
-    ? { title: "Nhật ký thay đổi", lead: "Mỗi bản QuickDesk có gì mới, cải thiện và sửa lỗi.", latest: "Mới nhất", source: "Nguồn: CHANGELOG.vi.md trên GitHub" }
-    : { title: "Changelog", lead: "What is new, improved and fixed in each QuickDesk release.", latest: "Latest", source: "Source: CHANGELOG.md on GitHub" };
-const file = lang === "vi" ? "CHANGELOG.vi.md" : "CHANGELOG.md";
+const s = strings(lang).changelog;
+const file = lang === "en" ? "CHANGELOG.md" : lang === "vi" ? "CHANGELOG.vi.md" : `website/src/locales/${lang}/CHANGELOG.md`;
 ---
 <div class="wrap wrap--narrow prose changelog">
   <h1>{s.title}</h1>
@@ -34,7 +31,8 @@ const file = lang === "vi" ? "CHANGELOG.vi.md" : "CHANGELOG.md";
           {i === 0 && <span class="release__tag">{s.latest}</span>}
           <time datetime={e.date}>{e.date}</time>
         </header>
-        <div set:html={e.html} />
+        {e.english && <p class="muted release__english">{s.english}</p>}
+        <div set:html={e.html} lang={e.english ? "en" : undefined} />
       </section>
     ))
   }

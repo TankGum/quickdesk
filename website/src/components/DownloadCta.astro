@@ -5,8 +5,8 @@
 // running with its shortcut). It plays while the section is on screen, and
 // shows the finished install when motion is reduced or scripts are off.
 import { OS_ICONS } from "../data/os-icons";
-import { href, type Lang } from "../i18n";
-import { hasMac, macBadge, type Release } from "../data/release";
+import { fill, href, macBadge, strings, type Lang } from "../i18n";
+import { hasMac, type Release } from "../data/release";
 
 interface Props {
   lang: Lang;
@@ -16,32 +16,8 @@ const { lang, release } = Astro.props;
 const v = release.version;
 // Non-breaking hyphens: "2026-10-11" must not wrap across lines.
 const date = release.date.replaceAll("-", "‑");
-const s = {
-  en: {
-    title: "Ready when you are.",
-    lead: "Install it once and everything is a shortcut away: your notes, what you copied, the ports in use and your AI limits.",
-    download: "Download",
-    changes: "What’s new",
-    meta: `Version ${v} · ${date} · Free and open source (MIT)`,
-    downloading: "Downloading",
-    verified: "SHA-256 verified",
-    installed: `QuickDesk ${v} installed`,
-    running: "QuickDesk is running",
-    open: "Open it with",
-  },
-  vi: {
-    title: "Sẵn sàng khi bạn cần.",
-    lead: "Cài một lần, mọi thứ chỉ cách một phím tắt: ghi chú, những gì bạn đã copy, các cổng đang mở và hạn mức AI.",
-    download: "Tải về",
-    changes: "Có gì mới",
-    meta: `Phiên bản ${v} · ${date} · Miễn phí, mã nguồn mở (MIT)`,
-    downloading: "Đang tải",
-    verified: "Đã kiểm tra SHA-256",
-    installed: `Đã cài QuickDesk ${v}`,
-    running: "QuickDesk đang chạy",
-    open: "Mở bằng",
-  },
-}[lang];
+const t = strings(lang).cta;
+const s = { ...t, meta: fill(t.meta, { v, date }), installed: fill(t.installed, { v }) };
 const systems = [
   { id: "linux", label: "Linux", ready: true },
   { id: "windows", label: "Windows", ready: true },

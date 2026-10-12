@@ -3,7 +3,11 @@ import Base from "../layouts/Base.astro";
 import Home from "../components/Home.astro";
 import { release } from "../data/release";
 import { faqPage, softwareApp } from "../data/seo";
+import { strings } from "../i18n";
+
+const lang = "en";
+const p = strings(lang).pages.home;
 ---
-<Base lang="en" title="QuickDesk — Notes, clipboard & ports for Linux and Windows" jsonLd={[softwareApp("en"), faqPage("en")]} description="QuickDesk is a free, open-source desktop helper for Linux and Windows: end-to-end encrypted notes, clipboard history, a live port manager and your AI usage limits, summoned with Super + Alt + N, V or P." wide intro>
-  <Home lang="en" release={release} />
+<Base lang={lang} title={p.title} description={p.description} jsonLd={[softwareApp(lang), faqPage(lang)]} wide intro>
+  <Home lang={lang} release={release} />
 </Base>

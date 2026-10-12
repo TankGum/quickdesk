@@ -1,7 +1,11 @@
 ---
 import Base from "../layouts/Base.astro";
 import PrivacyPage from "../components/PrivacyPage.astro";
+import { strings } from "../i18n";
+
+const lang = "en";
+const p = strings(lang).pages.privacy;
 ---
-<Base lang="en" title="Privacy · QuickDesk" description="QuickDesk has no accounts, analytics or telemetry. What stays on your computer and what is sent where.">
-  <PrivacyPage lang="en" />
+<Base lang={lang} title={p.title} description={p.description}>
+  <PrivacyPage lang={lang} />
 </Base>

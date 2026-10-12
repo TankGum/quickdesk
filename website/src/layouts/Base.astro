@@ -3,8 +3,8 @@
 import "../styles/site.css";
 import Intro from "../components/Intro.astro";
 import { OS_ICONS } from "../data/os-icons";
-import { macBadge, release } from "../data/release";
-import { GITHUB, href, pagePath, ui, type Lang } from "../i18n";
+import { release } from "../data/release";
+import { GITHUB, LANGS, LANG_INFO, href, macBadge, pagePath, strings, type Lang } from "../i18n";
 
 interface Props {
   lang: Lang;
@@ -20,20 +20,32 @@ interface Props {
   intro?: boolean;
 }
 const { lang, title, description, wide = false, noindex = false, jsonLd = [], intro = false } = Astro.props;
-const s = ui[lang];
+const all = strings(lang);
+const s = all.ui;
+const info = LANG_INFO[lang];
 const page = pagePath(Astro.url.pathname);
 const site = Astro.site!;
 const url = (l: Lang) => new URL(href(l, page), site).toString();
-// The preview image when a page is shared (1200×630, one per language).
+// The preview image when a page is shared (1200×630): its own for Vietnamese,
+// the English one otherwise.
 const ogImage = new URL(lang === "vi" ? "/og-vi.png" : "/og.png", site).toString();
-const ogAlt = lang === "vi" ? "QuickDesk: cả bàn làm việc, chỉ cách một phím tắt." : "QuickDesk: your whole desk, one shortcut away.";
+const ogAlt = all.seo.ogAlt;
+// Scripts Inter does not cover get a Noto font (Google Fonts, like Inter).
+const SCRIPT_FONT: Partial<Record<Lang, string>> = {
+  zh: "Noto+Sans+SC:wght@400;500;700",
+  ja: "Noto+Sans+JP:wght@400;500;700",
+  hi: "Noto+Sans+Devanagari:wght@400;500;700",
+  bn: "Noto+Sans+Bengali:wght@400;500;700",
+  ar: "Noto+Sans+Arabic:wght@400;500;700",
+};
+const fonts = `https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Ubuntu+Sans:wght@400;500;700${SCRIPT_FONT[lang] ? `&family=${SCRIPT_FONT[lang]}` : ""}&display=swap`;
 const structured = [
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "QuickDesk",
     url: new URL(href(lang, "/"), site).toString(),
-    inLanguage: lang,
+    inLanguage: info.tag,
   },
   ...jsonLd,
 ];
@@ -69,7 +81,7 @@ const ghMark =
   "M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z";
 ---
 <!doctype html>
-<html lang={lang}>
+<html lang={info.tag} dir={info.dir} data-lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -115,8 +127,7 @@ const ghMark =
         <>
           <meta name="robots" content="index, follow, max-image-preview:large" />
           <link rel="canonical" href={url(lang)} />
-          <link rel="alternate" hreflang="en" href={url("en")} />
-          <link rel="alternate" hreflang="vi" href={url("vi")} />
+          {LANGS.map((l) => <link rel="alternate" hreflang={LANG_INFO[l].tag} href={url(l)} />)}
           <link rel="alternate" hreflang="x-default" href={url("en")} />
         </>
       )
@@ -126,8 +137,8 @@ const ghMark =
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={url(lang)} />
-    <meta property="og:locale" content={lang === "vi" ? "vi_VN" : "en_US"} />
-    <meta property="og:locale:alternate" content={lang === "vi" ? "en_US" : "vi_VN"} />
+    <meta property="og:locale" content={info.og} />
+    {LANGS.filter((l) => l !== lang).map((l) => <meta property="og:locale:alternate" content={LANG_INFO[l].og} />)}
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -141,11 +152,12 @@ const ghMark =
     {structured.map((d) => <script type="application/ld+json" set:html={ldJson(d)} />)}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Ubuntu+Sans:wght@400;500;700&display=swap"
-    />
+    <link rel="stylesheet" href={fonts} />
     <link rel="stylesheet" href="/assets/css/style.css" />
+    <script is:inline define:vars={{ demoStrings: all.demo }}>
+      // The words main.js writes itself (the demo's toasts), in this page's language.
+      window.QD_STR = demoStrings;
+    </script>
     {
       intro && (
         <script is:inline>
@@ -198,9 +210,22 @@ const ghMark =
             <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4" /></svg>
             <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" /></svg>
           </button>
-          <div class="lang" role="group" aria-label={s.language}>
-            <a href={href("en", page)} hreflang="en" aria-current={lang === "en" ? "true" : undefined}>EN</a>
-            <a href={href("vi", page)} hreflang="vi" aria-current={lang === "vi" ? "true" : undefined}>VI</a>
+          <div class="langpick" data-langpick>
+            <button type="button" class="langpick__btn" aria-expanded="false" aria-controls="langpick-menu" aria-label={s.language} title={s.language}>
+              <svg class="langpick__globe" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.4 2.4 3.6 5.2 3.6 8.5s-1.2 6.1-3.6 8.5c-2.4-2.4-3.6-5.2-3.6-8.5S9.6 5.9 12 3.5z" /></svg>
+              <span>{lang.toUpperCase()}</span>
+            </button>
+            <ul class="langpick__menu" id="langpick-menu">
+              {
+                LANGS.map((l) => (
+                  <li>
+                    <a href={href(l, page)} hreflang={LANG_INFO[l].tag} lang={LANG_INFO[l].tag} dir={LANG_INFO[l].dir} aria-current={l === lang ? "true" : undefined}>
+                      {LANG_INFO[l].name}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
           </div>
           <a href={href(lang, "/download")} class="btn btn--primary btn--sm nav__cta">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d={icons.download} /></svg>
@@ -243,11 +268,15 @@ const ghMark =
             <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" /></svg>
             {s.themeShort}
           </button>
-          <div class="drawer__lang" role="group" aria-label={s.language}>
-            <a href={href("en", page)} hreflang="en" aria-current={lang === "en" ? "true" : undefined}>EN</a>
-            <span aria-hidden="true">·</span>
-            <a href={href("vi", page)} hreflang="vi" aria-current={lang === "vi" ? "true" : undefined}>VI</a>
-          </div>
+        </div>
+        <div class="drawer__langs" role="group" aria-label={s.language} style={`--i: ${menu.length - 1}`}>
+          {
+            LANGS.map((l) => (
+              <a href={href(l, page)} hreflang={LANG_INFO[l].tag} lang={LANG_INFO[l].tag} dir={LANG_INFO[l].dir} aria-current={l === lang ? "true" : undefined}>
+                {LANG_INFO[l].name}
+              </a>
+            ))
+          }
         </div>
         <div class="drawer__foot" style={`--i: ${menu.length}`}>
           <a href={href(lang, "/download")} class="btn btn--primary drawer__cta">
@@ -300,8 +329,13 @@ const ghMark =
           <div class="footer__col">
             <h2>{s.language}</h2>
             <div class="footer__lang" role="group" aria-label={s.language}>
-              <a href={href("en", page)} hreflang="en" aria-current={lang === "en" ? "true" : undefined}>English</a>
-              <a href={href("vi", page)} hreflang="vi" aria-current={lang === "vi" ? "true" : undefined}>Tiếng Việt</a>
+              {
+                LANGS.map((l) => (
+                  <a href={href(l, page)} hreflang={LANG_INFO[l].tag} lang={LANG_INFO[l].tag} dir={LANG_INFO[l].dir} aria-current={l === lang ? "true" : undefined}>
+                    {LANG_INFO[l].name}
+                  </a>
+                ))
+              }
             </div>
           </div>
         </div>
@@ -318,6 +352,25 @@ const ghMark =
       document.querySelectorAll("[data-theme-switch]").forEach((b) =>
         b.addEventListener("click", () => window.qdSetTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light")),
       );
+      // Language menu (header): a click opens it; a click outside or Escape closes it.
+      (() => {
+        const pick = document.querySelector("[data-langpick]");
+        if (!pick) return;
+        const button = pick.querySelector("button");
+        const set = (open) => {
+          pick.classList.toggle("is-open", open);
+          button.setAttribute("aria-expanded", String(open));
+        };
+        button.addEventListener("click", () => set(!pick.classList.contains("is-open")));
+        document.addEventListener("click", (e) => !pick.contains(e.target) && set(false));
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && pick.classList.contains("is-open")) {
+            set(false);
+            button.focus();
+          }
+        });
+        pick.addEventListener("focusout", (e) => !pick.contains(e.relatedTarget) && set(false));
+      })();
       // Phone menu: covers the screen; × and Escape close it.
       (() => {
         const drawer = document.getElementById("drawer");

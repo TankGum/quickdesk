@@ -1,0 +1,16 @@
+---
+// The page in every language but English (/vi/…, /zh/…, /ar/…).
+import Base from "../../layouts/Base.astro";
+import DownloadPage from "../../components/DownloadPage.astro";
+import { softwareApp } from "../../data/seo";
+import { LANGS, strings, type Lang } from "../../i18n";
+
+export function getStaticPaths() {
+  return LANGS.filter((l) => l !== "en").map((lang) => ({ params: { lang } }));
+}
+const lang = Astro.params.lang as Lang;
+const p = strings(lang).pages.download;
+---
+<Base lang={lang} title={p.title} description={p.description} jsonLd={[softwareApp(lang)]}>
+  <DownloadPage lang={lang} />
+</Base>

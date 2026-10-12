@@ -1,44 +1,20 @@
 ---
-import { macBadge } from "../data/release";
 // /sitemap: every page and section of the site, for people (sitemap.xml is
 // the one for search engines). Built from the same data as the pages, so new
 // docs sections and releases show up by themselves.
 import { changelog } from "../data/changelog";
-import { sections } from "../data/docs";
-import { home } from "../data/home";
-import { privacy } from "../data/privacy";
-import { GITHUB, href, ui, type Lang } from "../i18n";
+import { sectionText, sections } from "../data/docs";
+import { homeText } from "../data/home";
+import { privacyText } from "../data/privacy";
+import { GITHUB, href, macBadge, strings, type Lang } from "../i18n";
 
 interface Props {
   lang: Lang;
 }
 const { lang } = Astro.props;
-const u = ui[lang];
+const u = strings(lang).ui;
 const strip = (html: string) => html.replace(/<[^>]+>/g, "").replace(/&amp;/g, "&");
-const s = {
-  en: {
-    title: "Site map",
-    lead: "Every page and section of quickdesk.click.",
-    home: "Home",
-    demo: "Try the shortcuts",
-    getIt: "Get QuickDesk",
-    oneLine: "Install scripts",
-    other: "Elsewhere",
-    machine: "sitemap.xml (for search engines)",
-    privacyNote: "No accounts, analytics or telemetry: what stays on your computer and what is sent where.",
-  },
-  vi: {
-    title: "Bản đồ trang web",
-    lead: "Mọi trang và mục của quickdesk.click.",
-    home: "Trang chủ",
-    demo: "Thử phím tắt",
-    getIt: "Tải QuickDesk",
-    oneLine: "Script cài đặt",
-    other: "Nơi khác",
-    machine: "sitemap.xml (cho công cụ tìm kiếm)",
-    privacyNote: "Không tài khoản, không analytics hay telemetry: dữ liệu nào ở trên máy và cái gì được gửi đi đâu.",
-  },
-}[lang];
+const s = strings(lang).sitemap;
 const at = (page: string, id = "") => `${href(lang, page)}${id ? `#${id}` : ""}`;
 const groups = [
   {
@@ -46,12 +22,12 @@ const groups = [
     href: at("/"),
     links: [
       { label: s.demo, href: at("/", "demo") },
-      { label: strip(home.t0[lang]), href: at("/", "notes") },
-      { label: strip(home.t17[lang]), href: at("/", "clipboard") },
-      { label: strip(home.t1[lang]), href: at("/", "ports") },
-      { label: strip(home["rt-eyebrow"][lang]), href: at("/", "runtimes") },
-      { label: strip(home.t2[lang]), href: at("/", "ai") },
-      { label: strip(home.t80[lang]), href: at("/", "faq") },
+      { label: strip(homeText("t0", lang)), href: at("/", "notes") },
+      { label: strip(homeText("t17", lang)), href: at("/", "clipboard") },
+      { label: strip(homeText("t1", lang)), href: at("/", "ports") },
+      { label: strip(homeText("rt-eyebrow", lang)), href: at("/", "runtimes") },
+      { label: strip(homeText("t2", lang)), href: at("/", "ai") },
+      { label: strip(homeText("t80", lang)), href: at("/", "faq") },
       { label: s.getIt, href: at("/", "download") },
     ],
   },
@@ -67,7 +43,7 @@ const groups = [
   {
     title: u.docs,
     href: at("/docs"),
-    links: sections.map((d) => ({ label: d.title[lang], href: at("/docs", d.id) })),
+    links: sections.map((d) => ({ label: sectionText(d, lang).title, href: at("/docs", d.id) })),
   },
   {
     title: u.changelog,
@@ -78,7 +54,7 @@ const groups = [
     })),
   },
   {
-    title: privacy[lang].title,
+    title: privacyText(lang).title,
     href: at("/privacy"),
     note: s.privacyNote,
     links: [],

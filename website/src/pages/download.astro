@@ -2,7 +2,11 @@
 import Base from "../layouts/Base.astro";
 import DownloadPage from "../components/DownloadPage.astro";
 import { softwareApp } from "../data/seo";
+import { strings } from "../i18n";
+
+const lang = "en";
+const p = strings(lang).pages.download;
 ---
-<Base lang="en" title="Download QuickDesk for Linux and Windows (free)" jsonLd={[softwareApp("en")]} description="Download QuickDesk for Windows 10 and 11, Ubuntu, Debian, Fedora and other Linux distributions: the Windows installer, .deb, .rpm and AppImage, with checksums.">
-  <DownloadPage lang="en" />
+<Base lang={lang} title={p.title} description={p.description} jsonLd={[softwareApp(lang)]}>
+  <DownloadPage lang={lang} />
 </Base>

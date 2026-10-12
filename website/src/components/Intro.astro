@@ -4,14 +4,13 @@
 // screen lifts to show the page. A click or any key skips it. Base.astro
 // decides in <head> whether to play it (html.intro-play): on arriving from
 // outside the site and on reload, never with reduced motion; "?intro" forces it.
-import type { Lang } from "../i18n";
+import { strings, type Lang } from "../i18n";
 
 interface Props {
   lang: Lang;
 }
 const { lang } = Astro.props;
-const tagline = lang === "vi" ? "Cả bàn làm việc. Chỉ cách một phím tắt." : "Your whole desk. One shortcut away.";
-const skip = lang === "vi" ? "Bỏ qua" : "Skip";
+const { tagline, skip } = strings(lang).intro;
 const bars = [
   { w: 48, top: 27, c: "var(--notes)" },
   { w: 36, top: 43.2, c: "var(--clip)" },

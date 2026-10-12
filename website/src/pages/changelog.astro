@@ -1,7 +1,11 @@
 ---
 import Base from "../layouts/Base.astro";
 import ChangelogPage from "../components/ChangelogPage.astro";
+import { strings } from "../i18n";
+
+const lang = "en";
+const p = strings(lang).pages.changelog;
 ---
-<Base lang="en" title="QuickDesk changelog: what’s new in each release" description="What is new, improved and fixed in each QuickDesk release.">
-  <ChangelogPage lang="en" />
+<Base lang={lang} title={p.title} description={p.description}>
+  <ChangelogPage lang={lang} />
 </Base>

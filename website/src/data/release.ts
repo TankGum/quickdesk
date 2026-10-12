@@ -63,9 +63,3 @@ export const hasMac = Boolean(release.files.macos && release.files.macos_app);
  * it is finished.
  */
 export const macBeta = true;
-
-/** The badge next to "macOS": "soon" before a Mac build, "beta" while in development. */
-export function macBadge(lang: "en" | "vi"): string | null {
-  if (!hasMac) return lang === "vi" ? "sắp có" : "soon";
-  return macBeta ? "beta" : null;
-}

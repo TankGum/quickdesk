@@ -1,12 +1,14 @@
 // /docs content. Each section is HTML in both languages; keep facts in step
 // with the app (defaults, limits, paths) when they change.
-import type { Lang } from "../i18n";
+import { localLinks, type Lang } from "../i18n";
+import { LOCALES } from "../locales";
 import { hasMac, macBeta } from "./release";
 
 export interface Section {
   id: string;
-  title: Record<Lang, string>;
-  html: Record<Lang, string>;
+  /** English and Vietnamese; other languages are in src/locales/<lang>/docs.ts. */
+  title: Record<"en" | "vi", string>;
+  html: Record<"en" | "vi", string>;
   /** Shown once a release has a Mac build. */
   mac?: true;
 }
@@ -334,3 +336,10 @@ const all: Section[] = [
 ];
 
 export const sections: Section[] = all.filter((s) => !s.mac || hasMac);
+
+/** A section's title and HTML in a language (English where a translation is missing). */
+export function sectionText(section: Section, lang: Lang): { title: string; html: string } {
+  if (lang === "en" || lang === "vi") return { title: section.title[lang], html: section.html[lang] };
+  const t = LOCALES[lang]?.content?.docs[section.id];
+  return { title: t?.title ?? section.title.en, html: localLinks(t?.html ?? section.html.en, lang) };
+}

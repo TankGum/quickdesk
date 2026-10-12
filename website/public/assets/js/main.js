@@ -71,26 +71,18 @@
   window.addEventListener('scroll', onScroll, { passive: true });
 
   /* ---------- Language ---------- */
-  // Each language has its own pages (/ and /vi/); this script only needs to
-  // know which one it is on. Strings it writes itself:
-  const STR = {
-    en: {
-      refreshed: 'Usage refreshed', paused: 'Clipboard history paused', resumed: 'Clipboard history resumed',
-      quit: 'Quit — in the real app, QuickDesk would close now',
-      encrypting: 'Encrypting…', synced: 'Encrypted & synced',
-      copied: 'Copied', pressCopy: 'Press Ctrl+C', copy: 'Copy',
-      note: 'Standup — Tuesday\n• Shipped clipboard images\n• Reviewing the release flow\n• No blockers',
-    },
-    vi: {
-      refreshed: 'Đã làm mới usage', paused: 'Đã tạm dừng lưu clipboard', resumed: 'Đã bật lại lưu clipboard',
-      quit: 'Thoát — trong app thật, QuickDesk sẽ đóng lại ngay',
-      encrypting: 'Đang mã hoá…', synced: 'Đã mã hoá & đồng bộ',
-      copied: 'Đã copy', pressCopy: 'Bấm Ctrl+C', copy: 'Copy',
-      note: 'Họp đầu ngày — Thứ Ba\n• Đã xong ảnh trong clipboard\n• Đang rà quy trình phát hành\n• Không vướng gì',
-    },
+  // Each language has its own pages (/, /vi/, /zh/ …): <html data-lang> says
+  // which, and the layout puts the words this script writes in window.QD_STR
+  // (src/locales/*.ts, "demo"). English is kept here in case it is missing.
+  const STR_EN = {
+    refreshed: 'Usage refreshed', paused: 'Clipboard history paused', resumed: 'Clipboard history resumed',
+    quit: 'Quit — in the real app, QuickDesk would close now',
+    encrypting: 'Encrypting…', synced: 'Encrypted & synced',
+    copied: 'Copied', pressCopy: 'Press Ctrl+C', copy: 'Copy',
+    note: 'Standup — Tuesday\n• Shipped clipboard images\n• Reviewing the release flow\n• No blockers',
   };
-  const lang = document.documentElement.lang === 'vi' ? 'vi' : 'en';
-  const tr = (key) => STR[lang][key];
+  const lang = document.documentElement.dataset.lang || 'en';
+  const tr = (key) => (window.QD_STR && window.QD_STR[key]) || STR_EN[key];
 
   /* ---------- Hero: the shortcut presses itself ---------- */
   const kb = $('.kb');
@@ -126,7 +118,8 @@
 
   // The demo windows are the real app: tell them which language to use.
   $$('iframe[src*="/demo/"]').forEach((f) => f.addEventListener('load', () => {
-    f.contentWindow?.postMessage({ source: 'quickdesk-page', type: 'lang', lang }, '*');
+    // The app itself speaks English and Vietnamese only.
+    f.contentWindow?.postMessage({ source: 'quickdesk-page', type: 'lang', lang: lang === 'vi' ? 'vi' : 'en' }, '*');
   }));
 
   /* ---------- Interactive demo ---------- */
@@ -385,11 +378,14 @@
   // Live clock in the top bar.
   const clock = $('#clock');
   // The Windows taskbar shows only the time.
-  const clockFormat = () => new Intl.DateTimeFormat(lang === 'vi' ? 'vi-VN' : 'en-US', os === 'windows'
+  const clockFormat = () => new Intl.DateTimeFormat(document.documentElement.lang || 'en-US', os === 'windows'
     ? { hour: '2-digit', minute: '2-digit', hour12: false }
     : { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
   // What the input-method indicator says on each system.
-  const imeLabel = () => ({ windows: lang === 'vi' ? 'VIE' : 'ENG', macos: lang === 'vi' ? 'VI' : 'ABC' })[os] ?? lang;
+  const imeLabel = () => ({
+    windows: { en: 'ENG', vi: 'VIE' }[lang] ?? lang.toUpperCase(),
+    macos: { en: 'ABC', vi: 'VI' }[lang] ?? lang.toUpperCase(),
+  })[os] ?? lang;
   let fmt = clockFormat();
   const tick = () => { clock.textContent = fmt.format(new Date()).replace(/,/g, ''); };
   tick();

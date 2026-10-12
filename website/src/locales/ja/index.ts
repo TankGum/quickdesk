@@ -1,0 +1,187 @@
+// 日本語 (Japanese). See ../en.ts for what each part is. The app itself is in
+// English and Vietnamese, so its menu and button names stay in English.
+import type { Locale } from "..";
+import changelog from "./CHANGELOG.md?raw";
+import docs from "./docs";
+import home from "./home";
+import privacy from "./privacy";
+
+const ja: Locale = {
+  strings: {
+    ui: {
+      home: "ホーム",
+      download: "ダウンロード",
+      docs: "ドキュメント",
+      changelog: "更新履歴",
+      privacy: "プライバシー",
+      github: "GitHub",
+      language: "言語",
+      footer: "QuickDesk · MIT ライセンス。",
+      tagline: "メモ、クリップボード履歴、ポート、AI の利用上限。ショートカットひとつで。",
+      systems: "対応 OS",
+      soon: "近日公開",
+      product: "製品",
+      project: "プロジェクト",
+      issues: "問題を報告",
+      sitemap: "サイトマップ",
+      skip: "本文へスキップ",
+      menu: "メニュー",
+      close: "閉じる",
+      faq: "よくある質問",
+      theme: "ライト / ダークを切り替え",
+      themeShort: "ライト / ダーク",
+    },
+    pages: {
+      home: {
+        title: "QuickDesk — Linux・Windows・macOS 向けのメモ、クリップボード、ポート管理",
+        description:
+          "QuickDesk は Linux・Windows・macOS 向けの無料・オープンソースのデスクトップ補助ツールです。エンドツーエンド暗号化されたメモ、クリップボード履歴、リアルタイムのポート管理、AI の利用上限を、ショートカットひとつで呼び出せます。",
+      },
+      download: {
+        title: "QuickDesk をダウンロード（Linux・Windows・macOS、無料）",
+        description:
+          "Windows 10 / 11、Apple シリコンの macOS、Ubuntu、Debian、Fedora などの Linux 向け QuickDesk をダウンロード：Windows インストーラー、.dmg、.deb、.rpm、AppImage とチェックサム。",
+      },
+      docs: {
+        title: "QuickDesk ドキュメント：インストール、ショートカット、同期、クリップボード、ポート",
+        description: "Linux・Windows・macOS への QuickDesk のインストール方法と、ショートカット、メモの同期、クリップボード履歴、ポート、言語バージョン、AI 利用量、アップデートの使い方。",
+      },
+      changelog: {
+        title: "QuickDesk 更新履歴：各リリースの新機能",
+        description: "QuickDesk の各リリースでの新機能・改善・修正。",
+      },
+      privacy: {
+        title: "プライバシー · QuickDesk",
+        description: "QuickDesk にはアカウントも分析もテレメトリもありません。何がコンピューターに残り、何がどこへ送られるか。",
+      },
+      sitemap: {
+        title: "サイトマップ · QuickDesk",
+        description: "quickdesk.click の全ページ：Linux・Windows・macOS 向けダウンロード、セクションごとのドキュメント、更新履歴の全リリース、プライバシー。",
+      },
+    },
+    seo: {
+      app: "無料・オープンソースのデスクトップ補助ツール：エンドツーエンド暗号化で同期できるメモ、クリップボード履歴、ポート管理、プログラミング言語のバージョン、AI の利用上限を、それぞれショートカットひとつで。",
+      ogAlt: "QuickDesk：デスクトップのすべてを、ショートカットひとつで。",
+    },
+    hero: {
+      pick: "お使いの OS",
+      linux: "Linux 版をダウンロード",
+      windows: "Windows 版をダウンロード",
+      macos: "macOS 版をダウンロード{beta}",
+      macSoon: "macOS：近日公開",
+    },
+    download: {
+      title: "QuickDesk {v} をダウンロード",
+      leadMac: "Linux と Windows（x86_64）、macOS（Apple シリコン{beta}）に対応 · {date} リリース。無料・オープンソース（MIT）。",
+      leadSoon: "x86_64 の Linux と Windows に対応、macOS は近日公開 · {date} リリース。無料・オープンソース（MIT）。",
+      pick: "お使いの OS",
+      devTitle: "Mac 版はまだ開発中です",
+      devText:
+        "QuickDesk for macOS は使えますが、まだ新しいため、すべての Mac ですべてを試せてはいません。自動貼り付けとショートカットは改良を続けています。うまく動かないことがあれば、ぜひお知らせください。",
+      devLink: "GitHub で問題を報告",
+      deb: ["Ubuntu、Debian、Linux Mint、Pop!_OS", "Ubuntu 22.04 以降、Debian 12 以降。"],
+      rpm: ["Fedora などの RPM 系ディストリビューション", "Fedora 36 以降、openSUSE Tumbleweed。"],
+      appimage: ["その他のディストリビューション", "ポータブル版：インストール不要。FUSE 2（libfuse2）が必要です。"],
+      windows: ["Windows 10 と 11", "64 ビット。ご自分のユーザーにのみインストール：管理者権限は不要です。"],
+      macos: ["macOS 11 以降", "Apple シリコン（M1 以降）。ディスクイメージを開き、QuickDesk を「アプリケーション」へドラッグします。"],
+      oneMac: "ターミナルで実行します。QuickDesk.app をダウンロードし、SHA-256 を確認して「アプリケーション」に置き、起動します。この方法でインストールすると、macOS の警告は出ません。",
+      afterMac: "QuickDesk はメニューバーに常駐し、今後は自動でアップデートします。自動貼り付けを使うには、macOS に尋ねられたら「プライバシーとセキュリティ → アクセシビリティ」で許可してください。",
+      gatekeeper: "ブラウザでダウンロードすると、macOS は初回起動をブロックします。QuickDesk はまだ Apple の公証を受けていません。",
+      gatekeeperHow: "開き方",
+      openTitle: "QuickDesk を初めて開く",
+      openLead:
+        "QuickDesk はまだ Apple の公証を受けていません（有料の Apple Developer ID が必要です）。.dmg をブラウザでダウンロードした場合、macOS は初回起動時に「マルウェアが含まれていないことを Apple は検証できません」と表示して止めます。アプリには何の問題もありません。次のどちらかを一度行ってください。上のコマンドでインストールした場合は不要です。",
+      openA: "「システム設定」で",
+      openASteps: [
+        "QuickDesk を「アプリケーション」へドラッグして開きます。macOS が警告したら「完了」をクリックします。",
+        "「システム設定 → プライバシーとセキュリティ」を開き、「セキュリティ」までスクロールします。",
+        "「Mac を保護するために “QuickDesk” がブロックされました」の横の「このまま開く」をクリックし、パスワードまたは Touch ID で確認してから「開く」をクリックします。",
+      ],
+      openOld: "macOS 14 以前では、「アプリケーション」で QuickDesk を Control キーを押しながらクリックし、「開く」を選んでもう一度「開く」をクリックする方法でも開けます。",
+      openB: "またはターミナルで",
+      openBLead: "QuickDesk を「アプリケーション」へドラッグしたあと、これを実行してから、いつもどおり QuickDesk を開きます：",
+      get: "ダウンロード",
+      sha: "SHA-256",
+      all: "すべてのチェックサム（SHA256SUMS）",
+      notes: "{v} の新機能",
+      allChanges: "すべての変更",
+      afterLinux: "あとはアプリメニューから QuickDesk を開くだけです。トップバーに常駐し、今後は自動でアップデートします。",
+      afterWindows: "あとはスタートメニューから QuickDesk を開くだけです。タスクトレイに常駐し、今後は自動でアップデートします。",
+      copy: "コピー",
+      oneTitle: "コマンドひとつでインストール",
+      oneLinux: "ターミナルで実行します。お使いのディストリビューションに合ったパッケージ（.deb、.rpm、AppImage）を選び、SHA-256 を確認してインストールします。パスワードを尋ねるのはインストールの手順だけです。",
+      oneWindows: "PowerShell で実行します。インストーラーをダウンロードし、SHA-256 を確認して、管理者権限なしでご自分のユーザーに QuickDesk をインストールします。",
+      oneScript: "スクリプトを読む",
+      orPick: "またはパッケージを選ぶ",
+      smartscreen: "Windows が「PC が保護されました」と表示することがあります。インストーラーにまだ署名がないためです。「詳細情報 → 実行」を選んでください。",
+      macTitle: "QuickDesk for macOS は準備中です",
+      macLead: "Mac でもメモ、クリップボード履歴、ポート、AI の利用上限を。公開時には更新履歴と GitHub のリリースでお知らせします。",
+      macWatch: "GitHub でリリースをウォッチ",
+    },
+    cta: {
+      title: "いつでも準備はできています。",
+      lead: "一度インストールすれば、すべてがショートカットひとつ：メモ、コピーしたもの、使用中のポート、AI の利用上限。",
+      download: "ダウンロード",
+      changes: "新機能",
+      meta: "バージョン {v} · {date} · 無料・オープンソース（MIT）",
+      downloading: "ダウンロード中",
+      verified: "SHA-256 を確認しました",
+      installed: "QuickDesk {v} をインストールしました",
+      running: "QuickDesk が起動しています",
+      open: "開くには",
+    },
+    intro: {
+      tagline: "デスクトップのすべてを、ショートカットひとつで。",
+      skip: "スキップ",
+    },
+    docs: {
+      title: "ドキュメント",
+      lead: "インストール、ショートカット、同期、クリップボード、ポート、AI 利用量、アップデート。",
+      contents: "目次",
+      groups: ["はじめに", "機能", "ヘルプ"],
+      sync: "同期",
+      clipboard: "クリップボード",
+      versions: "ランタイム",
+      stuck: "まだ解決しませんか？",
+      ask: "GitHub で質問する",
+    },
+    sitemap: {
+      title: "サイトマップ",
+      lead: "quickdesk.click のすべてのページとセクション。",
+      home: "ホーム",
+      demo: "ショートカットを試す",
+      getIt: "QuickDesk を入手",
+      oneLine: "インストールスクリプト",
+      other: "その他",
+      machine: "sitemap.xml（検索エンジン向け）",
+      privacyNote: "アカウントも分析もテレメトリもなし：何がコンピューターに残り、何がどこへ送られるか。",
+    },
+    changelog: {
+      title: "更新履歴",
+      lead: "QuickDesk の各リリースでの新機能・改善・修正。",
+      latest: "最新",
+      source: "出典：GitHub 上の更新履歴",
+      english: "まだ翻訳されていないため、英語で表示しています。",
+    },
+    notFound: {
+      title: "ページが見つかりません · QuickDesk",
+      description: "このページは存在しません。",
+      heading: "このページは存在しません。",
+    },
+    demo: {
+      refreshed: "利用量を更新しました",
+      paused: "クリップボード履歴を一時停止しました",
+      resumed: "クリップボード履歴を再開しました",
+      quit: "終了 — 実際のアプリなら、ここで QuickDesk が閉じます",
+      encrypting: "暗号化中…",
+      synced: "暗号化して同期しました",
+      copied: "コピーしました",
+      pressCopy: "Ctrl+C を押してください",
+      copy: "コピー",
+      note: "朝会 — 火曜日\n• クリップボード画像をリリース\n• リリース手順を確認中\n• 障害なし",
+    },
+  },
+  content: { home, docs, privacy, changelog },
+};
+
+export default ja;

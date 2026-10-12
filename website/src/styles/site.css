@@ -107,6 +107,64 @@
   background: color-mix(in srgb, #ff9f0a 9%, transparent);
 }
 
+/* ---------- Languages ---------- */
+/* Header: a globe with the language code; the menu lists every language by its own name. */
+.langpick { position: relative; }
+.langpick__btn {
+  display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 11px 0 9px; border: 0; border-radius: 999px;
+  background: rgba(var(--fg), .08); color: var(--text-2); font-size: 11.5px; font-weight: 600; letter-spacing: .03em; cursor: pointer;
+  transition: color .2s, background-color .2s;
+}
+.langpick__btn:hover, .langpick.is-open .langpick__btn { color: var(--text); background: rgba(var(--fg), .13); }
+.langpick__globe { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.langpick__menu {
+  position: absolute; top: calc(100% + 10px); inset-inline-end: 0; z-index: 60; min-width: 190px; max-height: min(70vh, 460px); overflow-y: auto;
+  margin: 0; padding: 6px; list-style: none; border-radius: 16px;
+  border: 1px solid var(--line-2); background: var(--surface); box-shadow: 0 24px 50px -18px rgba(0, 0, 0, .55);
+  opacity: 0; visibility: hidden; transform: translateY(-4px); transition: opacity .15s ease, transform .2s var(--ease), visibility 0s .2s;
+}
+.langpick.is-open .langpick__menu { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+.langpick__menu a { display: block; padding: 8px 12px; border-radius: 10px; color: var(--text-2); font-size: 14px; text-align: start; }
+.langpick__menu a:hover { color: var(--text); background: rgba(var(--fg), .06); }
+.langpick__menu a[aria-current="true"] { color: var(--text); background: rgba(var(--fg), .09); font-weight: 600; }
+/* Phone menu and footer: every language, in a grid. */
+.drawer__langs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; margin-top: 18px; font-size: 14.5px; }
+.drawer__langs a { padding: 5px 0; color: var(--text-3); }
+.drawer__langs a[aria-current="true"] { color: var(--text); font-weight: 600; }
+.footer__lang { display: grid; grid-template-columns: repeat(2, max-content); gap: 10px 22px; }
+.notfound__langs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 28px 0 0; padding: 0; list-style: none; font-size: 14px; }
+.notfound__langs a { color: var(--text-2); }
+.release__english { margin: 0 0 8px; font-size: 13px; }
+
+/* Scripts Inter does not cover: the Noto font Base.astro loads, then the system's. */
+:root[data-lang="zh"] { --font: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif; }
+:root[data-lang="ja"] { --font: "Inter", "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif; }
+:root[data-lang="hi"] { --font: "Inter", "Noto Sans Devanagari", "Nirmala UI", sans-serif; }
+:root[data-lang="bn"] { --font: "Inter", "Noto Sans Bengali", "Nirmala UI", sans-serif; }
+:root[data-lang="ar"] { --font: "Noto Sans Arabic", "Inter", "Segoe UI", Tahoma, sans-serif; }
+/* Tight negative letter-spacing suits Latin headlines, not these scripts. */
+:root:is([data-lang="zh"], [data-lang="ja"], [data-lang="hi"], [data-lang="bn"], [data-lang="ar"]) :is(h1, h2, h3, .section-title, .hero__title, body) { letter-spacing: 0; }
+
+/* Right to left (Arabic): the page mirrors; code, terminals, keys and the
+   demo desktop stay left to right, as they are on the screen. */
+[dir="rtl"] :is(pre, code, kbd, .pkg__cmd, .install, .term, .terminal, .desktop, .kb, .shortcut, .device, .appwin, .story, .stack, .ospick, .download__os) { direction: ltr; }
+/* Inline code is its own left-to-right run, and long paths may break anywhere. */
+[dir="rtl"] :is(code, kbd) { unicode-bidi: isolate; }
+.prose :not(pre) > code { overflow-wrap: anywhere; }
+[dir="rtl"] .cta__title, [dir="rtl"] .cta__lead, [dir="rtl"] .cta .download__meta { text-align: right; }
+[dir="rtl"] .cta .download__os, [dir="rtl"] .cta__actions { justify-content: flex-end; }
+[dir="rtl"] .docs__toc ol { padding-left: 0; padding-right: 12px; border-left: 0; border-right: 1px solid var(--line); }
+[dir="rtl"] .docs__toc ol a::before { left: auto; right: -12px; }
+[dir="rtl"] .docs__toc-group { padding-left: 0; padding-right: 10px; }
+[dir="rtl"] .prose :is(ul, ol) { padding-left: 0; padding-right: 1.4em; }
+[dir="rtl"] .install__toast { right: auto; left: -22px; }
+[dir="rtl"] .footer__col { align-items: flex-start; }
+@media (max-width: 860px) {
+  [dir="rtl"] .cta__title, [dir="rtl"] .cta__lead, [dir="rtl"] .cta .download__meta { text-align: center; }
+  [dir="rtl"] .cta .download__os, [dir="rtl"] .cta__actions { justify-content: center; }
+  [dir="rtl"] .install__toast { left: 12px; }
+}
+
 /* ---------- Themes ---------- */
 /* Dark is the default (style.css :root). Light follows the system or the
    switch in the header (html[data-theme], set in <head> before the first
@@ -160,8 +218,9 @@
 .theme-switch .moon, :root[data-theme="light"] .theme-switch .sun { display: none; }
 :root[data-theme="light"] .theme-switch .moon { display: block; }
 
-.skip { position: absolute; left: -9999px; top: 8px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: var(--blue); color: #fff; }
-.skip:focus { left: 12px; }
+/* Hidden above the page (nothing scrolls there, in either direction of text) until focused. */
+.skip { position: absolute; inset-inline-start: 12px; top: 8px; z-index: 100; padding: 8px 14px; border-radius: 8px; background: var(--blue); color: #fff; transform: translateY(-200%); }
+.skip:focus { transform: none; }
 
 
 main.page { padding: calc(var(--nav-h) + 64px) 0 120px; min-height: 70vh; }
@@ -424,19 +483,19 @@ html.drawer-open { overflow: hidden; }
 .drawer__ver { margin: 0; text-align: center; color: var(--text-3); font-size: 12.5px; }
 
 /* Rows rise into place one after another; all leave together. */
-.drawer li, .drawer__meta, .drawer__foot { opacity: 0; transform: translateY(14px); transition: opacity .15s ease, transform .2s ease; }
-.drawer.is-open li, .drawer.is-open .drawer__meta, .drawer.is-open .drawer__foot {
+.drawer li, .drawer__meta, .drawer__langs, .drawer__foot { opacity: 0; transform: translateY(14px); transition: opacity .15s ease, transform .2s ease; }
+.drawer.is-open li, .drawer.is-open .drawer__meta, .drawer.is-open .drawer__langs, .drawer.is-open .drawer__foot {
   opacity: 1;
   transform: none;
   transition: opacity .4s ease calc(var(--i) * 45ms + 60ms), transform .6s cubic-bezier(.16, 1, .3, 1) calc(var(--i) * 45ms + 60ms);
 }
 @media (prefers-reduced-motion: reduce) {
-  .drawer__panel, .drawer li, .drawer__meta, .drawer__foot { transition: none !important; }
+  .drawer__panel, .drawer li, .drawer__meta, .drawer__langs, .drawer__foot { transition: none !important; }
 }
 
 @media (max-width: 640px) {
   .nav__menu { display: block; }
-  .nav__end > .lang, .nav__end > .theme-switch { display: none; }
+  .nav__end > .langpick, .nav__end > .theme-switch { display: none; }
   .nav__inner { grid-template-columns: 1fr auto; padding: 0 10px 0 16px; }
   .nav.is-scrolled .nav__inner { padding: 0 6px 0 14px; }
 }

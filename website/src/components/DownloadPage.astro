@@ -4,7 +4,7 @@
 // checksum, then the release notes.
 import { changelog } from "../data/changelog";
 import { hasMac, macBeta, release } from "../data/release";
-import { href, type Lang } from "../i18n";
+import { fill, href, strings, type Lang } from "../i18n";
 import OsPicker from "./OsPicker.astro";
 
 interface Props {
@@ -16,104 +16,14 @@ const v = release.version;
 const date = release.date.replaceAll("-", "‑");
 const notes = changelog(lang).find((e) => e.version === v);
 const f = release.files;
+const t = strings(lang).download;
+const vars = { v, date, beta: macBeta ? ", beta" : "" };
 const s = {
-  en: {
-    title: `Download QuickDesk ${v}`,
-    lead: hasMac
-      ? `For Linux and Windows (x86_64) and macOS (Apple Silicon${macBeta ? ", beta" : ""}) · released ${date}. Free and open source (MIT).`
-      : `For Linux and Windows on x86_64, macOS coming soon · released ${date}. Free and open source (MIT).`,
-    pick: "Your system",
-    devTitle: "The Mac version is still in development",
-    devText: "QuickDesk for macOS works, but it is new: not everything has been tried on every Mac yet, and auto-paste and the shortcuts are still being refined. If something does not work, please tell us.",
-    devLink: "Report a problem on GitHub",
-    soon: "soon",
-    deb: ["Ubuntu, Debian, Linux Mint, Pop!_OS", "Ubuntu 22.04 and newer, Debian 12 and newer."],
-    rpm: ["Fedora and other RPM-based distros", "Fedora 36 and newer, openSUSE Tumbleweed."],
-    appimage: ["Any other distribution", "Portable: no install needed. Needs FUSE 2 (libfuse2)."],
-    windows: ["Windows 10 and 11", "64-bit. Installs for your user only: no administrator rights needed."],
-    macos: ["macOS 11 or later", "Apple Silicon (M1 and newer). Open the disk image and drag QuickDesk to Applications."],
-    oneMac: "In Terminal. Downloads QuickDesk.app, checks its SHA-256, puts it in Applications and opens it. Installed this way, macOS does not warn about it.",
-    afterMac: "QuickDesk lives in the menu bar and updates itself from now on. For auto-paste, allow it under Privacy & Security → Accessibility when macOS asks.",
-    gatekeeper: "Downloaded in a browser, macOS blocks the first launch: QuickDesk is not notarized by Apple yet.",
-    gatekeeperHow: "How to open it",
-    openTitle: "Opening QuickDesk the first time",
-    openLead: "QuickDesk is not notarized by Apple yet (that needs a paid Apple Developer ID). When the .dmg was downloaded in a browser, macOS stops the first launch with “Apple cannot check it for malicious software”. Nothing is wrong with the app: do one of these once. Installed with the command above, you can skip this.",
-    openA: "In System Settings",
-    openASteps: [
-      "Drag QuickDesk to Applications and open it. When macOS warns, click Done.",
-      "Open System Settings → Privacy & Security and scroll down to Security.",
-      "Next to “QuickDesk was blocked to protect your Mac”, click Open Anyway, confirm with your password or Touch ID, then click Open.",
-    ],
-    openOld: "On macOS 14 or earlier, Control-click QuickDesk in Applications and choose Open, then Open again.",
-    openB: "Or in Terminal",
-    openBLead: "After dragging QuickDesk to Applications, run this, then open QuickDesk as usual:",
-    get: "Download",
-    sha: "SHA-256",
-    all: "All checksums (SHA256SUMS)",
-    notes: `What’s new in ${v}`,
-    allChanges: "All changes",
-    afterLinux: "Then open QuickDesk from your app menu. It lives in the top bar and updates itself from now on.",
-    afterWindows: "Then open QuickDesk from the Start menu. It lives in the system tray and updates itself from now on.",
-    copy: "Copy",
-    oneTitle: "Install with one command",
-    oneLinux: "In a terminal. Picks the right package for your distribution (.deb, .rpm or AppImage), checks its SHA-256 and installs it. It asks for your password only for the install step.",
-    oneWindows: "In PowerShell. Downloads the installer, checks its SHA-256 and installs QuickDesk for your user, without administrator rights.",
-    oneScript: "Read the script",
-    orPick: "Or pick a package",
-    smartscreen: "Windows may say it protected your PC: the installer is not signed yet. Choose More info → Run anyway.",
-    macTitle: "QuickDesk for macOS is on the way",
-    macLead: "Notes, clipboard history, ports and AI limits on the Mac. It will be announced on the changelog and in GitHub releases.",
-    macWatch: "Watch the releases on GitHub",
-  },
-  vi: {
-    title: `Tải QuickDesk ${v}`,
-    lead: hasMac
-      ? `Cho Linux và Windows (x86_64) và macOS (Apple Silicon${macBeta ? ", beta" : ""}) · phát hành ${date}. Miễn phí, mã nguồn mở (MIT).`
-      : `Cho Linux và Windows x86_64, macOS sắp có · phát hành ${date}. Miễn phí, mã nguồn mở (MIT).`,
-    pick: "Hệ điều hành của bạn",
-    devTitle: "Bản macOS vẫn đang được phát triển",
-    devText: "QuickDesk cho macOS đã dùng được, nhưng còn mới: chưa phải mọi thứ đều được thử trên mọi máy Mac, và phần tự động dán cùng phím tắt vẫn đang được hoàn thiện. Nếu có gì không chạy, hãy báo cho chúng tôi.",
-    devLink: "Báo lỗi trên GitHub",
-    soon: "sắp có",
-    deb: ["Ubuntu, Debian, Linux Mint, Pop!_OS", "Ubuntu 22.04 trở lên, Debian 12 trở lên."],
-    rpm: ["Fedora và các distro dùng RPM", "Fedora 36 trở lên, openSUSE Tumbleweed."],
-    appimage: ["Mọi distro khác", "Chạy ngay, không cần cài. Cần FUSE 2 (libfuse2)."],
-    windows: ["Windows 10 và 11", "64-bit. Chỉ cài cho tài khoản của bạn: không cần quyền quản trị."],
-    macos: ["macOS 11 trở lên", "Apple Silicon (M1 trở lên). Mở file disk image rồi kéo QuickDesk vào Applications."],
-    oneMac: "Chạy trong Terminal. Tải QuickDesk.app, kiểm tra SHA-256, đặt vào Applications rồi mở. Cài theo cách này thì macOS không cảnh báo.",
-    afterMac: "QuickDesk nằm trên menu bar và từ giờ sẽ tự cập nhật. Để tự động dán, hãy cho phép trong Privacy & Security → Accessibility khi macOS hỏi.",
-    gatekeeper: "Nếu tải bằng trình duyệt, macOS sẽ chặn lần mở đầu tiên: QuickDesk chưa được Apple notarize.",
-    gatekeeperHow: "Cách mở app",
-    openTitle: "Mở QuickDesk lần đầu",
-    openLead: "QuickDesk chưa được Apple notarize (việc này cần tài khoản Apple Developer trả phí). Nếu bạn tải file .dmg bằng trình duyệt, lần đầu mở macOS sẽ chặn và báo “Apple cannot check it for malicious software”. App không có vấn đề gì: chỉ cần làm một trong hai cách dưới đây một lần. Cài bằng lệnh ở trên thì bỏ qua bước này.",
-    openA: "Trong System Settings",
-    openASteps: [
-      "Kéo QuickDesk vào Applications rồi mở nó. Khi macOS cảnh báo, bấm Done.",
-      "Mở System Settings → Privacy & Security, kéo xuống phần Security.",
-      "Ở dòng “QuickDesk was blocked to protect your Mac”, bấm Open Anyway, xác nhận bằng mật khẩu hoặc Touch ID, rồi bấm Open.",
-    ],
-    openOld: "Trên macOS 14 trở về trước, bạn cũng có thể Control-click QuickDesk trong Applications, chọn Open, rồi bấm Open lần nữa.",
-    openB: "Hoặc trong Terminal",
-    openBLead: "Sau khi kéo QuickDesk vào Applications, chạy lệnh này rồi mở QuickDesk như bình thường:",
-    get: "Tải",
-    sha: "SHA-256",
-    all: "Toàn bộ mã kiểm tra (SHA256SUMS)",
-    notes: `Có gì mới trong ${v}`,
-    allChanges: "Mọi thay đổi",
-    afterLinux: "Sau đó mở QuickDesk từ menu ứng dụng. App nằm trên thanh trên cùng và từ giờ sẽ tự cập nhật.",
-    afterWindows: "Sau đó mở QuickDesk từ menu Start. App nằm ở khay hệ thống và từ giờ sẽ tự cập nhật.",
-    copy: "Copy",
-    oneTitle: "Cài bằng một lệnh",
-    oneLinux: "Chạy trong terminal. Tự chọn gói hợp với distro của bạn (.deb, .rpm hoặc AppImage), kiểm tra SHA-256 rồi cài. Chỉ hỏi mật khẩu ở bước cài đặt.",
-    oneWindows: "Chạy trong PowerShell. Tải bộ cài, kiểm tra SHA-256 rồi cài QuickDesk cho tài khoản của bạn, không cần quyền quản trị.",
-    oneScript: "Xem script",
-    orPick: "Hoặc chọn một gói",
-    smartscreen: "Windows có thể báo đã chặn để bảo vệ máy: bộ cài chưa được ký số. Chọn More info → Run anyway.",
-    macTitle: "QuickDesk cho macOS đang được làm",
-    macLead: "Ghi chú, lịch sử clipboard, cổng và hạn mức AI trên Mac. Bản macOS sẽ được báo trong trang thay đổi và trên GitHub releases.",
-    macWatch: "Theo dõi các bản phát hành trên GitHub",
-  },
-}[lang];
+  ...t,
+  title: fill(t.title, vars),
+  lead: fill(hasMac ? t.leadMac : t.leadSoon, vars),
+  notes: fill(t.notes, vars),
+};
 const oneLinux = "curl -fsSL https://quickdesk.click/install.sh | bash";
 const oneWindows = "irm https://quickdesk.click/install.ps1 | iex";
 const unquarantine = "xattr -dr com.apple.quarantine /Applications/QuickDesk.app";

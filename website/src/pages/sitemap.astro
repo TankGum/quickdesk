@@ -1,7 +1,11 @@
 ---
 import Base from "../layouts/Base.astro";
 import SitemapPage from "../components/SitemapPage.astro";
+import { strings } from "../i18n";
+
+const lang = "en";
+const p = strings(lang).pages.sitemap;
 ---
-<Base lang="en" title="Site map · QuickDesk" description="Every page of quickdesk.click: download for Linux and Windows, the docs section by section, every release in the changelog, and privacy.">
-  <SitemapPage lang="en" />
+<Base lang={lang} title={p.title} description={p.description}>
+  <SitemapPage lang={lang} />
 </Base>

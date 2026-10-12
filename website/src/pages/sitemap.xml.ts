@@ -1,18 +1,17 @@
-// sitemap.xml: every page in both languages, each listing its other-language
-// twin (hreflang), dated by the newest release. robots.txt points here.
+// sitemap.xml: every page in every language, each listing its translations
+// (hreflang), dated by the newest release. robots.txt points here.
 import type { APIRoute } from "astro";
 import { release } from "../data/release";
-import { href, type Lang } from "../i18n";
+import { LANGS, LANG_INFO, href, type Lang } from "../i18n";
 
 const PAGES = ["/", "/download", "/docs", "/changelog", "/privacy", "/sitemap"];
-const LANGS: Lang[] = ["en", "vi"];
 
 export const GET: APIRoute = ({ site }) => {
   const abs = (lang: Lang, page: string) => new URL(href(lang, page), site).toString();
   const urls = PAGES.flatMap((page) =>
     LANGS.map((lang) => {
       const alternates = [
-        ...LANGS.map((l) => `    <xhtml:link rel="alternate" hreflang="${l}" href="${abs(l, page)}"/>`),
+        ...LANGS.map((l) => `    <xhtml:link rel="alternate" hreflang="${LANG_INFO[l].tag}" href="${abs(l, page)}"/>`),
         `    <xhtml:link rel="alternate" hreflang="x-default" href="${abs("en", page)}"/>`,
       ].join("\n");
       return `  <url>\n    <loc>${abs(lang, page)}</loc>\n    <lastmod>${release.date}</lastmod>\n${alternates}\n  </url>`;

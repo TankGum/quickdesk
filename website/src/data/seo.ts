@@ -1,9 +1,9 @@
 // Structured data (schema.org JSON-LD) for search engines: what QuickDesk is,
 // and the home page's questions and answers. Built from the same strings the
 // pages show, so the two never disagree.
-import { home } from "./home";
+import { homeText, type HomeKey } from "./home";
 import { hasMac, release } from "./release";
-import { GITHUB, href, type Lang } from "../i18n";
+import { GITHUB, LANGS, LANG_INFO, href, strings, type Lang } from "../i18n";
 
 const SITE = "https://quickdesk.click";
 
@@ -20,10 +20,7 @@ export function softwareApp(lang: Lang) {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     name: "QuickDesk",
-    description:
-      lang === "vi"
-        ? "Tiện ích desktop miễn phí, mã nguồn mở: ghi chú mã hoá đầu-cuối có đồng bộ, lịch sử clipboard, trình quản lý cổng, version ngôn ngữ lập trình và hạn mức AI, gọi ra bằng một phím tắt."
-        : "A free, open-source desktop helper: end-to-end encrypted synced notes, clipboard history, a port manager, programming language versions and AI usage limits, each one shortcut away.",
+    description: strings(lang).seo.app,
     applicationCategory: "UtilitiesApplication",
     operatingSystem: hasMac ? "Linux, Windows 10, Windows 11, macOS 11 or later (Apple Silicon)" : "Linux, Windows 10, Windows 11",
     softwareVersion: release.version,
@@ -31,7 +28,7 @@ export function softwareApp(lang: Lang) {
     url: `${SITE}${href(lang, "/")}`,
     downloadUrl: `${SITE}${href(lang, "/download")}`,
     image: `${SITE}${lang === "vi" ? "/og-vi.png" : "/og.png"}`,
-    inLanguage: ["en", "vi"],
+    inLanguage: LANGS.map((l) => LANG_INFO[l].tag),
     isAccessibleForFree: true,
     license: "https://opensource.org/licenses/MIT",
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
@@ -41,9 +38,9 @@ export function softwareApp(lang: Lang) {
 
 /** The FAQ on the home page (questions t81, t83 … t99; answers the key after). */
 export function faqPage(lang: Lang) {
-  const pairs: [keyof typeof home, keyof typeof home][] = [
+  const pairs: [HomeKey, HomeKey][] = [
     ["t81", hasMac ? "t82-mac" : "t82"],
-    ...(hasMac ? ([["mac-open-q", "mac-open-a"]] as [keyof typeof home, keyof typeof home][]) : []),
+    ...(hasMac ? ([["mac-open-q", "mac-open-a"]] as [HomeKey, HomeKey][]) : []),
     ["t83", "t84"],
     ["t85", hasMac ? "t86-mac" : "t86"],
     ["t87", "t88"],
@@ -57,11 +54,11 @@ export function faqPage(lang: Lang) {
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    inLanguage: lang,
+    inLanguage: LANG_INFO[lang].tag,
     mainEntity: pairs.map(([q, a]) => ({
       "@type": "Question",
-      name: text(home[q][lang]),
-      acceptedAnswer: { "@type": "Answer", text: text(home[a][lang]) },
+      name: text(homeText(q, lang)),
+      acceptedAnswer: { "@type": "Answer", text: text(homeText(a, lang)) },
     })),
   };
 }

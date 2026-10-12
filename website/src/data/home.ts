@@ -1,4 +1,8 @@
 // Home page strings (English and Vietnamese), converted from the original page.
+// The other languages translate every key in src/locales/<lang>/home.ts.
+import { localLinks, type Lang } from "../i18n";
+import { LOCALES } from "../locales";
+
 export const home = {
   "t4": {
     "en": "Free &amp; open source",
@@ -325,3 +329,13 @@ export const home = {
     "vi": "Cổng"
   }
 } as const;
+
+export type HomeKey = keyof typeof home;
+
+/** A home page string in a language (English where a translation is missing). */
+export function homeText(key: HomeKey, lang: Lang): string {
+  const entry = home[key] as { en: string; vi?: string };
+  if (lang === "en") return entry.en;
+  if (lang === "vi") return entry.vi ?? entry.en;
+  return localLinks(LOCALES[lang]?.content?.home[key] ?? entry.en, lang);
+}

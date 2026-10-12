@@ -1,0 +1,166 @@
+// Docs in Hindi, by section id (src/data/docs.ts).
+import { macBeta } from "../../data/release";
+
+const docs: Record<string, { title: string; html: string }> = {
+  install: {
+    title: "इंस्टॉल करें",
+    html: `<p>सबसे तेज़ तरीका, किसी भी डिस्ट्रीब्यूशन पर:</p>
+<pre><code>curl -fsSL https://quickdesk.click/install.sh | bash</code></pre>
+<p>यह आपके सिस्टम के लिए .deb, .rpm या AppImage चुनता है, उसका SHA-256 जाँचता है और इंस्टॉल करता है (<a href="/install.sh">स्क्रिप्ट पढ़ें</a>)। या <a href="/download">डाउनलोड पेज</a> से पैकेज लें और डाउनलोड हुई फ़ाइल ऐसे इंस्टॉल करें:</p>
+<ul>
+<li><strong>Ubuntu, Debian, Mint, Pop!_OS:</strong> <code>sudo apt install ~/Downloads/QuickDesk_&lt;version&gt;_amd64.deb</code></li>
+<li><strong>Fedora, openSUSE:</strong> <code>sudo dnf install ~/Downloads/QuickDesk-&lt;version&gt;-1.x86_64.rpm</code></li>
+<li><strong>बाकी सब:</strong> AppImage को executable बनाएँ और चलाएँ। इसके लिए FUSE 2 चाहिए (<code>libfuse2</code>, Ubuntu 24.04 पर <code>libfuse2t64</code>)।</li>
+</ul>
+<p>QuickDesk को पिछले कुछ सालों का x86_64 सिस्टम चाहिए (glibc 2.34 या नया)। यह GNOME पर सबसे अच्छा चलता है, Wayland और X11 दोनों पर।</p>
+<p><strong>Windows 10 और 11 (64-बिट):</strong> PowerShell में <code>irm https://quickdesk.click/install.ps1 | iex</code> चलाएँ, या <a href="/download">डाउनलोड पेज</a> से इंस्टॉलर डाउनलोड करें। यह बिना एडमिन अधिकार के सिर्फ़ आपके यूज़र के लिए इंस्टॉल होता है। इंस्टॉलर अभी साइन नहीं है, इसलिए Windows कह सकता है कि उसने आपके PC की सुरक्षा की: <em>More info → Run anyway</em> चुनें। Windows पर शॉर्टकट <kbd>Win</kbd> <kbd>Alt</kbd> <kbd>N</kbd> / <kbd>V</kbd> / <kbd>P</kbd> हैं, QuickDesk सिस्टम ट्रे में रहता है, और ऑटो-पेस्ट के लिए कोई सेटअप नहीं चाहिए। वहाँ Runtimes टैब mise, rustup और uv के ज़रिए काम करता है (<em>भाषा वर्ज़न</em> देखें)।</p>
+<p>पहली बार शुरू होने पर एक स्वागत स्क्रीन शॉर्टकट दिखाती है और दो विकल्प देती है: <strong>लॉग इन करने पर शुरू करें</strong> (क्लिपबोर्ड इतिहास और AI घेरे के हमेशा चलने के लिए ज़रूरी) और <strong>तुरंत पेस्ट</strong> (<a href="#auto-paste">ऑटो-पेस्ट</a> देखें)। उसके बाद QuickDesk टॉप बार में रहता है।</p>`,
+  },
+  macos: {
+    title: "macOS",
+    html: `${macBeta ? '<p class="note"><strong>अभी विकास में है।</strong> Mac वर्ज़न काम करता है, पर यह नया है: अभी हर Mac पर हर चीज़ आज़माई नहीं गई है, और ऑटो-पेस्ट तथा शॉर्टकट अभी बेहतर किए जा रहे हैं। जो काम न करे, कृपया <a href="https://github.com/TankGum/quickdesk/issues">बताएँ</a>।</p>\n' : ""}<p>QuickDesk Apple Silicon (M1 और नए) पर macOS 11 या नए पर चलता है। Terminal में <code>curl -fsSL https://quickdesk.click/install.sh | bash</code> चलाएँ: यह QuickDesk.app को Applications में रखकर खोल देता है। या <a href="/download#macos">डाउनलोड पेज</a> से <code>.dmg</code> डाउनलोड करें और QuickDesk को Applications में खींचें।</p>
+<p><strong>पहली बार खोलना।</strong> QuickDesk अभी Apple से notarized नहीं है, इसलिए अगर <code>.dmg</code> ब्राउज़र से डाउनलोड हुई है, तो macOS पहली बार खोलते समय “Apple cannot check it for malicious software” कहकर रोक देता है। ऐप में कोई खराबी नहीं है; इनमें से कोई एक काम एक बार करें (कमांड से इंस्टॉल करने पर चेतावनी नहीं आती):</p>
+<ol>
+<li>Applications से QuickDesk खोलें और macOS चेतावनी दे तो <em>Done</em> पर क्लिक करें। फिर System Settings → Privacy &amp; Security खोलें, नीचे Security तक स्क्रॉल करें, “QuickDesk was blocked to protect your Mac” के पास <em>Open Anyway</em> पर क्लिक करें, पासवर्ड या Touch ID से पुष्टि करें और <em>Open</em> पर क्लिक करें। macOS 14 या पुराने पर, QuickDesk पर Control-क्लिक → <em>Open</em> → <em>Open</em> भी काम करता है।</li>
+<li>या Terminal में <code>xattr -dr com.apple.quarantine /Applications/QuickDesk.app</code> चलाएँ, फिर QuickDesk को हमेशा की तरह खोलें।</li>
+</ol>
+<p><a href="/download#macos-open">डाउनलोड पेज</a> पर भी यही चरण हैं।</p>
+<ul>
+<li>QuickDesk मेन्यू बार में रहता है, Dock में उसका आइकन नहीं होता। उसके पॉपअप उसी Space में खुलते हैं जिसमें आप हैं, फ़ुल स्क्रीन ऐप के ऊपर भी।</li>
+<li>शॉर्टकट <kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>N</kbd> / <kbd>V</kbd> / <kbd>P</kbd> (Control + Option) हैं: ⌘⌥V और ⌘⌥N Finder के हैं।</li>
+<li><strong>ऑटो-पेस्ट</strong> उस ऐप में ⌘V दबाता है जिसमें आप थे, और macOS यह तभी करने देता है जब आप QuickDesk को System Settings → Privacy & Security → <strong>Accessibility</strong> में जोड़ दें। macOS पहली बार एंट्री चुनने पर पूछता है; तब तक एंट्री कॉपी होती है और ⌘V आप दबाते हैं। Settings → Auto-paste में दिखता है कि अनुमति है या नहीं।</li>
+<li>नए macOS वर्ज़न पूछ सकते हैं कि क्या QuickDesk दूसरे ऐप्स की कॉपी की हुई चीज़ें पढ़ सकता है। Allow चुनें, वरना क्लिपबोर्ड इतिहास खाली रहेगा।</li>
+<li><strong>Claude उपयोग:</strong> Mac पर Claude Code अपना लॉगिन Keychain में रखता है। AI टैब उसे वहाँ से पढ़ने का प्रस्ताव देता है; फिर macOS एक बार पूछता है (<em>Always Allow</em> चुनें)। दूसरे सिस्टम की तरह, लॉगिन सिर्फ़ पढ़ा जाता है और सिर्फ़ <code>api.anthropic.com</code> को भेजा जाता है।</li>
+<li>क्योंकि ऐप ad hoc साइन है, अपडेट के बाद macOS फिर से Accessibility और Keychain की अनुमति माँग सकता है। अगर ऑटो-पेस्ट काम करना बंद कर दे, तो QuickDesk को Accessibility सूची से हटाकर दोबारा जोड़ें।</li>
+<li>Runtimes टैब Linux की तरह ही आपके लॉगिन शेल (zsh: <code>~/.zshrc</code>) से काम करता है। Homebrew से इंस्टॉल की गई कॉपी दिखाई जाती हैं, पर बदली नहीं जातीं।</li>
+</ul>
+<p><strong>अनइंस्टॉल:</strong> मेन्यू बार से QuickDesk बंद करें और उसे Applications से Trash में डालें। आपका डेटा <code>~/Library/Application Support/click.quickdesk</code> में तब तक रहता है जब तक आप वह फ़ोल्डर न मिटाएँ।</p>`,
+  },
+  shortcuts: {
+    title: "शॉर्टकट",
+    html: `<table>
+<tr><th>शॉर्टकट</th><th>क्या खुलता है</th></tr>
+<tr><td><kbd>Super</kbd> <kbd>Alt</kbd> <kbd>N</kbd></td><td>नोट्स</td></tr>
+<tr><td><kbd>Super</kbd> <kbd>Alt</kbd> <kbd>V</kbd></td><td>क्लिपबोर्ड इतिहास पॉपअप</td></tr>
+<tr><td><kbd>Super</kbd> <kbd>Alt</kbd> <kbd>P</kbd></td><td>पोर्ट</td></tr>
+<tr><td>सेट नहीं</td><td>क्विक नोट पॉपअप (Settings में सेट करें)</td></tr>
+</table>
+<p>विंडो खुली हो तब शॉर्टकट दोबारा दबाने से वह बंद हो जाती है। इनमें से कोई भी <strong>Settings → Hotkeys</strong> में बदलें; अगर कोई संयोजन पहले से इस्तेमाल में है तो QuickDesk चेतावनी देता है।</p>
+<p>GNOME पर शॉर्टकट <em>Settings → Keyboard → Custom Shortcuts</em> में जोड़े जाते हैं और QuickDesk बंद होने पर हटा दिए जाते हैं, इसलिए वे Wayland पर भी काम करते हैं। दूसरे डेस्कटॉप पर, अपने डेस्कटॉप की कीबोर्ड सेटिंग में <code>quickdesk toggle notes</code>, <code>quickdesk toggle clipboard</code>, <code>quickdesk toggle ports</code> या <code>quickdesk toggle quick-note</code> को कुंजियों से जोड़ें।</p>
+<p><strong>Super + Alt क्यों?</strong> टेक्स्ट फ़ील्ड में लिखते समय Unikey और Bamboo जैसे वियतनामी इनपुट मेथड Super + Shift + अक्षर को निगल जाते हैं; Alt वाले संयोजन काम करते रहते हैं।</p>`,
+  },
+  notes: {
+    title: "नोट्स",
+    html: `<p>नोट्स Markdown में होते हैं और एक रिच एडिटर के साथ: हेडिंग, बोल्ड और इटैलिक, सूचियाँ, चेकलिस्ट, कोट और कोड ब्लॉक। <kbd>Ctrl</kbd> <kbd>N</kbd> नया नोट बनाता है, <kbd>Ctrl</kbd> <kbd>S</kbd> सहेजता है, <kbd>Ctrl</kbd> <kbd>F</kbd> खोजता है। खोज मात्राओं/एक्सेंट को नज़रअंदाज़ करती है, इसलिए <code>tieng viet</code> से “tiếng Việt” मिल जाता है।</p>
+<p>किसी नोट को सबसे ऊपर रखने के लिए स्टार से पिन करें। मिटाने से पहले पूछा जाता है और कुछ सेकंड तक उसे वापस लाया जा सकता है।</p>`,
+  },
+  sync: {
+    title: "कंप्यूटरों के बीच नोट्स सिंक करें",
+    html: `<p>नोट्स <strong>QuickDesk Cloud</strong> के ज़रिए सिंक होते हैं। न खाता, न ईमेल: एक कंप्यूटर को <strong>सिंक कोड</strong> मिलता है, और आपके दूसरे कंप्यूटर उससे जुड़ते हैं। सिर्फ़ नोट्स सिंक होते हैं; क्लिपबोर्ड इतिहास और सेटिंग हर कंप्यूटर पर अलग रहती हैं।</p>
+<h3>सेट करें</h3>
+<ol>
+<li>पहले कंप्यूटर पर: <strong>Settings → Sync → Turn on sync</strong>, और एक पासफ़्रेज़ चुनें (कम से कम 8 अक्षर)।</li>
+<li>QuickDesk आपका <strong>सिंक कोड</strong> (<code>QD1-…</code>) और एक <strong>रिकवरी की</strong> दिखाता है। रिकवरी की को सुरक्षित जगह रखें; यह सिर्फ़ एक बार दिखती है।</li>
+<li>हर दूसरे कंप्यूटर पर: <strong>Settings → Sync → I have a sync code</strong>, फिर कोड और वही पासफ़्रेज़ (या रिकवरी की) डालें।</li>
+</ol>
+<p>सिंक कोड को कभी भी Settings → Sync में <strong>Show sync code</strong> से फिर देखा जा सकता है।</p>
+<h3>कब सिंक होता है</h3>
+<ul>
+<li>नोट बदलने के कुछ सेकंड बाद, और जब आप QuickDesk की कोई विंडो खोलते हैं।</li>
+<li>बाकी समय, विंडो खुली हो तो QuickDesk हर मिनट बदलाव जाँचता है, और ट्रे में हो तो हर 5 मिनट। हर जाँच एक छोटा-सा अनुरोध है; नोट्स तभी भेजे जाते हैं जब कुछ बदला हो।</li>
+<li><strong>Sync now</strong> तुरंत जाँचता है। ऑफ़लाइन किए गए बदलाव ऑनलाइन लौटने पर भेजे जाते हैं।</li>
+<li>अगर कोई नोट एक साथ दो कंप्यूटरों पर बदला, तो दोनों वर्ज़न रखे जाते हैं: नया वाला अपनी जगह रहता है, दूसरा उसके पास एक कॉपी बन जाता है। मिटाने पर बदलाव भारी पड़ता है।</li>
+</ul>
+<h3>गोपनीयता और कुंजियाँ</h3>
+<ul>
+<li>नोट्स अपलोड से पहले आपके कंप्यूटर पर एन्क्रिप्ट होते हैं (XChaCha20-Poly1305, कुंजी आपके पासफ़्रेज़ से Argon2id द्वारा)। QuickDesk Cloud एक रैंडम खाता ID के तहत सिर्फ़ सिफ़रटेक्स्ट रखता है और आपके नोट्स नहीं पढ़ सकता।</li>
+<li>इसके लिए <strong>दोनों</strong> चाहिए: सिंक कोड (डेटा तक पहुँचने के लिए) और पासफ़्रेज़ (उसे डिक्रिप्ट करने के लिए)। सिंक कोड को पासवर्ड की तरह संभालें: सिर्फ़ उससे भी कोई आपके सिंक हुए नोट्स मिटा सकता है।</li>
+<li>पासफ़्रेज़ भूल गए? उसकी जगह रिकवरी की डालें। दोनों में से कोई न हो, तो QuickDesk Cloud की कॉपी नहीं खुल सकती, पर हर कंप्यूटर पर नोट्स जस के तस रहते हैं।</li>
+<li>अगर QuickDesk <strong>Unlock sync</strong> कहे (जैसे सिस्टम कीरिंग रीसेट होने के बाद), तो पासफ़्रेज़ फिर से डालें।</li>
+</ul>
+<h3>बंद करना</h3>
+<p><strong>Turn off sync…</strong> एक कंप्यूटर पर सिंक रोकता है और उसके नोट्स रखता है। हर कंप्यूटर के लिए सिंक की हुई कॉपी हटाने के लिए <em>Also delete my notes from QuickDesk Cloud</em> पर टिक करें।</p>
+<p>हर सिंक कोड की सीमा: 256 MB और 20,000 सहेजे गए ऑब्जेक्ट, नोट्स की ज़रूरत से कहीं ज़्यादा।</p>`,
+  },
+  clipboard: {
+    title: "क्लिपबोर्ड इतिहास",
+    html: `<p>आप जो भी कॉपी करते हैं वह सहेजा जाता है: टेक्स्ट, इमेज (स्क्रीनशॉट) और फ़ाइल मैनेजर में कॉपी की गई फ़ाइलें। <kbd>Super</kbd> <kbd>Alt</kbd> <kbd>V</kbd> से पॉपअप खोलें, खोजने के लिए लिखें, टेक्स्ट, इमेज या फ़ाइल से छाँटें, और जिस ऐप में थे उसमें पेस्ट करने के लिए <kbd>Enter</kbd> दबाएँ। <kbd>Ctrl</kbd> <kbd>Enter</kbd> सिर्फ़ कॉपी करता है, <kbd>Ctrl</kbd> <kbd>P</kbd> पिन करता है, <kbd>Del</kbd> मिटाता है।</p>
+<ul>
+<li>इतिहास इसी कंप्यूटर पर रहता है और कभी सिंक नहीं होता।</li>
+<li>जिन कॉपी को पासवर्ड मैनेजर गुप्त चिह्नित करते हैं, वे छोड़ दी जाती हैं। कुछ संवेदनशील कॉपी करने से पहले, सहेजना 15 मिनट, एक घंटे या दोबारा चालू करने तक <strong>रोकें</strong> (Clipboard टैब या ट्रे मेन्यू में)।</li>
+<li>QuickDesk नवीनतम 1,000 एंट्री रखता है; पिन की गई हमेशा रहती हैं। टेक्स्ट 1 MB तक, हर इमेज 10 MB तक और कुल 200 MB।</li>
+<li>Clipboard टैब में <strong>Clear…</strong> पिन की गई एंट्री छोड़कर सब हटा देता है।</li>
+</ul>`,
+  },
+  "auto-paste": {
+    title: "ऑटो-पेस्ट",
+    html: `<p>जब आप कोई एंट्री चुनते हैं, तो QuickDesk उसी ऐप पर लौटता है जिसमें आप थे और <kbd>Shift</kbd> <kbd>Insert</kbd> दबाता है, जो टर्मिनल में भी काम करता है। तरीका <strong>Settings → Auto-paste</strong> में चुनें:</p>
+<ul>
+<li><strong>Desktop portal</strong> (डिफ़ॉल्ट): GNOME एक बार अनुमति माँगता है और पेस्ट करते समय रिमोट-कंट्रोल संकेतक दिखाता है।</li>
+<li><strong>Instant (virtual keyboard)</strong>: न सवाल, न संकेतक। चालू करते समय एक बार एडमिन पासवर्ड माँगा जाता है, ताकि आपके नाम से चल रहे प्रोग्राम वर्चुअल कीबोर्ड बना सकें (वही अनुमति जो Steam कंट्रोलर के लिए इस्तेमाल करता है)।</li>
+</ul>
+<p>सिर्फ़ कॉपी करने के लिए Clipboard टैब में ऑटो-पेस्ट बंद करें, फिर <kbd>Ctrl</kbd> <kbd>V</kbd> खुद दबाएँ।</p>`,
+  },
+  ports: {
+    title: "पोर्ट",
+    html: `<p><kbd>Super</kbd> <kbd>Alt</kbd> <kbd>P</kbd> हर सुन रहे TCP पोर्ट (IPv4 और IPv6) को प्रोसेस, उसकी पूरी कमांड लाइन और यूज़र के साथ दिखाता है, हर 2 सेकंड में ताज़ा। पोर्ट, PID, प्रोसेस या कंटेनर के नाम से छाँटें।</p>
+<ul>
+<li><strong>Open</strong> आपके ब्राउज़र में <code>http://localhost:&lt;port&gt;</code> खोलता है; <strong>Copy PID</strong> और <strong>Copy cmd</strong> उन्हें कॉपी करते हैं।</li>
+<li><strong>Kill</strong> पहले पूछता है, फिर प्रोसेस को आराम से रोकता है और ज़बरदस्ती बंद करने का विकल्प तभी देता है जब वह न रुके।</li>
+<li>Docker द्वारा खोले गए पोर्ट कंटेनर और इमेज दिखाते हैं, और <strong>Stop</strong> <code>docker-proxy</code> को बंद करने की जगह कंटेनर को रोकता है।</li>
+<li>दूसरे यूज़र्स (सिस्टम सर्विस) के प्रोसेस छिपे दिखते हैं; उन्हें देखने के लिए root चाहिए।</li>
+</ul>`,
+  },
+  versions: {
+    title: "भाषा वर्ज़न (Runtimes)",
+    html: `<p><strong>Runtimes</strong> टैब इस कंप्यूटर पर प्रोग्रामिंग भाषाओं (Node.js, Python, Rust, Go, Java, Ruby, Deno, Bun, PHP) के वर्ज़न संभालता है। यह दिखाता है कि <em>नया टर्मिनल</em> कौन-सा वर्ज़न चलाता है और वह कहाँ से आता है। QuickDesk आपके लॉगिन शेल से पूछता है, इसलिए यह वही है जो <code>~/.bashrc</code> या <code>~/.zshrc</code> के बाद मिलता है, न कि जो डेस्कटॉप देखता है।</p>
+<ul>
+<li><strong>nvm</strong> (Node.js), <strong>rustup</strong> (Rust), <strong>uv</strong> (Python) या <strong>mise</strong> (Go, Java, Ruby, Deno, Bun, PHP और बाकी) से इंस्टॉल की गई भाषाएँ बदली जा सकती हैं: <strong>Install version…</strong> टूल के दिए वर्ज़न में से चुनता है (rustup आपके लिखे चैनल या वर्ज़न को लेता है), <strong>Make default</strong> तय करता है कि नए टर्मिनल क्या इस्तेमाल करें, <strong>Uninstall</strong> एक वर्ज़न हटाकर जगह खाली करता है। डिफ़ॉल्ट वर्ज़न हटाया नहीं जा सकता; पहले कोई दूसरा डिफ़ॉल्ट चुनें।</li>
+<li>इंस्टॉल बैकग्राउंड में प्रोग्रेस बार के साथ चलते हैं और रद्द किए जा सकते हैं। एक समय में सिर्फ़ एक बदलाव चलता है। वर्ज़न सूची डिफ़ॉल्ट रूप से हर लाइन की नवीनतम रिलीज़ दिखाती है; LTS या सब पर जाएँ, या छाँटने के लिए लिखें।</li>
+<li>जब किसी इंस्टॉल की गई लाइन की नई रिलीज़ आती है (22.23.3 के लिए Node 22.24.1, 3.13.7 के लिए Python 3.13.9), तो वर्ज़न पर <strong>↑ 22.24.1</strong> दिखता है: एक क्लिक उसे इंस्टॉल करता है और अगर पुराना डिफ़ॉल्ट था, तो नए को डिफ़ॉल्ट बना देता है। पुराना वर्ज़न तब तक रहता है जब तक आप उसे अनइंस्टॉल न करें। Rust चैनल अपनी जगह पर अपडेट होते हैं: rustup के पास नया stable हो तो <strong>stable</strong> पर <strong>↑ 1.93.0</strong> दिखता है, और क्लिक <code>rustup update stable</code> चलाता है।</li>
+<li><strong>Apply right away in open terminals</strong> (टैब के ऊपर) बदलावों को पहले से खुले टर्मिनल तक उनके अगले प्रॉम्प्ट से पहुँचाता है: QuickDesk आपकी शेल फ़ाइल में एक लाइन जोड़ता है जो एक छोटा प्रॉम्प्ट हुक (<code>~/.config/quickdesk/shell/hook.sh</code>) लोड करती है। यह हुक QuickDesk के वर्ज़न बदलने के बाद शेल से कमांड फिर से खोजवाता है, और जब आप किसी प्रोजेक्ट में <code>cd</code> करते हैं तो Node को सबसे नज़दीकी <code>.nvmrc</code> के हिसाब से चलाता है, वरना आपके चुने डिफ़ॉल्ट से (हाथ से किया <code>nvm use</code> तब तक रहता है जब तक आप फ़ोल्डर या डिफ़ॉल्ट न बदलें)। इसके बिना भी Rust के बदलाव तुरंत लागू होते हैं, Python और mise के बदलाव नए टर्मिनल तक पहुँचते हैं (या खुले टर्मिनल में <code>hash -r</code> के बाद), और nvm के बदलाव सिर्फ़ नए टर्मिनल तक।</li>
+<li><strong>Set for a project…</strong> आपके चुने फ़ोल्डर में टूल की अपनी फ़ाइल लिखता है: <code>.nvmrc</code>, <code>rust-toolchain.toml</code>, <code>.python-version</code> या <code>mise.toml</code> (mise वहाँ पहले से लिखे बाकी टूल रखता है)।</li>
+<li>जिस भाषा का कोई वर्ज़न मैनेजर नहीं है (जैसे apt से इंस्टॉल Go), उसके लिए <strong>Install mise…</strong> मिलता है: QuickDesk नवीनतम mise github.com/jdx/mise से डाउनलोड करता है, उसे रिलीज़ के SHA-256 से मिलाता है और <code>~/.local/bin</code> में रखता है। कोई वर्ज़न डिफ़ॉल्ट बनाने के बाद, <strong>Fix PATH…</strong> वह लाइन देता है जो आपके शेल में mise चालू करती है।</li>
+<li>अगर नए टर्मिनल डिफ़ॉल्ट की जगह कोई और कॉपी चलाएँगे (जैसे PATH में सिस्टम का <code>python3</code> पहले आता है), तो कार्ड वजह बताता है और <strong>Fix PATH…</strong> ठीक-ठीक वे लाइनें दिखाता है जो वह जोड़ेगा। आपकी सहमति के बाद ही QuickDesk उन्हें आपकी शेल फ़ाइल के अंत में एक चिह्नित ब्लॉक के रूप में जोड़ता है, पास में एक बैकअप के साथ; ब्लॉक उसी जगह से हटाया जा सकता है।</li>
+<li>PATH सुधार और प्रॉम्प्ट हुक bash (<code>~/.bashrc</code>) और zsh (<code>~/.zshrc</code>) के लिए लिखे जाते हैं; fish अभी समर्थित नहीं है।</li>
+<li>जो भाषाएँ कंप्यूटर पर अभी नहीं हैं, वे <strong>Add a language</strong> के नीचे हैं: कोई चुनें, ज़रूरत हो तो mise इंस्टॉल करें, फिर वर्ज़न।</li>
+<li><strong>Windows:</strong> QuickDesk PowerShell से पूछता है कि नया टर्मिनल क्या चलाता है और <strong>mise</strong> (<code>%LOCALAPPDATA%\\mise\\bin</code> में इंस्टॉल), <strong>rustup</strong> और <strong>uv</strong> के ज़रिए काम करता है; nvm-windows और fnm दिखाए जाते हैं पर बदले नहीं जाते, और Store का <code>python.exe</code> प्लेसहोल्डर नज़रअंदाज़ होता है। <strong>Fix PATH…</strong> टूल के फ़ोल्डर (mise के लिए उसके shims) आपके खाते के PATH — Settings → Environment Variables वाले — में सबसे आगे रखता है, बिना एडमिन अधिकार के; पुराना मान <code>~\\.config\\quickdesk\\path</code> में रखा जाता है और वही पैनल फ़ोल्डर फिर हटा देता है। नए टर्मिनल इसे अपना लेते हैं; उसके बाद डिफ़ॉल्ट के बदलाव तुरंत लागू होते हैं। Windows पर “Apply right away” की ज़रूरत नहीं है और यह दिखाया नहीं जाता।</li>
+<li>सिस्टम द्वारा इंस्टॉल की गई कॉपी (apt, dnf) कभी बदली या हटाई नहीं जातीं; QuickDesk कभी <code>sudo</code> नहीं चलाता। जिन टूल्स को यह समर्थन नहीं देता (fnm, volta, pyenv, SDKMAN…), उनसे संभाली जाने वाली भाषाएँ सिर्फ़ पढ़ने के लिए दिखाई जाती हैं।</li>
+</ul>`,
+  },
+  ai: {
+    title: "AI उपयोग",
+    html: `<p>टॉप बार में एक घेरा दिखाता है कि आपने अपनी AI सीमाओं का कितना हिस्सा इस्तेमाल किया है, हरे, पीले या लाल रंग में। उसका मेन्यू आपके ट्रैक किए टूल को दिखाता है, हर सीमा के लिए एक बार और रीसेट का समय; AI टैब हर टूल दिखाता है।</p>
+<ul>
+<li><strong>Claude Code:</strong> QuickDesk वह लॉगिन पढ़ता है जो Claude Code ने इस कंप्यूटर पर पहले से सहेजा है और Anthropic से आपका उपयोग पूछता है, ज़्यादा से ज़्यादा हर 5 मिनट में। टोकन सिर्फ़ पढ़ा जाता है: कभी सहेजा, रीफ़्रेश या Anthropic के अलावा कहीं भेजा नहीं जाता।</li>
+<li><strong>Codex:</strong> Codex के <code>~/.codex</code> में रखे सेशन लॉग से पढ़ा जाता है।</li>
+<li><strong>Gemini (Antigravity):</strong> यह प्रतिशत नहीं बताता, इसलिए QuickDesk उसके लॉग से दिखाता है कि आपका कोटा आखिरी बार कब खत्म हुआ।</li>
+</ul>
+<p><em>Track</em> में चुनें कि कौन-सा टूल और कौन-सी सीमा देखनी है, या AI टैब में घेरा छिपा दें।</p>`,
+  },
+  updates: {
+    title: "अपडेट",
+    html: `<p>QuickDesk शुरू होने के 30 सेकंड बाद और फिर हर 6 घंटे में नया वर्ज़न जाँचता है। नया वर्ज़न आने पर मुख्य विंडो में एक बैनर और ट्रे मेन्यू के सबसे ऊपर एक एंट्री <strong>What’s New</strong> के साथ बताती है। जब तक आप <strong>Update Now</strong> पर क्लिक नहीं करते, कुछ इंस्टॉल नहीं होता।</p>
+<p>हर अपडेट इंस्टॉल होने से पहले QuickDesk की साइनिंग कुंजी से जाँचा जाता है। .deb या .rpm एडमिन पासवर्ड माँगता है; AppImage खुद को बदल लेता है। फिर QuickDesk फिर से शुरू होता है और दिखाता है कि क्या बदला। अपने-आप जाँच बंद करें या हाथ से जाँचें <strong>Settings → Updates</strong> में।</p>`,
+  },
+  uninstall: {
+    title: "अनइंस्टॉल",
+    html: `<ol>
+<li>Settings में <em>Start QuickDesk when I log in</em> बंद करें, और ट्रे से बंद करें।</li>
+<li>पैकेज हटाएँ: <code>sudo apt remove quick-desk</code> (Debian/Ubuntu) या <code>sudo dnf remove QuickDesk</code> (Fedora), या AppImage मिटा दें।</li>
+<li>आपका डेटा <code>~/.local/share/click.quickdesk</code> में तब तक रहता है जब तक आप वह फ़ोल्डर न मिटाएँ।</li>
+</ol>
+<p><strong>Windows:</strong> Settings → Apps → Installed apps → QuickDesk → Uninstall। आपका डेटा <code>%APPDATA%\\click.quickdesk</code> में तब तक रहता है जब तक आप वह फ़ोल्डर न मिटाएँ।</p>
+<p>पैकेज हटाने से तुरंत-पेस्ट की अनुमति भी हट जाती है, अगर आपने उसे चालू किया था।</p>`,
+  },
+  troubleshooting: {
+    title: "समस्या समाधान",
+    html: `<ul>
+<li><strong>शॉर्टकट कुछ नहीं करता:</strong> <em>Settings → Keyboard → Custom Shortcuts</em> में टकराव देखें, या Settings → Hotkeys में कोई और संयोजन चुनें।</li>
+<li><strong>ऑटो-पेस्ट कुछ नहीं लिखता:</strong> पक्का करें कि जिस ऐप में आप थे, उस पर अब भी फ़ोकस है; Settings → Auto-paste में तरीका बदलें। एंट्री हमेशा कॉपी होती है, इसलिए <kbd>Ctrl</kbd> <kbd>V</kbd> काम करता है।</li>
+<li><strong>लॉग:</strong> <code>~/.local/share/click.quickdesk/logs/</code>। <a href="https://github.com/TankGum/quickdesk/issues">समस्या बताते</a> समय इन्हें जोड़ें।</li>
+</ul>`,
+  },
+};
+
+export default docs;

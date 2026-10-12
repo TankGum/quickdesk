@@ -1,11 +1,11 @@
 ---
-import { privacy } from "../data/privacy";
+import { privacyText } from "../data/privacy";
 import type { Lang } from "../i18n";
 
 interface Props {
   lang: Lang;
 }
-const p = privacy[Astro.props.lang];
+const p = privacyText(Astro.props.lang);
 ---
 <div class="wrap wrap--narrow prose">
   <h1>{p.title}</h1>

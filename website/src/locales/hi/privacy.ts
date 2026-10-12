@@ -1,0 +1,32 @@
+// Privacy page in Hindi. Keep it in step with src/data/privacy.ts.
+const privacy = {
+  title: "गोपनीयता",
+  updated: "आखिरी बार अपडेट: 11 अक्टूबर 2026 (डाउनलोड गिनती)",
+  html: `<p class="lead">QuickDesk में न खाते हैं, न एनालिटिक्स, न टेलीमेट्री। आपके नोट्स और क्लिपबोर्ड इतिहास आपके कंप्यूटर पर रहते हैं। यह पेज वह सब बताता है जो उससे बाहर जाता है।</p>
+<h2>जो आपके कंप्यूटर पर रहता है</h2>
+<ul>
+<li><strong>नोट्स, क्लिपबोर्ड इतिहास (टेक्स्ट, इमेज, फ़ाइल सूचियाँ), सेटिंग और लॉग</strong> <code>~/.local/share/click.quickdesk</code> में।</li>
+<li><strong>क्लिपबोर्ड इतिहास आपके कंप्यूटर से कभी बाहर नहीं जाता</strong>, सिंक चालू होने पर भी नहीं। जिन कॉपी को पासवर्ड मैनेजर गुप्त चिह्नित करते हैं, वे सहेजी नहीं जातीं, और आप कभी भी सहेजना रोक सकते हैं।</li>
+<li><strong>पोर्ट</strong> आपकी मशीन के <code>/proc</code> और Docker से पढ़े जाते हैं और सहेजे नहीं जाते।</li>
+<li>आपका सिंक कोड और एन्क्रिप्शन कुंजी आपके सिस्टम कीरिंग में रखे जाते हैं।</li>
+</ul>
+<h2>QuickDesk क्या भेजता है, और कहाँ</h2>
+<table>
+<tr><th>कब</th><th>कहाँ</th><th>क्या</th></tr>
+<tr><td data-label="कब">अपडेट की जाँच (शुरू होने के 30 सेकंड बाद, फिर हर 6 घंटे; बंद की जा सकती है)</td><td data-label="कहाँ"><code>dl.quickdesk.click</code> (Cloudflare)</td><td data-label="क्या"><code>update.json</code> के लिए एक अनुरोध, और अपडेट चुनने पर पैकेज। किसी भी डाउनलोड की तरह, आपका IP पता Cloudflare को दिखता है।</td></tr>
+<tr><td data-label="कब">नोट सिंक, सिर्फ़ अगर आप उसे चालू करें</td><td data-label="कहाँ">QuickDesk Cloud, <code>sync.quickdesk.click</code> (Cloudflare)</td><td data-label="क्या">आपके नोट्स, आपके कंप्यूटर पर आपके पासफ़्रेज़ से बनी कुंजी से एन्क्रिप्ट (XChaCha20-Poly1305); QuickDesk Cloud उन्हें पढ़ नहीं सकता। यह उन्हें एक रैंडम सिंक खाता ID के तहत, उनके आकार और अपलोड समय के साथ रखता है, और आपका IP पता देखता है। कोई ईमेल, नाम या दूसरा निजी डेटा नहीं। आप Settings → Sync से सब कुछ मिटा सकते हैं।</td></tr>
+<tr><td data-label="कब">AI उपयोग, सिर्फ़ अगर इस कंप्यूटर पर Claude Code में लॉग इन है (Mac पर, सिर्फ़ तब जब आप Keychain से उसका लॉगिन पढ़ने की अनुमति दें)</td><td data-label="कहाँ"><code>api.anthropic.com</code></td><td data-label="क्या">Claude Code के मौजूदा लॉगिन से अधिकृत उपयोग का एक अनुरोध, ज़्यादा से ज़्यादा हर 5 मिनट। टोकन पढ़ा जाता है, कभी सहेजा, रीफ़्रेश या कहीं और भेजा नहीं जाता।</td></tr>
+<tr><td data-label="कब">Runtimes टैब, जब वह नई रिलीज़ खोजता है (ज़्यादा से ज़्यादा घंटे में एक बार), जब आप वर्ज़न सूची खोलते हैं या कोई वर्ज़न इंस्टॉल करते हैं</td><td data-label="कहाँ">nvm, uv, rustup और mise के सर्वर: <code>nodejs.org</code>, <code>github.com</code> / <code>releases.astral.sh</code> (Python बिल्ड), <code>static.rust-lang.org</code>, और mise के लिए हर भाषा की अपनी डाउनलोड साइट (जैसे <code>go.dev</code>)</td><td data-label="क्या">ये अनुरोध वे टूल खुद करते हैं, जैसे जब आप उन्हें टर्मिनल में चलाते हैं। QuickDesk उनमें कुछ नहीं जोड़ता।</td></tr>
+<tr><td data-label="कब">Runtimes टैब, सिर्फ़ अगर आप “Install mise” पर क्लिक करें</td><td data-label="कहाँ"><code>github.com</code> (jdx/mise रिलीज़); Windows पर <code>api.github.com</code> भी</td><td data-label="क्या">नवीनतम mise और उसकी चेकसम फ़ाइल का डाउनलोड। Windows पर QuickDesk पहले GitHub API से पूछता है कि नवीनतम रिलीज़ कौन-सी है (User-Agent “QuickDesk”)।</td></tr>
+<tr><td data-label="कब">डेस्कटॉप पोर्टल से ऑटो-पेस्ट</td><td data-label="कहाँ">आपका अपना डेस्कटॉप (GNOME), नेटवर्क नहीं</td><td data-label="क्या">एक Shift + Insert कुंजी दबाना।</td></tr>
+</table>
+<p>Codex और Antigravity का उपयोग आपके कंप्यूटर की लॉग फ़ाइलों से पढ़ा जाता है; कुछ भेजा नहीं जाता।</p>
+<h2>यह वेबसाइट</h2>
+<p>quickdesk.click, Cloudflare Pages पर एक स्टैटिक साइट है: न कुकी, न एनालिटिक्स, न ट्रैकिंग। यह Google Fonts से फ़ॉन्ट लोड करती है, इसलिए Google आपका IP पता देखता है। डेमो पूरी तरह आपके ब्राउज़र में नमूना डेटा पर चलता है। आपका चुना सिस्टम (Linux, Windows या macOS) और लाइट या डार्क थीम, अगर आप बदलें, आपके ब्राउज़र के लोकल स्टोरेज में याद रखे जाते हैं और कहीं भेजे नहीं जाते।</p>
+<h2>डाउनलोड गिनती</h2>
+<p>यह जानने के लिए कि कितने लोग QuickDesk इंस्टॉल और अपडेट करते हैं, <code>dl.quickdesk.click</code> हर डाउनलोड और अपडेट जाँच गिनता है: कौन-सी फ़ाइल (उसका वर्ज़न और सिस्टम), किस तरह के क्लाइंट ने पूछा (इस वेबसाइट या कहीं और से आया ब्राउज़र, टर्मिनल, PowerShell या ऐप का अपडेटर) और Cloudflare उस अनुरोध के लिए कौन-सा देश बताता है। सिर्फ़ रोज़ के कुल आँकड़े रखे जाते हैं (Cloudflare D1 डेटाबेस में): न IP पता, न ब्राउज़र स्ट्रिंग, न कुकी, न कोई दूसरा पहचानकर्ता, न हर अनुरोध का रिकॉर्ड — इसलिए गिनती को किसी व्यक्ति या कंप्यूटर से जोड़ा नहीं जा सकता।</p>
+<h2>सवाल</h2>
+<p>QuickDesk ओपन सोर्स है: यहाँ लिखी हर बात <a href="https://github.com/TankGum/quickdesk">सोर्स कोड</a> में जाँची जा सकती है। सवाल पूछें या समस्या बताएँ <a href="https://github.com/TankGum/quickdesk/issues">GitHub issues</a> में।</p>`,
+};
+
+export default privacy;

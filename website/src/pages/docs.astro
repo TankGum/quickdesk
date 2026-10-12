@@ -1,7 +1,11 @@
 ---
 import Base from "../layouts/Base.astro";
 import DocsPage from "../components/DocsPage.astro";
+import { strings } from "../i18n";
+
+const lang = "en";
+const p = strings(lang).pages.docs;
 ---
-<Base lang="en" title="QuickDesk docs: install, shortcuts, sync, clipboard, ports" description="How to install QuickDesk on Linux and Windows, use its shortcuts, sync notes, clipboard history, ports, language versions, AI usage and updates.">
-  <DocsPage lang="en" />
+<Base lang={lang} title={p.title} description={p.description}>
+  <DocsPage lang={lang} />
 </Base>

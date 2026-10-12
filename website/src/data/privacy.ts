@@ -1,8 +1,16 @@
 // /privacy. Keep this true to what the app does; update it with any new
 // network connection or stored data.
-import type { Lang } from "../i18n";
+import { localLinks, type Lang } from "../i18n";
+import { LOCALES } from "../locales";
 
-export const privacy: Record<Lang, { title: string; updated: string; html: string }> = {
+export interface Privacy {
+  title: string;
+  updated: string;
+  html: string;
+}
+
+/** English and Vietnamese; other languages are in src/locales/<lang>/privacy.ts. */
+export const privacy: Record<"en" | "vi", Privacy> = {
   en: {
     title: "Privacy",
     updated: "Last updated 11 October 2026 (download counts)",
@@ -62,3 +70,10 @@ export const privacy: Record<Lang, { title: string; updated: string; html: strin
 <p>QuickDesk là mã nguồn mở: mọi điều ghi ở đây đều kiểm chứng được trong <a href="https://github.com/TankGum/quickdesk">mã nguồn</a>. Hỏi hoặc báo lỗi tại <a href="https://github.com/TankGum/quickdesk/issues">GitHub issues</a>.</p>`,
   },
 };
+
+/** The privacy page in a language (English where a translation is missing). */
+export function privacyText(lang: Lang): Privacy {
+  if (lang === "en" || lang === "vi") return privacy[lang];
+  const t = LOCALES[lang]?.content?.privacy ?? privacy.en;
+  return { ...t, html: localLinks(t.html, lang) };
+}
