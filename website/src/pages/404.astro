@@ -18,7 +18,7 @@ const s = strings("en");
         LANGS.filter((l) => l !== "en").map((l) => (
           <li>
             <a href={href(l, "/")} hreflang={LANG_INFO[l].tag} lang={LANG_INFO[l].tag} dir={LANG_INFO[l].dir}>
-              {LANG_INFO[l].name}
+              <img class="flag" src={`/assets/flags/${l}.svg`} alt="" width="20" height="15" loading="lazy" decoding="async" /><span>{LANG_INFO[l].name}</span>
             </a>
           </li>
         ))

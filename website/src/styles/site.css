@@ -134,6 +134,9 @@
 .footer__lang { display: grid; grid-template-columns: repeat(2, max-content); gap: 10px 22px; }
 .notfound__langs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: 28px 0 0; padding: 0; list-style: none; font-size: 14px; }
 .notfound__langs a { color: var(--text-2); }
+/* A small flag before each language name in every language list. */
+.langpick__menu a, .drawer__langs a, .footer__lang a, .notfound__langs a { display: flex; align-items: center; gap: 9px; }
+.flag { flex: none; width: 20px; height: 15px; object-fit: cover; border-radius: 3px; box-shadow: 0 0 0 1px rgba(var(--fg), .14); }
 .release__english { margin: 0 0 8px; font-size: 13px; }
 
 /* Scripts Inter does not cover: the Noto font Base.astro loads, then the system's. */
