@@ -212,6 +212,7 @@ pub fn set_tray_enabled(app: &AppHandle, enabled: bool) -> qd_core::Result<()> {
 pub fn set_claude_keychain(app: &AppHandle, on: bool) -> qd_core::Result<()> {
     let state = app.state::<AppState>();
     qd_core::settings::set(&*state.db.conn()?, SETTING_CLAUDE_KEYCHAIN, &on)?;
+    qd_ai_usage::forget_claude_login();
     {
         let mut s = state.ai.snapshot.lock().unwrap_or_else(|e| e.into_inner());
         s.claude_keychain = Some(on);

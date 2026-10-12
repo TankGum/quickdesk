@@ -118,6 +118,11 @@ pub fn claude_keychain_possible() -> bool {
     claude::keychain_possible()
 }
 
+/// macOS: read Claude Code's login from the Keychain afresh on the next refresh.
+pub fn forget_claude_login() {
+    claude::forget_kept_login();
+}
+
 /// Merge a fresh result with the previous one: keep the last good numbers
 /// through transient errors, and keep live providers that were not fetched.
 pub fn merge(previous: &[ProviderUsage], fresh: Vec<ProviderUsage>, skipped_live: &[&str]) -> Vec<ProviderUsage> {

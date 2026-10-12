@@ -9,7 +9,8 @@
 //! On macOS Claude Code keeps the login in the Keychain instead of a file.
 //! QuickDesk reads it there only after the user turned that on (macOS then
 //! asks once), and like the file it is never stored or sent anywhere but
-//! api.anthropic.com.
+//! api.anthropic.com. It is kept in memory between refreshes and read again
+//! only once it stops working, so macOS does not ask every few minutes.
 
 use std::path::PathBuf;
 use std::time::Duration;
@@ -23,6 +24,33 @@ const USAGE_URL: &str = "https://api.anthropic.com/api/oauth/usage";
 /// The Keychain item Claude Code saves its login in (macOS).
 #[cfg(target_os = "macos")]
 const KEYCHAIN_SERVICE: &str = "Claude Code-credentials";
+/// A login from the Keychain that stopped working (or could not be read) is
+/// read again at most this often.
+#[cfg(target_os = "macos")]
+const KEYCHAIN_REREAD: Duration = Duration::from_secs(10 * 60);
+
+/// The last Keychain read, so the login is not read on every refresh.
+#[cfg(target_os = "macos")]
+struct KeptLogin {
+    result: Result<String, String>,
+    read_at: std::time::Instant,
+    /// The login was refused or has expired: read it again when allowed.
+    stale: bool,
+}
+
+#[cfg(target_os = "macos")]
+static KEPT_LOGIN: std::sync::Mutex<Option<KeptLogin>> = std::sync::Mutex::new(None);
+
+#[cfg(target_os = "macos")]
+fn kept_login() -> std::sync::MutexGuard<'static, Option<KeptLogin>> {
+    KEPT_LOGIN.lock().unwrap_or_else(|e| e.into_inner())
+}
+
+/// Read the Keychain afresh next time (the user turned the option on again).
+pub fn forget_kept_login() {
+    #[cfg(target_os = "macos")]
+    kept_login().take();
+}
 
 /// Where the login is read from.
 enum Login {
@@ -58,7 +86,7 @@ impl Claude {
         match &self.login {
             Login::File(path) => std::fs::read_to_string(path).map_err(|e| format!("cannot read Claude login: {e}")),
             #[cfg(target_os = "macos")]
-            Login::Keychain => read_keychain(),
+            Login::Keychain => keychain_login(),
         }
     }
 
@@ -67,6 +95,12 @@ impl Claude {
         match self.fetch_inner(&mut usage) {
             Ok(()) => usage.as_of = Some(now_ms()),
             Err(e) => usage.error = Some(e),
+        }
+        #[cfg(target_os = "macos")]
+        if matches!(self.login, Login::Keychain) && usage.error.is_some() && !usage.is_transient_error() {
+            if let Some(kept) = kept_login().as_mut() {
+                kept.stale = true;
+            }
         }
         usage
     }
@@ -102,6 +136,23 @@ impl Claude {
 /// reading it needs the user's go-ahead (the AI tab asks).
 pub fn keychain_possible() -> bool {
     cfg!(target_os = "macos") && config_dir().is_some_and(|d| d.is_dir() && !d.join(".credentials.json").exists())
+}
+
+/// The login from the Keychain: the one read before while it works, else a
+/// fresh read (at most every `KEYCHAIN_REREAD`).
+#[cfg(target_os = "macos")]
+fn keychain_login() -> Result<String, String> {
+    // Held while reading, so macOS never asks twice at once.
+    let mut kept = kept_login();
+    if let Some(k) = kept.as_ref() {
+        let works = k.result.is_ok() && !k.stale;
+        if works || k.read_at.elapsed() < KEYCHAIN_REREAD {
+            return k.result.clone();
+        }
+    }
+    let result = read_keychain();
+    *kept = Some(KeptLogin { result: result.clone(), read_at: std::time::Instant::now(), stale: false });
+    result
 }
 
 /// The login JSON Claude Code saved in the Keychain. macOS asks the user the

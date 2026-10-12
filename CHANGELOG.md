@@ -8,6 +8,12 @@ Each release is a `## <version> — <date>` section with up to three groups:
 a version that has no section here, and shows the section in the app, on the
 download page and on GitHub Releases.
 
+## Unreleased
+
+### Fixed
+- macOS: the clipboard and quick note popups no longer take the app you were typing in out of focus. They open as panels that take the keyboard while that app stays active, with its text field focused, so picking a clipboard entry pastes right there.
+- macOS: far fewer password prompts from the Keychain. QuickDesk read its sync secrets from the Keychain on every sync (every minute while a window was open, twice right at start) and Claude Code's login every 5 minutes; now each is read once per run, and Claude's login again only when it stops working. Choose “Always Allow” when macOS asks.
+
 ## 0.6.1 — 2026-10-12
 
 ### Fixed

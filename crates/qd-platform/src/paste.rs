@@ -443,7 +443,7 @@ mod imp {
             }
             // Let its window become key and its text field take the focus again.
             tokio::time::sleep(Duration::from_millis(150)).await;
-            tracing::debug!(target, came_back = back, waited_ms = started.elapsed().as_millis() as u64, "pressing ⌘V");
+            tracing::info!(target, came_back = back, waited_ms = started.elapsed().as_millis() as u64, "pressing ⌘V");
             press_cmd_v().map(|()| None)
         }
 

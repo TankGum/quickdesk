@@ -43,7 +43,16 @@ pub fn show<R: Runtime>(app: &AppHandle<R>, target: Target, sent_at_ms: u64) {
     if label == CLIP_POPUP && !w.is_visible().unwrap_or(false) {
         qd_platform::paste::remember_target();
     }
-    if let Err(e) = w.show().and_then(|_| w.unminimize()).and_then(|_| w.set_focus()) {
+    // macOS: popups are panels that must not activate QuickDesk (see macos::make_panel).
+    #[cfg(target_os = "macos")]
+    let up = if is_popup(label) {
+        crate::macos::show_panel(&w)
+    } else {
+        w.show().and_then(|_| w.unminimize()).and_then(|_| w.set_focus())
+    };
+    #[cfg(not(target_os = "macos"))]
+    let up = w.show().and_then(|_| w.unminimize()).and_then(|_| w.set_focus());
+    if let Err(e) = up {
         tracing::warn!(label, error = %e, "failed to show window");
     }
     // Opening notes is a good moment to pick up changes from other devices.

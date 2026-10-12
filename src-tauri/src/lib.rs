@@ -204,7 +204,13 @@ pub fn run(args: Vec<String>) {
             for config in app.config().app.windows.clone() {
                 let _window = tauri::WebviewWindowBuilder::from_config(app.handle(), &config)?.build()?;
                 #[cfg(target_os = "macos")]
-                macos::place_on_spaces(&_window, windows::is_popup(&config.label));
+                {
+                    let popup = windows::is_popup(&config.label);
+                    macos::place_on_spaces(&_window, popup);
+                    if popup {
+                        macos::make_panel(&_window);
+                    }
+                }
             }
 
             tray::build(app, clip_paused)?;

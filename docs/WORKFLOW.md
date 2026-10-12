@@ -67,8 +67,8 @@ Security → Open Anyway. Locally, clippy for `aarch64-apple-darwin` works throu
 (`rustup target add aarch64-apple-darwin`; `CC_aarch64_apple_darwin` = cargo-zigbuild's
 `zigcc-aarch64-apple-darwin-*.sh` wrapper; no linking). macOS-only code lives behind
 `cfg(target_os = "macos")`: the NSPasteboard watcher (`clipboard/macos.rs`), ⌘V paste and the
-Accessibility permission (`paste.rs`, `qd-platform/src/macos.rs`), menu bar app and Spaces
-(`src-tauri/src/macos.rs`), Claude's login from the Keychain (`qd-ai-usage/src/claude.rs`), the
+Accessibility permission (`paste.rs`, `qd-platform/src/macos.rs`), menu bar app, Spaces and
+popups as non-activating panels (`src-tauri/src/macos.rs`), Claude's login from the Keychain (`qd-ai-usage/src/claude.rs`), the
 bundle config (`src-tauri/tauri.macos.conf.json`). Default shortcuts there are ⌃⌥N / V / P.
 
 While working, also:

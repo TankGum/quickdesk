@@ -6,6 +6,12 @@ Mỗi bản phát hành QuickDesk có gì mới. Bản tiếng Anh là
 Mỗi bản là một mục `## <phiên bản> — <ngày>` với tối đa ba nhóm:
 `### Mới`, `### Cải thiện`, `### Sửa lỗi`.
 
+## Unreleased
+
+### Sửa lỗi
+- macOS: popup clipboard và popup ghi chú nhanh không còn làm app bạn đang gõ bị mất focus. Chúng mở dạng panel nhận bàn phím trong khi app kia vẫn active và ô nhập vẫn giữ focus, nên chọn một mục clipboard là dán đúng vào đó.
+- macOS: Keychain hỏi mật khẩu ít hơn hẳn. Trước đây QuickDesk đọc khóa sync từ Keychain mỗi lần sync (mỗi phút khi đang mở cửa sổ, hai lần ngay lúc khởi động) và đọc phiên đăng nhập Claude Code mỗi 5 phút; giờ mỗi mục chỉ đọc một lần mỗi lần chạy, phiên Claude chỉ đọc lại khi nó hết hiệu lực. Khi macOS hỏi, hãy chọn “Always Allow”.
+
 ## 0.6.1 — 2026-10-12
 
 ### Sửa lỗi

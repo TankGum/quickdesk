@@ -82,13 +82,14 @@ pub async fn clip_paste(app: AppHandle, id: i64) -> CmdResult<()> {
     {
         crate::macos::give_back_focus(&app);
         if !qd_platform::macos::accessibility_trusted() {
+            tracing::warn!("auto-paste needs the Accessibility permission; copied only");
             qd_platform::macos::request_accessibility();
             return Err(CmdError::new("accessibility_needed", "allow QuickDesk under Accessibility to paste"));
         }
     }
     // Give the compositor time to hand focus back to the previous window.
     tokio::time::sleep(Duration::from_millis(120)).await;
-    crate::clipboard::paste_into_focused(&app, chord).await.map_err(|e| {
+    crate::clipboard::paste_into_focused(&app, chord).await.map(|()| tracing::info!("auto-pasted")).map_err(|e| {
         tracing::warn!(error = %e, "auto-paste failed");
         CmdError::new("paste_failed", e)
     })
