@@ -8,7 +8,7 @@ Each release is a `## <version> — <date>` section with up to three groups:
 a version that has no section here, and shows the section in the app, on the
 download page and on GitHub Releases.
 
-## Unreleased
+## 0.7.0 — 2026-10-12
 
 ### New
 - The app speaks the website's languages: besides English and Vietnamese, also Chinese (Simplified), Japanese, Hindi, Spanish, French, Arabic (right to left), Bengali, Russian, Portuguese (Brazil) and Indonesian. Pick one in Settings → Language; “Same as system” now also follows the system language on macOS and Windows. The tray menus and the “what's new” notes follow the same language.

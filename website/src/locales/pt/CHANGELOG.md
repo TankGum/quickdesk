@@ -2,7 +2,7 @@
 
 O que mudou em cada versão do QuickDesk (tradução para o português do Brasil). O original em inglês está em CHANGELOG.md, na raiz do repositório; as versões que faltarem aqui aparecem em inglês.
 
-## Unreleased
+## 0.7.0 — 2026-10-12
 
 ### Novo
 - O app fala os idiomas do site: além de inglês e vietnamita, chinês simplificado, japonês, hindi, espanhol, francês, árabe (da direita para a esquerda), bengali, russo, português (Brasil) e indonésio. Escolha um em Configurações → Idioma; “Igual ao sistema” agora também segue o idioma do sistema no macOS e no Windows. Os menus da bandeja e as novidades usam o mesmo idioma.

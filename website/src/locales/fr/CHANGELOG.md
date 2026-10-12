@@ -2,7 +2,7 @@
 
 Ce qui a changé dans chaque version de QuickDesk (traduction française). L’original anglais est dans CHANGELOG.md à la racine du dépôt ; les versions absentes ici s’affichent en anglais.
 
-## Unreleased
+## 0.7.0 — 2026-10-12
 
 ### Nouveau
 - L’application parle les langues du site : en plus de l’anglais et du vietnamien, le chinois simplifié, le japonais, l’hindi, l’espagnol, le français, l’arabe (de droite à gauche), le bengali, le russe, le portugais (Brésil) et l’indonésien. Choisissez-en une dans Réglages → Langue ; « Comme le système » suit désormais aussi la langue du système sur macOS et Windows. Les menus de la zone de notification et les nouveautés suivent la même langue.

@@ -2,7 +2,7 @@
 
 Apa yang berubah di setiap versi QuickDesk (terjemahan bahasa Indonesia). Versi asli berbahasa Inggris ada di CHANGELOG.md di akar repositori; versi yang belum ada di sini ditampilkan dalam bahasa Inggris.
 
-## Unreleased
+## 0.7.0 — 2026-10-12
 
 ### Baru
 - Aplikasi kini memakai bahasa-bahasa situs web: selain Inggris dan Vietnam, juga Tionghoa Sederhana, Jepang, Hindi, Spanyol, Prancis, Arab (kanan ke kiri), Bengali, Rusia, Portugis (Brasil), dan Indonesia. Pilih di Pengaturan → Bahasa; “Sama dengan sistem” kini juga mengikuti bahasa sistem di macOS dan Windows. Menu baki dan catatan “Yang Baru” memakai bahasa yang sama.

@@ -6,7 +6,7 @@ Mỗi bản phát hành QuickDesk có gì mới. Bản tiếng Anh là
 Mỗi bản là một mục `## <phiên bản> — <ngày>` với tối đa ba nhóm:
 `### Mới`, `### Cải thiện`, `### Sửa lỗi`.
 
-## Unreleased
+## 0.7.0 — 2026-10-12
 
 ### Mới
 - Ứng dụng có các ngôn ngữ như website: ngoài tiếng Anh và tiếng Việt còn có tiếng Trung (giản thể), Nhật, Hindi, Tây Ban Nha, Pháp, Ả Rập (viết từ phải sang trái), Bengali, Nga, Bồ Đào Nha (Brazil) và Indonesia. Chọn trong Cài đặt → Ngôn ngữ; “Giống hệ thống” giờ cũng theo ngôn ngữ của macOS và Windows. Menu khay và phần “có gì mới” cũng theo ngôn ngữ đó.
