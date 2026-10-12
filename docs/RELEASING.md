@@ -42,6 +42,8 @@ Repository → **Settings** → **Secrets and variables** → **Actions** → **
 | `TAURI_SIGNING_PRIVATE_KEY` | updater signing key (see step 3) |
 | `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | its password |
 | `CF_PAGES_DEPLOY_HOOK` | the website's deploy hook URL (see step 4) |
+| `MACOS_CERTIFICATE` | macOS code signing certificate, base64 (see below step 3) |
+| `MACOS_CERTIFICATE_PASSWORD` | its password |
 
 ### 3. Updater signing key (once)
 
@@ -68,6 +70,30 @@ package type (`linux-x86_64-deb`, `-rpm`, `-appimage`, `windows-x86_64-nsis`,
 `pkexec dpkg -i` / `rpm -U`, which asks for the administrator password; the
 app then restarts. The endpoint is `plugins.updater.endpoints`; keep the old
 URL listed there if the bucket ever moves to a custom domain.
+
+### macOS signing certificate (once)
+
+QuickDesk has no Apple Developer ID, so the Mac app is not notarized. Signed
+ad hoc, macOS knows it only by the hash of each build: after every update it
+asks for the login password again for each Keychain item QuickDesk reads, and
+the Accessibility permission (needed for auto-paste) stops working until it is
+turned off and on. Signed with a fixed certificate, macOS knows it by that
+certificate, and "Always Allow" and the permission carry over to updates.
+Gatekeeper treats both the same ("Open Anyway" for a downloaded .dmg).
+
+```sh
+scripts/make_macos_cert.sh   # writes ~/.tauri/quickdesk-macos.p12 (+ .password)
+```
+
+- Put the base64 it copies in the GitHub secret `MACOS_CERTIFICATE`, and the
+  contents of `~/.tauri/quickdesk-macos.p12.password` in `MACOS_CERTIFICATE_PASSWORD`.
+- **Back both files up.** A new certificate is a new app to macOS: every Mac
+  asks once more.
+- `scripts/macos_signing.sh` puts it on the build machine (release and macOS
+  preview). Without the secrets the build is signed ad hoc, with a warning.
+- To sign local builds the same way, import the .p12 into the login keychain and
+  build with `APPLE_SIGNING_IDENTITY=<its SHA-1>` (the certificate is not
+  trusted by the system, so codesign does not find it by name).
 
 ### 4. Sync server (QuickDesk Cloud)
 

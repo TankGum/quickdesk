@@ -8,6 +8,11 @@ Each release is a `## <version> — <date>` section with up to three groups:
 a version that has no section here, and shows the section in the app, on the
 download page and on GitHub Releases.
 
+## Unreleased
+
+### Improved
+- macOS: QuickDesk is signed with its own certificate. After this update macOS asks one last time for the Keychain (choose “Always Allow”) and for the Accessibility permission; later updates keep both, so no more password prompts after each update.
+
 ## 0.6.2 — 2026-10-12
 
 ### Fixed

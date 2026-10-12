@@ -104,8 +104,9 @@ jobs:
             target/release/bundle/nsis/*.exe
             target/release/bundle/nsis/*.sig
 
-  # Apple Silicon only, signed ad hoc (no Apple Developer ID): installs from
-  # install.sh run without Gatekeeper's quarantine.
+  # Apple Silicon only, signed with QuickDesk's own certificate (not an Apple
+  # Developer ID; ad hoc without the secret): installs from install.sh run
+  # without Gatekeeper's quarantine.
   macos:
     runs-on: macos-14
     steps:
@@ -117,6 +118,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Signing certificate
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: scripts/macos_signing.sh
 
       # The .app.tar.gz doubles as the update package (<archive>.sig).
       - name: Build the app

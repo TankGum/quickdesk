@@ -1,7 +1,8 @@
 name: macOS preview
 
 # Run by hand (Actions → macOS preview → Run workflow) to get a Mac build to
-# try, without publishing anything: a .dmg for Apple Silicon, signed ad hoc.
+# try, without publishing anything: a .dmg for Apple Silicon, signed like a
+# release (scripts/macos_signing.sh).
 # Uploaded as is (not zipped), so the run's artifact downloads as the .dmg.
 on:
   workflow_dispatch:
@@ -18,6 +19,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Signing certificate
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: scripts/macos_signing.sh
       - run: npx tauri build --bundles app,dmg
       - name: Find the dmg
         id: dmg
