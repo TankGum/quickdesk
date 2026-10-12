@@ -8,7 +8,7 @@ Each release is a `## <version> — <date>` section with up to three groups:
 a version that has no section here, and shows the section in the app, on the
 download page and on GitHub Releases.
 
-## Unreleased
+## 0.6.2 — 2026-10-12
 
 ### Fixed
 - macOS: the clipboard and quick note popups no longer take the app you were typing in out of focus. They open as panels that take the keyboard while that app stays active, with its text field focused, so picking a clipboard entry pastes right there.

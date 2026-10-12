@@ -6,7 +6,7 @@ Mỗi bản phát hành QuickDesk có gì mới. Bản tiếng Anh là
 Mỗi bản là một mục `## <phiên bản> — <ngày>` với tối đa ba nhóm:
 `### Mới`, `### Cải thiện`, `### Sửa lỗi`.
 
-## Unreleased
+## 0.6.2 — 2026-10-12
 
 ### Sửa lỗi
 - macOS: popup clipboard và popup ghi chú nhanh không còn làm app bạn đang gõ bị mất focus. Chúng mở dạng panel nhận bàn phím trong khi app kia vẫn active và ô nhập vẫn giữ focus, nên chọn một mục clipboard là dán đúng vào đó.
