@@ -74,7 +74,8 @@ def notes(version: str) -> dict:
 
 def updater_manifest(version: str, published: str, public: str, files: dict, sigs: dict) -> dict:
     """Static manifest in tauri-plugin-updater's format. `notes` is shown in
-    the app; `notes_vi` is QuickDesk's own extra field for Vietnamese."""
+    the app; `notes_vi` and `notes_i18n` (the website's translations, by
+    language) are QuickDesk's own extra fields."""
     # The updater asks for `<os>-<arch>-<installer>` first, then `<os>-<arch>`.
     platform = {
         "deb": ["linux-x86_64-deb"],
@@ -88,6 +89,7 @@ def updater_manifest(version: str, published: str, public: str, files: dict, sig
         "version": version,
         "notes": n["en"],
         "notes_vi": n["vi"],
+        "notes_i18n": changelog.translated(version),
         "pub_date": published,
         "platforms": {
             key: {"signature": sigs[kind].read_text().strip(), "url": f"{public}/{f['url']}"}

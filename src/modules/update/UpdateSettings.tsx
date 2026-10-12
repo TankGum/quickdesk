@@ -49,7 +49,7 @@ export function UpdateSettings() {
           {t("update.checkNow")}
         </button>
       </div>
-      {s.state === "available" && pickNotes(s.notes, s.notesVi) && <ReleaseNotes markdown={pickNotes(s.notes, s.notesVi)!} />}
+      {s.state === "available" && pickNotes(s.notes, s.notesVi, s.notesI18n) && <ReleaseNotes markdown={pickNotes(s.notes, s.notesVi, s.notesI18n)!} />}
       <label className="switch">
         <input type="checkbox" checked={info.autoCheck} onChange={(e) => void api.updateSetAuto(e.target.checked).then(setInfo, (x) => setError(errorMessage(x)))} />
         {t("update.auto")}

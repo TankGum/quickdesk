@@ -75,8 +75,9 @@ While working, also:
 
 - **New or changed Tauri command?** Give it an answer in `src/demo/core.ts`, or the
   website demo breaks (it runs the real UI on that sample data).
-- **New UI text?** Add it to both languages in `src/shared/i18n.ts` (tray menu text:
-  `src-tauri/src/i18n.rs`).
+- **New UI text?** Add it to every language: English and Vietnamese in `src/shared/i18n.ts`,
+  the others in `src/shared/locales/<lang>.ts` (`npm run typecheck` names a missing one); tray
+  menu text: `src-tauri/src/i18n.rs`. The app's languages are the website's (`src/shared/langs.ts`).
 - **Changed behaviour** (defaults, limits, shortcuts, paths, anything sent over the
   network)? Update `website/src/data/docs.ts`, and **always** `website/src/data/privacy.ts`
   when data leaves the computer.
@@ -127,6 +128,11 @@ cd website && nvm use && npm install && npm run dev   # http://localhost:4321
    While features land before a release is decided, collect them under `## Unreleased`
    (in both files). The changelog page leaves that section out, and `npm run release <v>`
    renames it to `## <v> — <today>`.
+
+   The other languages' notes are the website's translations,
+   `website/src/locales/<lang>/CHANGELOG.md` (same `## Unreleased`, renamed by the release
+   script too). They are optional: a release missing there shows in English on the site,
+   in the app's update banner (`notes_i18n` in update.json) and in "what's new".
 
 2. `npm run release 0.3.1 -- --push` bumps the version (tauri.conf.json, Cargo.toml,
    package.json and the lock files), commits "Release 0.3.1", tags `v0.3.1` and pushes.

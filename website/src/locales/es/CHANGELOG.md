@@ -2,6 +2,11 @@
 
 Lo que cambió en cada versión de QuickDesk (traducción al español). El original en inglés está en CHANGELOG.md, en la raíz del repositorio; las versiones que falten aquí se muestran en inglés.
 
+## Unreleased
+
+### Nuevo
+- La app habla los idiomas del sitio web: además de inglés y vietnamita, chino simplificado, japonés, hindi, español, francés, árabe (de derecha a izquierda), bengalí, ruso, portugués (Brasil) e indonesio. Elige uno en Ajustes → Idioma; «Igual que el sistema» ahora también sigue el idioma del sistema en macOS y Windows. Los menús de la bandeja y las novedades usan el mismo idioma.
+
 ## 0.6.1 — 2026-10-12
 
 ### Corregido
@@ -19,8 +24,8 @@ Lo que cambió en cada versión de QuickDesk (traducción al español). El origi
 ## 0.5.0 — 2026-10-11
 
 ### Nuevo
-- QuickDesk para Windows 10 y 11 (64 bits): notas con sincronización, historial del portapapeles con texto, imágenes y archivos, pegado automático en la app que estabas usando, puertos y uso de IA, con los mismos atajos Win+Alt+N / V / P. Instálalo desde PowerShell con `irm https://quickdesk.click/install.ps1 | iex` o desde la página de descarga; se instala para tu usuario sin permisos de administrador y se actualiza solo. La pestaña Runtimes funciona con mise, rustup y uv: instala mise con un clic, añade Node, Python, Go y los demás, y «Fix PATH…» pone sus carpetas en el PATH de tu cuenta sin permisos de administrador.
-- Runtimes: los lenguajes que aún no están en el equipo aparecen en «Add a language», listos para instalarse con mise.
+- QuickDesk para Windows 10 y 11 (64 bits): notas con sincronización, historial del portapapeles con texto, imágenes y archivos, pegado automático en la app que estabas usando, puertos y uso de IA, con los mismos atajos Win+Alt+N / V / P. Instálalo desde PowerShell con `irm https://quickdesk.click/install.ps1 | iex` o desde la página de descarga; se instala para tu usuario sin permisos de administrador y se actualiza solo. La pestaña Runtimes funciona con mise, rustup y uv: instala mise con un clic, añade Node, Python, Go y los demás, y «Arreglar PATH…» pone sus carpetas en el PATH de tu cuenta sin permisos de administrador.
+- Runtimes: los lenguajes que aún no están en el equipo aparecen en «Añadir un lenguaje», listos para instalarse con mise.
 
 ### Mejorado
 - Runtimes: los canales de Rust también tienen botón de actualización. Cuando rustup tiene un stable (o beta, nightly) más nuevo, el canal muestra ↑ y un clic ejecuta `rustup update` para él.
@@ -31,7 +36,7 @@ Lo que cambió en cada versión de QuickDesk (traducción al español). El origi
 - Una pestaña Runtimes para las versiones de tus lenguajes de programación: mira qué Node.js, Python, Rust, Go… ejecuta de verdad una terminal nueva y de dónde viene, instala y desinstala versiones, elige la predeterminada y fija una versión por proyecto. QuickDesk trabaja con nvm, uv, rustup y mise, y nunca toca los paquetes del sistema.
 - Cuando sale una versión más nueva de una rama instalada (por ejemplo Node 22.24.1 para 22.23.3), la versión muestra un botón de actualización; la antigua se queda hasta que la quites.
 - Los lenguajes sin gestor de versiones (por ejemplo Go instalado con apt) pueden obtener mise con un clic, descargado de sus versiones en GitHub y comprobado con sus sumas SHA-256.
-- «Apply right away in open terminals»: los cambios llegan a las terminales ya abiertas en su siguiente prompt, y Node sigue el `.nvmrc` más cercano cuando haces `cd`. Cuando algo en el PATH estorba, la pestaña explica por qué y ofrece las líneas exactas que añadir a tu archivo de shell, con una copia de seguridad.
+- «Aplicar al momento en las terminales abiertas»: los cambios llegan a las terminales ya abiertas en su siguiente prompt, y Node sigue el `.nvmrc` más cercano cuando haces `cd`. Cuando algo en el PATH estorba, la pestaña explica por qué y ofrece las líneas exactas que añadir a tu archivo de shell, con una copia de seguridad.
 
 ### Mejorado
 - La página de descarga muestra la orden completa para descargar e instalar desde una terminal.
@@ -40,14 +45,14 @@ Lo que cambió en cada versión de QuickDesk (traducción al español). El origi
 ## 0.3.1 — 2026-10-09
 
 ### Nuevo
-- La sincronización ya viene integrada: actívala en Settings → Sync y une tus otros equipos con un código de sincronización. Sin cuenta, correo ni configuración de almacenamiento. Las notas se siguen cifrando en tu ordenador antes de salir de él; QuickDesk Cloud solo guarda texto cifrado.
+- La sincronización ya viene integrada: actívala en Ajustes → Sincronización y une tus otros equipos con un código de sincronización. Sin cuenta, correo ni configuración de almacenamiento. Las notas se siguen cifrando en tu ordenador antes de salir de él; QuickDesk Cloud solo guarda texto cifrado.
 
 ### Corregido
 - Han vuelto las notas, el historial del portapapeles y la configuración de versiones anteriores. Al actualizar a 0.2.0 y a 0.3.0 se empezaba con una carpeta vacía en lugar de trasladar tus datos; ahora QuickDesk los trae por sí mismo y conserva las carpetas antiguas como copia de seguridad.
-- Abrir Settings ya no vuelve grises los puntos de color de las demás pestañas.
+- Abrir Ajustes ya no vuelve grises los puntos de color de las demás pestañas.
 
 ### Mejorado
-- Ya no se ofrece la sincronización a través de tu propio bucket de S3 o R2. Si la usabas, la sincronización se desactiva una vez, con una nota en Settings → Sync; tus notas se quedan en tu ordenador.
+- Ya no se ofrece la sincronización a través de tu propio bucket de S3 o R2. Si la usabas, la sincronización se desactiva una vez, con una nota en Ajustes → Sincronización; tus notas se quedan en tu ordenador.
 - El menú de uso de IA de la barra superior solo muestra la herramienta que sigues, con una barra verde, amarilla o roja por cada límite y la hora de reinicio debajo. Elige otra herramienta en Track.
 
 ## 0.3.0 — 2026-10-09
@@ -64,7 +69,7 @@ Lo que cambió en cada versión de QuickDesk (traducción al español). El origi
 
 ### Nuevo
 - QuickDesk ahora se actualiza solo. Busca versiones nuevas en segundo plano, te cuenta qué ha cambiado y solo las instala cuando tú lo eliges. Cada actualización se verifica con la clave de firma de QuickDesk antes de instalarse.
-- Settings → Updates: mira tu versión, comprueba ahora o desactiva las comprobaciones automáticas.
+- Ajustes → Actualizaciones: mira tu versión, comprueba ahora o desactiva las comprobaciones automáticas.
 - Tras una actualización, QuickDesk muestra las novedades una vez.
 - La página de descarga está disponible en vietnamita y enlaza al código fuente en GitHub.
 
@@ -76,7 +81,7 @@ Lo que cambió en cada versión de QuickDesk (traducción al español). El origi
 ### Nuevo
 - Un aspecto nuevo, compartido por la app y su página de descarga: un color por sección (notas, portapapeles, puertos, IA), pistas de teclado en las ventanas emergentes y una barra de pestañas al estilo de macOS.
 - Iconos de línea en lugar de emojis en toda la app.
-- Menús de la bandeja con un estilo macOS más limpio: etiquetas cortas, una marca de verificación para «Save Clipboard History» y los límites de IA agrupados por herramienta.
+- Menús de la bandeja con un estilo macOS más limpio: etiquetas cortas, una marca de verificación para «Save Portapapeles History» y los límites de IA agrupados por herramienta.
 
 ### Mejorado
 - La demo de la página de descarga es la app real funcionando con datos de ejemplo.

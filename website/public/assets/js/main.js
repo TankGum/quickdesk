@@ -118,8 +118,7 @@
 
   // The demo windows are the real app: tell them which language to use.
   $$('iframe[src*="/demo/"]').forEach((f) => f.addEventListener('load', () => {
-    // The app itself speaks English and Vietnamese only.
-    f.contentWindow?.postMessage({ source: 'quickdesk-page', type: 'lang', lang: lang === 'vi' ? 'vi' : 'en' }, '*');
+    f.contentWindow?.postMessage({ source: 'quickdesk-page', type: 'lang', lang }, '*');
   }));
 
   /* ---------- Interactive demo ---------- */

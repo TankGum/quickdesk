@@ -13,12 +13,15 @@ Rules that are easy to break:
   `cargo test --workspace`, `npm run typecheck`; website changes: `npm run build:demo` then
   `npm run build --prefix website` (Node 22).
 - Every new Tauri command needs a demo answer in `src/demo/core.ts`; every UI string needs
-  English and Vietnamese (`src/shared/i18n.ts`, tray: `src-tauri/src/i18n.rs`).
+  every language: English and Vietnamese in `src/shared/i18n.ts`, the others in
+  `src/shared/locales/<lang>.ts` (TypeScript fails if one misses a key); tray: one column per
+  language in `src-tauri/src/i18n.rs`.
 - The website is in English, Vietnamese and the languages in `website/src/locales/` (zh, ja, hi, es, fr,
   ar, bn, ru, pt (Brazilian), id; ar is right to left). Site words are in `website/src/locales/<lang>`; TypeScript
   fails if a language misses one. Long content (home, docs, privacy) for English/Vietnamese is in
   `website/src/data/`, for the others in `website/src/locales/<lang>/`; a release missing from a
-  language's `CHANGELOG.md` there shows in English. The app itself stays English/Vietnamese.
+  language's `CHANGELOG.md` there shows in English (on the site and in the app). The app has the
+  same languages (`src/shared/langs.ts`); the site names the app's buttons as the app shows them.
 - Behaviour that changes what leaves the computer must be reflected in
   `website/src/data/privacy.ts`.
 - Claude Code's OAuth token (`~/.claude/.credentials.json`) may only be read and sent to

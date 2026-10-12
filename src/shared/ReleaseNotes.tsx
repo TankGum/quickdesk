@@ -1,10 +1,15 @@
 import enLog from "../../CHANGELOG.md?raw";
 import viLog from "../../CHANGELOG.vi.md?raw";
-import { lang } from "./i18n";
+import { lang, translatedChangelog } from "./i18n";
 
-/** A version's section of the changelog bundled into the app, in the UI language. */
+/** A version's section of the changelog bundled into the app, in the UI language
+ *  (English when that language has no notes for it). */
 export function bundledNotes(version: string): string | null {
-  const text = lang() === "vi" ? viLog : enLog;
+  const own = lang() === "vi" ? viLog : lang() === "en" ? undefined : translatedChangelog();
+  return (own && section(own, version)) || section(enLog, version);
+}
+
+function section(text: string, version: string): string | null {
   const lines = text.split("\n");
   const start = lines.findIndex((l) => new RegExp(`^## v?${version.replace(/\./g, "\\.")}(\\s|$)`).test(l));
   if (start < 0) return null;
@@ -13,9 +18,10 @@ export function bundledNotes(version: string): string | null {
   return body || null;
 }
 
-/** Pick the notes in the UI language from update.json (`notes` / `notes_vi`). */
-export function pickNotes(notes: string | null, notesVi: string | null): string | null {
-  return (lang() === "vi" ? notesVi || notes : notes || notesVi) || null;
+/** Pick the notes in the UI language from update.json (`notes` / `notes_vi` / `notes_i18n`; English when a language has none). */
+export function pickNotes(notes: string | null, notesVi: string | null, notesI18n?: Record<string, string>): string | null {
+  if (lang() === "vi") return notesVi || notes || null;
+  return notesI18n?.[lang()] || notes || notesVi || null;
 }
 
 function inline(text: string) {

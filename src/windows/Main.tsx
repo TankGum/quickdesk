@@ -12,7 +12,7 @@ import { PasteSettings } from "../modules/settings/PasteSettings";
 import { UpdateBanner } from "../modules/update/UpdateBanner";
 import { WhatsNew } from "../modules/update/WhatsNew";
 import { UpdateSettings } from "../modules/update/UpdateSettings";
-import { LangPref, setLanguage, useI18n } from "../shared/i18n";
+import { LANGS, LANG_NAMES, LangPref, setLanguage, useI18n } from "../shared/i18n";
 import { api, AppInfo, currentWindow, errorMessage, FocusStats, hideWindow, useShown } from "../shared/ipc";
 import { Welcome } from "./Welcome";
 
@@ -86,20 +86,15 @@ export function Main() {
 
 function LanguagePicker() {
   const { t, pref } = useI18n();
-  const options: { value: LangPref; label: string }[] = [
-    { value: "auto", label: t("settings.language.auto") },
-    { value: "vi", label: "Tiếng Việt" },
-    { value: "en", label: "English" },
-  ];
   return (
-    <div className="radio-list horizontal">
-      {options.map((o) => (
-        <label key={o.value} className="radio">
-          <input type="radio" name="ui-language" checked={pref === o.value} onChange={() => void setLanguage(o.value)} />
-          <span>{o.label}</span>
-        </label>
+    <select className="lang-select" value={pref} aria-label={t("settings.language")} onChange={(e) => void setLanguage(e.target.value as LangPref)}>
+      <option value="auto">{t("settings.language.auto")}</option>
+      {LANGS.map((l) => (
+        <option key={l} value={l}>
+          {LANG_NAMES[l]}
+        </option>
       ))}
-    </div>
+    </select>
   );
 }
 

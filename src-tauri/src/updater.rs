@@ -7,6 +7,7 @@
 //! then the app restarts into the new version. On Windows the plugin runs the
 //! NSIS installer (passive, current user), which closes and reopens the app.
 
+use std::collections::BTreeMap;
 use std::sync::Mutex;
 use std::time::Duration;
 
@@ -33,11 +34,13 @@ pub enum UpdateStatus {
     UpToDate {
         checked_at: i64,
     },
-    /// `notes` / `notes_vi`: this version's CHANGELOG section (update.json).
+    /// `notes` / `notes_vi`: this version's CHANGELOG section (update.json);
+    /// `notes_i18n`: the website's translations of it, by language.
     Available {
         version: String,
         notes: Option<String>,
         notes_vi: Option<String>,
+        notes_i18n: BTreeMap<String, String>,
     },
     Downloading {
         version: String,
@@ -135,10 +138,20 @@ pub async fn check(app: &AppHandle) {
     match result {
         Ok(Some(update)) => {
             tracing::info!(version = %update.version, "update available");
-            // notes_vi is QuickDesk's own field in update.json, next to the standard notes.
+            // notes_vi and notes_i18n are QuickDesk's own fields in update.json, next to the standard notes.
             let notes_vi = update.raw_json.get("notes_vi").and_then(|v| v.as_str()).map(str::to_owned);
-            let status =
-                UpdateStatus::Available { version: update.version.clone(), notes: update.body.clone(), notes_vi };
+            let notes_i18n = update
+                .raw_json
+                .get("notes_i18n")
+                .and_then(|v| v.as_object())
+                .map(|m| m.iter().filter_map(|(k, v)| Some((k.clone(), v.as_str()?.to_owned()))).collect())
+                .unwrap_or_default();
+            let status = UpdateStatus::Available {
+                version: update.version.clone(),
+                notes: update.body.clone(),
+                notes_vi,
+                notes_i18n,
+            };
             *app.state::<AppState>().updates.pending.lock().unwrap_or_else(|e| e.into_inner()) = Some(update);
             set(app, status);
         }

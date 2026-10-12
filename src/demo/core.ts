@@ -14,6 +14,7 @@ import type {
   SyncStatus,
   UsageSnapshot,
 } from "../shared/ipc";
+import type { Lang } from "../shared/langs";
 import { demoLang, emit, params, toPage } from "./bus";
 
 const now = Date.now();
@@ -92,11 +93,30 @@ const clip = (kind: ClipKind, preview: string, ago: number, extra: Partial<ClipE
   ...extra,
 });
 
+/** The one sample entry written in a language, shown in the page's language. */
+const MEETING: Record<Lang, string> = {
+  en: "Meeting moved to 15:30, room 4B",
+  vi: "Họp dời sang 15:30, phòng 4B",
+  zh: "会议改到 15:30，4B 会议室",
+  ja: "会議は 15:30 に変更、4B 会議室",
+  hi: "मीटिंग 15:30 पर खिसकी, कमरा 4B",
+  es: "Reunión movida a las 15:30, sala 4B",
+  fr: "Réunion déplacée à 15 h 30, salle 4B",
+  ar: "نُقل الاجتماع إلى 15:30، القاعة 4B",
+  bn: "মিটিং 15:30-এ সরানো হয়েছে, রুম 4B",
+  ru: "Встреча перенесена на 15:30, переговорная 4B",
+  pt: "Reunião remarcada para 15:30, sala 4B",
+  id: "Rapat dipindah ke 15.30, ruang 4B",
+};
+const meeting = clip("text", MEETING.en, 12 * MIN, { copyCount: 3 });
+const inPageLang = (c: ClipEntry): ClipEntry =>
+  c.id === meeting.id ? { ...c, preview: MEETING[demoLang], chars: MEETING[demoLang].length } : c;
+
 let clips: ClipEntry[] = [
   clip("text", "docker compose up -d --build", 20_000, { copyCount: 4 }),
   clip("image", "", 4 * MIN, { byteSize: 188_416, width: 1280, height: 720, thumb }),
   clip("files", "/home/me/Projects/quickdesk/release-notes.pdf\n/home/me/Projects/quickdesk/mockup.png\n/home/me/Projects/quickdesk/assets", 9 * MIN),
-  clip("text", "Họp dời sang 15:30, phòng 4B", 12 * MIN, { copyCount: 3 }),
+  meeting,
   clip("text", "https://github.com/TankGum/quickdesk", 25 * MIN),
   clip("text", "SELECT id, title FROM notes\nWHERE deleted_at IS NULL\nORDER BY updated_at DESC\nLIMIT 20;", 50 * MIN),
   clip("text", "ssh deploy@10.0.0.12", 3 * DAY, { pinned: true, copyCount: 27 }),
@@ -114,6 +134,7 @@ const clipStatus: ClipStatus = {
 function clipQuery(query: string, limit = 50, kind?: ClipKind) {
   const q = fold(query.trim());
   return clips
+    .map(inPageLang)
     .filter((c) => (!kind || c.kind === kind) && (!q || fold(c.preview).includes(q)))
     .sort((a, b) => Number(b.pinned) - Number(a.pinned) || b.lastCopiedAt - a.lastCopiedAt)
     .slice(0, limit);
@@ -385,12 +406,12 @@ function runJob(lang: string, action: RuntimeAction, version: string, from: stri
 type Args = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 const changed = (event: string) => setTimeout(() => emit(event), 0);
-/** Toast text for the page, in the demo's language. */
+/** Toast text for the page, in the demo's language (English for the languages other than Vietnamese). */
 const say = (en: string, vi: string) => (demoLang === "vi" ? vi : en);
 
 const commands: Record<string, (a: Args) => unknown> = {
   app_get_language: () => ({ pref: demoLang, resolved: demoLang }),
-  app_set_language: (a) => ({ pref: a.language, resolved: a.language === "vi" ? "vi" : "en" }),
+  app_set_language: (a) => ({ pref: a.language, resolved: a.language === "auto" ? demoLang : a.language }),
   app_onboarding: () => ({ done: true, offerUinput: false }),
   app_info: () => ({
     version: "0.2.1",

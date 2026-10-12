@@ -1,6 +1,7 @@
-// Bahasa Indonesia (Indonesian). See ../en.ts for what each part is. The app
-// itself is in English and Vietnamese, so its menu and button names stay in
-// English.
+// Bahasa Indonesia (Indonesian). See ../en.ts for what each part is. The app's
+// menu and button names are written as the app itself shows them
+// (src/shared/locales/id.ts). The system's own labels are named as the system
+// shows them.
 import type { Locale } from "..";
 import changelog from "./CHANGELOG.md?raw";
 import docs from "./docs";
@@ -147,7 +148,7 @@ const id: Locale = {
       groups: ["Memulai", "Fitur", "Bantuan"],
       sync: "Sinkronisasi",
       clipboard: "Clipboard",
-      versions: "Runtimes",
+      versions: "Runtime",
       stuck: "Masih kesulitan?",
       ask: "Tanya di GitHub",
     },

@@ -1,5 +1,6 @@
 // Demo build only: an in-page stand-in for Tauri's event system, plus the
 // bridge to the landing page that embeds the demo windows in iframes.
+import { isLang, type Lang } from "../shared/langs";
 
 type Handler = (event: { event: string; payload: unknown }) => void;
 
@@ -19,7 +20,7 @@ export function emit(event: string, payload?: unknown) {
 export const params = new URLSearchParams(location.search);
 
 /** Language the page asked for (?lang= or a "lang" message); the app follows it. */
-export let demoLang: "en" | "vi" = params.get("lang") === "vi" ? "vi" : "en";
+export let demoLang: Lang = isLang(params.get("lang")) ? (params.get("lang") as Lang) : "en";
 
 // The demo has no update history: never greet visitors with "updated to …".
 try {
@@ -66,8 +67,9 @@ if (params.get("tab")) {
 window.addEventListener("message", ({ data }) => {
   if (!data || data.source !== "quickdesk-page") return;
   if (data.type === "lang") {
-    demoLang = data.lang === "vi" ? "vi" : "en";
+    demoLang = isLang(data.lang) ? data.lang : "en";
     emit("ui://language", { pref: demoLang, resolved: demoLang });
+    emit("clipboard://changed"); // sample entries follow the language too
   }
   if (data.type === "show") {
     const now = Date.now();

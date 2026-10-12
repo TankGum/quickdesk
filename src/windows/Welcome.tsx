@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { lang, setLanguage, useI18n } from "../shared/i18n";
+import { lang, LANGS, LANG_NAMES, setLanguage, type Lang, useI18n } from "../shared/i18n";
 import { markSeen } from "../modules/update/WhatsNew";
 import { api, errorMessage, HotkeyConfig } from "../shared/ipc";
 import { isMac, keyLabel } from "../shared/platform";
@@ -45,24 +45,18 @@ export function Welcome({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="welcome">
-      <div className="radio-list horizontal welcome-lang">
-        {(
-          [
-            ["vi", "Tiếng Việt"],
-            ["en", "English"],
-          ] as const
-        ).map(([value, label]) => (
-          <label key={value} className="radio">
-            <input
-              type="radio"
-              name="welcome-lang"
-              checked={pref === value || (pref === "auto" && lang() === value)}
-              onChange={() => void setLanguage(value)}
-            />
-            <span>{label}</span>
-          </label>
+      <select
+        className="lang-select welcome-lang"
+        value={pref === "auto" ? lang() : pref}
+        aria-label={t("settings.language")}
+        onChange={(e) => void setLanguage(e.target.value as Lang)}
+      >
+        {LANGS.map((l) => (
+          <option key={l} value={l}>
+            {LANG_NAMES[l]}
+          </option>
         ))}
-      </div>
+      </select>
       <h1>{t("welcome.title")}</h1>
       <p className="muted">{t(isMac ? "welcome.intro.mac" : "welcome.intro")}</p>
       {hotkeys && (

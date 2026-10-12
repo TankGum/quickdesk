@@ -260,11 +260,12 @@ fn update_tray(app: &AppHandle, snap: &UsageSnapshot) {
     if let Some(tray) = app.tray_by_id(TRAY_ID) {
         let _ = tray.set_icon(Some(icon));
         let _ = tray.set_menu(Some(menu));
+        let _ = tray.set_tooltip(Some(tx(lang, "tooltip")));
         return;
     }
     let built = TrayIconBuilder::with_id(TRAY_ID)
         .icon(icon)
-        .tooltip("AI usage")
+        .tooltip(tx(lang, "tooltip"))
         .menu(&menu)
         .show_menu_on_left_click(true)
         .on_menu_event(|app, event| match event.id().as_ref() {
@@ -356,12 +357,12 @@ fn build_menu(app: &AppHandle, lang: Lang, snap: &UsageSnapshot) -> tauri::Resul
 fn fmt_duration(lang: Lang, ms: i64) -> String {
     let min = (ms.max(0) + 59_999) / 60_000;
     let (d, h, m) = (min / 1440, (min % 1440) / 60, min % 60);
-    let (dl, hl, ml) = if lang == Lang::Vi { (" ngày", " giờ", " phút") } else { ("d", "h", "m") };
-    match (d, h) {
-        (0, 0) => format!("{m}{ml}"),
-        (0, _) => format!("{h}{hl} {m}{ml}"),
-        _ => format!("{d}{dl} {h}{hl}"),
-    }
+    let key = match (d, h) {
+        (0, 0) => "dur_m",
+        (0, _) => "dur_hm",
+        _ => "dur_dh",
+    };
+    tx(lang, key).replace("{d}", &d.to_string()).replace("{h}", &h.to_string()).replace("{m}", &m.to_string())
 }
 
 /// Selectable limits: every window that reports a percentage.
@@ -408,102 +409,7 @@ fn ring_submenu(app: &AppHandle, lang: Lang, snap: &UsageSnapshot) -> tauri::Res
 }
 
 fn tx(lang: Lang, key: &str) -> &'static str {
-    let vi = lang == Lang::Vi;
-    match key {
-        "five_hour" => {
-            if vi {
-                "5 giờ"
-            } else {
-                "5-hour"
-            }
-        }
-        "weekly" => {
-            if vi {
-                "Tuần"
-            } else {
-                "Weekly"
-            }
-        }
-        "weekly_opus" => {
-            if vi {
-                "Tuần (Opus)"
-            } else {
-                "Weekly (Opus)"
-            }
-        }
-        "weekly_sonnet" => {
-            if vi {
-                "Tuần (Sonnet)"
-            } else {
-                "Weekly (Sonnet)"
-            }
-        }
-        "monthly" => {
-            if vi {
-                "Tháng"
-            } else {
-                "Monthly"
-            }
-        }
-        "extra" => "Extra usage",
-        "extra_off" => {
-            if vi {
-                "Extra usage: tắt"
-            } else {
-                "Extra usage: off"
-            }
-        }
-        "quota_hit" => {
-            if vi {
-                "Hết quota lần cuối"
-            } else {
-                "Last ran out of quota"
-            }
-        }
-        "refresh" => {
-            if vi {
-                "Làm mới ngay"
-            } else {
-                "Refresh Now"
-            }
-        }
-        "open" => {
-            if vi {
-                "Mở trang AI…"
-            } else {
-                "Open AI Usage…"
-            }
-        }
-        "no_percent" => {
-            if vi {
-                "Không cung cấp % hạn mức"
-            } else {
-                "Does not report a quota percentage"
-            }
-        }
-        "resets_in" => {
-            if vi {
-                "đặt lại sau {left}"
-            } else {
-                "resets in {left}"
-            }
-        }
-        "ring" => {
-            if vi {
-                "Theo dõi"
-            } else {
-                "Track"
-            }
-        }
-        "ring_auto" => {
-            if vi {
-                "Tự động (limit 5 giờ cao nhất)"
-            } else {
-                "Automatic (highest 5-hour limit)"
-            }
-        }
-        _ => "",
-    }
+    crate::i18n::tr(lang, key)
 }
 
 #[cfg(test)]

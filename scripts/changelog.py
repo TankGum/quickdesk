@@ -14,11 +14,23 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 FILES = {"en": ROOT / "CHANGELOG.md", "vi": ROOT / "CHANGELOG.vi.md"}
+# The website's translations into its other languages; a release may be missing there.
+TRANSLATED = {p.parent.name: p for p in sorted((ROOT / "website/src/locales").glob("*/CHANGELOG.md"))}
 
 
 def section(lang: str, version: str) -> str | None:
     """Body of `## <version> …` (without the heading), or None."""
-    text = FILES[lang].read_text()
+    return _section(FILES[lang], version)
+
+
+def translated(version: str) -> dict:
+    """The version's notes in each other language that already has them."""
+    found = {lang: _section(path, version) for lang, path in TRANSLATED.items()}
+    return {lang: body for lang, body in found.items() if body}
+
+
+def _section(path: Path, version: str) -> str | None:
+    text = path.read_text()
     head = re.compile(rf"^## v?{re.escape(version)}(\s|$).*$", re.M)
     m = head.search(text)
     if not m:

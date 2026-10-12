@@ -327,6 +327,26 @@ export const home = {
   "kb-ports": {
     "en": "Ports",
     "vi": "Cổng"
+  },
+  "clip-eyebrow": {
+    "en": "Clipboard",
+    "vi": "Clipboard"
+  },
+  "clip-files": {
+    "en": "Files",
+    "vi": "File"
+  },
+  "mode-clip": {
+    "en": "<b>V</b>Clipboard",
+    "vi": "<b>V</b>Clipboard"
+  },
+  "story-kill": {
+    "en": "Kill",
+    "vi": "Dừng"
+  },
+  "clip-sample": {
+    "en": "Meeting moved to 15:30, room 4B",
+    "vi": "Họp dời sang 15:30, phòng 4B"
   }
 } as const;
 

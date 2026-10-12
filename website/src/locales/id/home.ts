@@ -40,7 +40,7 @@ const home: Record<HomeKey, string> = {
   t45: 'Putar ulang <span aria-hidden="true">↺</span>',
   t49: "<kbd>Tray</kbd><kbd>◔</kbd>",
   t2: "Penggunaan AI",
-  "rt-eyebrow": "Runtimes",
+  "rt-eyebrow": "Runtime",
   "rt-keys": "<kbd>nvm</kbd><kbd>uv</kbd><kbd>rustup</kbd><kbd>mise</kbd>",
   "rt-title": "Setiap versi setiap bahasa.<br>Satu tempat untuk menggantinya.",
   "rt-lead":
@@ -58,37 +58,42 @@ const home: Record<HomeKey, string> = {
   t83: "Apakah pintasan berfungsi di Wayland?",
   t84: "Ya. Di GNOME, QuickDesk menambahkannya ke pintasan keyboard khusus, jadi berfungsi di sesi X11 maupun Wayland, dan menghapusnya saat keluar. Di Windows, pintasannya adalah pintasan sistem biasa.",
   t85: "Kenapa Super + Alt, bukan Super + Shift?",
-  t86: "Super adalah tombol Windows di sebagian besar keyboard. Metode input bahasa Vietnam seperti Unikey dan Bamboo menelan Super + Shift + huruf saat Anda mengetik di kolom teks; kombinasi dengan Alt tetap berfungsi. Anda bisa mengubah pintasan mana pun di Settings → Hotkeys, dan QuickDesk memberi tahu jika kombinasi itu sudah dipakai.",
+  t86: "Super adalah tombol Windows di sebagian besar keyboard. Metode input bahasa Vietnam seperti Unikey dan Bamboo menelan Super + Shift + huruf saat Anda mengetik di kolom teks; kombinasi dengan Alt tetap berfungsi. Anda bisa mengubah pintasan mana pun di Pengaturan → Pintasan, dan QuickDesk memberi tahu jika kombinasi itu sudah dipakai.",
   t87: "Bagaimana catatan disinkronkan antarkomputer?",
-  t88: "Aktifkan sinkronisasi di Settings → Sync pada satu komputer: QuickDesk memberi Anda kode sinkronisasi dan kunci pemulihan. Di komputer lain, pilih “I have a sync code” lalu masukkan kode itu dengan frasa sandi yang sama. Tanpa akun, tanpa email. Catatan tersinkron di latar belakang, perubahan saat offline menyusul begitu Anda online lagi, dan jika satu catatan diedit di dua komputer sekaligus, kedua versinya disimpan.",
+  t88: "Aktifkan sinkronisasi di Pengaturan → Sinkronisasi pada satu komputer: QuickDesk memberi Anda kode sinkronisasi dan kunci pemulihan. Di komputer lain, pilih “Saya punya kode sinkronisasi” lalu masukkan kode itu dengan frasa sandi yang sama. Tanpa akun, tanpa email. Catatan tersinkron di latar belakang, perubahan saat offline menyusul begitu Anda online lagi, dan jika satu catatan diedit di dua komputer sekaligus, kedua versinya disimpan.",
   t89: "Apakah data saya dienkripsi?",
   t90: "Catatan dienkripsi di perangkat Anda (XChaCha20-Poly1305, dengan kunci yang diturunkan dari frasa sandi Anda lewat Argon2id) sebelum diunggah, jadi QuickDesk Cloud hanya menyimpan teks terenkripsi dan tidak bisa membaca catatan Anda. Kode sinkronisasi dan kunci enkripsi Anda disimpan di keyring sistem. Riwayat clipboard dan data port tidak pernah keluar dari mesin Anda.",
   t91: "Apakah riwayat clipboard saya diunggah ke suatu tempat?",
   t92: "Tidak. Riwayat itu tetap di perangkat ini dan tidak pernah disinkronkan. Apa pun yang ditandai rahasia oleh pengelola kata sandi dilewati, dan Anda bisa menjeda penyimpanan selama 15 menit, satu jam, atau sampai Anda mengaktifkannya lagi. QuickDesk menyimpan 1.000 entri terbaru (yang disematkan, selamanya) dan gambar hingga 10 MB per gambar. Anda bisa mengosongkannya kapan saja.",
   t93: "Bagaimana tempel otomatis bekerja?",
-  t94: "Saat Anda memilih sebuah entri, QuickDesk kembali ke aplikasi yang sedang Anda pakai dan menempelkannya. Di Windows langsung berfungsi tanpa pengaturan apa pun. Di Linux, QuickDesk menekan Shift + Insert, yang juga berfungsi di terminal, melalui portal desktop jarak jauh GNOME, yang meminta izin sekali saja; Anda juga bisa mengaktifkan tempel instan dengan keyboard virtual di Settings → Auto-paste (meminta kata sandi admin sekali). Atau matikan tempel otomatis dan cukup salin saja.",
+  t94: "Saat Anda memilih sebuah entri, QuickDesk kembali ke aplikasi yang sedang Anda pakai dan menempelkannya. Di Windows langsung berfungsi tanpa pengaturan apa pun. Di Linux, QuickDesk menekan Shift + Insert, yang juga berfungsi di terminal, melalui portal desktop jarak jauh GNOME, yang meminta izin sekali saja; Anda juga bisa mengaktifkan tempel instan dengan keyboard virtual di Pengaturan → Tempel otomatis (meminta kata sandi admin sekali). Atau matikan tempel otomatis dan cukup salin saja.",
   t95: "Apa yang dibaca cincin penggunaan AI?",
   t96: "Untuk Claude Code, QuickDesk membaca login yang sudah disimpan Claude Code di mesin Anda dan menanyakan penggunaan Anda ke Anthropic, paling sering setiap 5 menit. Token hanya dibaca: tidak pernah disimpan, diperbarui, atau dikirim ke mana pun selain Anthropic. Angka Codex dan Antigravity berasal dari berkas log yang disimpan alat-alat itu di komputer Anda.",
   t97: "Apakah QuickDesk gratis?",
   t98: 'Ya. QuickDesk gratis dan sumber terbuka di bawah lisensi MIT. Kode sumbernya ada di <a class="btn--link" href="https://github.com/TankGum/quickdesk">GitHub</a>.',
   t99: "Bagaimana cara mencopotnya?",
-  t100: "Matikan “Start QuickDesk when I log in” di Settings lalu keluar dari tray. Di Windows, lalu buka Pengaturan → Aplikasi → Aplikasi yang diinstal → QuickDesk → Copot pemasangan; data Anda tetap di <code>%APPDATA%\\click.quickdesk</code>. Di Linux, jalankan <code>sudo apt remove quick-desk</code> (Debian/Ubuntu) atau <code>sudo dnf remove QuickDesk</code> (Fedora), atau cukup hapus AppImage-nya; catatan dan riwayat clipboard Anda tetap di <code>~/.local/share/click.quickdesk</code>. Hapus folder itu untuk ikut menghapusnya.",
+  t100: "Matikan “Jalankan QuickDesk saat saya masuk” di Pengaturan lalu keluar dari tray. Di Windows, lalu buka Pengaturan → Aplikasi → Aplikasi yang diinstal → QuickDesk → Copot pemasangan; data Anda tetap di <code>%APPDATA%\\click.quickdesk</code>. Di Linux, jalankan <code>sudo apt remove quick-desk</code> (Debian/Ubuntu) atau <code>sudo dnf remove QuickDesk</code> (Fedora), atau cukup hapus AppImage-nya; catatan dan riwayat clipboard Anda tetap di <code>~/.local/share/click.quickdesk</code>. Hapus folder itu untuk ikut menghapusnya.",
   "t82-mac":
     "Windows 10 dan 11 (64-bit), tempat pintasan dan tempel otomatis langsung berfungsi; macOS 11 atau lebih baru di Apple Silicon (M1 atau lebih baru), masih dalam pengembangan (sudah berjalan, dan tempel otomatis memerlukan izin Anda di Aksesibilitas); dan distribusi Linux x86_64 mana pun dari beberapa tahun terakhir: Ubuntu 22.04 atau lebih baru, Debian 12, Fedora, Linux Mint, dan sejenisnya. Di Linux, QuickDesk paling cocok di GNOME, yang pintasannya didaftarkan otomatis; di desktop lain, kaitkan <code>quickdesk toggle notes</code>, <code>clipboard</code>, atau <code>ports</code> ke sebuah tombol di pengaturan keyboard desktop Anda.",
   "mac-open-q": "macOS bilang tidak dapat memverifikasi bahwa QuickDesk bebas dari malware. Lalu bagaimana?",
   "mac-open-a":
     'QuickDesk belum dinotarisasi oleh Apple, jadi macOS menghentikan pembukaan pertama salinan yang diunduh lewat browser. Tidak ada yang salah dengan aplikasinya. Tutup peringatannya, buka Pengaturan Sistem → Privasi &amp; Keamanan, gulir ke bawah, klik <em>Tetap Buka</em> di samping QuickDesk, lalu konfirmasi. Atau jalankan <code>xattr -dr com.apple.quarantine /Applications/QuickDesk.app</code> di Terminal. Cukup dilakukan sekali; jika Anda memasang dengan perintah <code>curl</code> di <a href="/download#macos-open">halaman unduhan</a>, tidak ada peringatan yang muncul.',
   "t86-mac":
-    "Super adalah tombol Windows di sebagian besar keyboard. Metode input bahasa Vietnam seperti Unikey dan Bamboo menelan Super + Shift + huruf saat Anda mengetik di kolom teks; kombinasi dengan Alt tetap berfungsi. Di Mac, pintasan default-nya Control + Option (⌃⌥ N, V, P), karena ⌘⌥V dan ⌘⌥N milik Finder. Anda bisa mengubah pintasan mana pun di Settings → Hotkeys, dan QuickDesk memberi tahu jika kombinasi itu sudah dipakai.",
+    "Super adalah tombol Windows di sebagian besar keyboard. Metode input bahasa Vietnam seperti Unikey dan Bamboo menelan Super + Shift + huruf saat Anda mengetik di kolom teks; kombinasi dengan Alt tetap berfungsi. Di Mac, pintasan default-nya Control + Option (⌃⌥ N, V, P), karena ⌘⌥V dan ⌘⌥N milik Finder. Anda bisa mengubah pintasan mana pun di Pengaturan → Pintasan, dan QuickDesk memberi tahu jika kombinasi itu sudah dipakai.",
   "t94-mac":
-    "Saat Anda memilih sebuah entri, QuickDesk kembali ke aplikasi yang sedang Anda pakai dan menempelkannya. Di Windows langsung berfungsi tanpa pengaturan apa pun. Di Mac, QuickDesk menekan ⌘V, yang memerlukan izin Anda sekali di Pengaturan Sistem → Privasi &amp; Keamanan → Aksesibilitas (macOS memintanya pertama kali). Di Linux, QuickDesk menekan Shift + Insert, yang juga berfungsi di terminal, melalui portal desktop jarak jauh GNOME, yang meminta izin sekali saja; Anda juga bisa mengaktifkan tempel instan dengan keyboard virtual di Settings → Auto-paste. Atau matikan tempel otomatis dan cukup salin saja.",
+    "Saat Anda memilih sebuah entri, QuickDesk kembali ke aplikasi yang sedang Anda pakai dan menempelkannya. Di Windows langsung berfungsi tanpa pengaturan apa pun. Di Mac, QuickDesk menekan ⌘V, yang memerlukan izin Anda sekali di Pengaturan Sistem → Privasi &amp; Keamanan → Aksesibilitas (macOS memintanya pertama kali). Di Linux, QuickDesk menekan Shift + Insert, yang juga berfungsi di terminal, melalui portal desktop jarak jauh GNOME, yang meminta izin sekali saja; Anda juga bisa mengaktifkan tempel instan dengan keyboard virtual di Pengaturan → Tempel otomatis. Atau matikan tempel otomatis dan cukup salin saja.",
   "t100-mac":
-    "Matikan “Start QuickDesk when I log in” di Settings lalu keluar dari tray atau bar menu. Di Windows, lalu buka Pengaturan → Aplikasi → Aplikasi yang diinstal → QuickDesk → Copot pemasangan; data Anda tetap di <code>%APPDATA%\\click.quickdesk</code>. Di Mac, pindahkan QuickDesk dari Aplikasi ke Tempat Sampah; data Anda tetap di <code>~/Library/Application Support/click.quickdesk</code>. Di Linux, jalankan <code>sudo apt remove quick-desk</code> (Debian/Ubuntu) atau <code>sudo dnf remove QuickDesk</code> (Fedora), atau cukup hapus AppImage-nya; catatan dan riwayat clipboard Anda tetap di <code>~/.local/share/click.quickdesk</code>. Hapus folder itu untuk ikut menghapusnya.",
+    "Matikan “Jalankan QuickDesk saat saya masuk” di Pengaturan lalu keluar dari tray atau bar menu. Di Windows, lalu buka Pengaturan → Aplikasi → Aplikasi yang diinstal → QuickDesk → Copot pemasangan; data Anda tetap di <code>%APPDATA%\\click.quickdesk</code>. Di Mac, pindahkan QuickDesk dari Aplikasi ke Tempat Sampah; data Anda tetap di <code>~/Library/Application Support/click.quickdesk</code>. Di Linux, jalankan <code>sudo apt remove quick-desk</code> (Debian/Ubuntu) atau <code>sudo dnf remove QuickDesk</code> (Fedora), atau cukup hapus AppImage-nya; catatan dan riwayat clipboard Anda tetap di <code>~/.local/share/click.quickdesk</code>. Hapus folder itu untuk ikut menghapusnya.",
   "hero-new": "Baru",
   "hero-whatsnew": "lihat yang baru",
   "kb-notes": "Catatan",
   "kb-clip": "Riwayat clipboard",
   "kb-ports": "Port",
+  "clip-eyebrow": "Clipboard",
+  "clip-files": "Berkas",
+  "mode-clip": "<b>V</b>Clipboard",
+  "story-kill": "Matikan",
+  "clip-sample": "Rapat dipindah ke 15.30, ruang 4B",
 };
 
 export default home;

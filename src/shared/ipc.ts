@@ -281,7 +281,7 @@ export type UpdateStatus =
   | { state: "idle" }
   | { state: "checking" }
   | { state: "upToDate"; checkedAt: number }
-  | { state: "available"; version: string; notes: string | null; notesVi: string | null }
+  | { state: "available"; version: string; notes: string | null; notesVi: string | null; notesI18n?: Record<string, string> }
   | { state: "downloading"; version: string; downloaded: number; total: number | null }
   | { state: "installing"; version: string }
   | { state: "error"; message: string; version: string | null };

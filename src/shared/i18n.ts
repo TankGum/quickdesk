@@ -1,11 +1,12 @@
-// UI translations. `en` is the source of truth; `vi` must define every key
-// (the `Record<Key, string>` type makes a missing translation a compile error).
-// Placeholders use {name}.
+// UI translations. `en` is the source of truth; `vi` (below) and every
+// language in ./locales/ must define every key (the `Record<Key, string>` type
+// makes a missing translation a compile error). Placeholders use {name}.
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useSyncExternalStore } from "react";
+import { type Lang } from "./langs";
 
-export type Lang = "en" | "vi";
+export { LANGS, LANG_NAMES, type Lang } from "./langs";
 export type LangPref = "auto" | Lang;
 
 const en = {
@@ -886,21 +887,73 @@ const vi: Record<Key, string> = {
   "time.justNow": "vừa xong",
 };
 
-const DICTS: Record<Lang, Record<Key, string>> = { en, vi };
+type Dict = Record<Key, string>;
+
+const dicts: Partial<Record<Lang, Dict>> = { en, vi };
+
+// The other languages load the first time they are used.
+const LOADERS: Record<Exclude<Lang, "en" | "vi">, () => Promise<{ default: Dict }>> = {
+  zh: () => import("./locales/zh"),
+  ja: () => import("./locales/ja"),
+  hi: () => import("./locales/hi"),
+  es: () => import("./locales/es"),
+  fr: () => import("./locales/fr"),
+  ar: () => import("./locales/ar"),
+  bn: () => import("./locales/bn"),
+  ru: () => import("./locales/ru"),
+  pt: () => import("./locales/pt"),
+  id: () => import("./locales/id"),
+};
+
+// Their release notes are the website's translations of the changelog.
+const CHANGELOGS = import.meta.glob<string>("../../website/src/locales/*/CHANGELOG.md", { query: "?raw", import: "default" });
+const changelogs: Partial<Record<Lang, string>> = {};
+
+async function load(lang: Lang) {
+  if (lang === "en" || lang === "vi" || dicts[lang]) return;
+  const [dict, log] = await Promise.all([
+    LOADERS[lang](),
+    CHANGELOGS[`../../website/src/locales/${lang}/CHANGELOG.md`]?.().catch(() => undefined),
+  ]);
+  dicts[lang] = dict.default;
+  if (log) changelogs[lang] = log;
+}
+
+/** BCP-47 locale for Intl formatting. */
+const LOCALES: Record<Lang, string> = {
+  en: "en-US",
+  vi: "vi-VN",
+  zh: "zh-CN",
+  ja: "ja-JP",
+  hi: "hi-IN",
+  es: "es-ES",
+  fr: "fr-FR",
+  ar: "ar",
+  bn: "bn-BD",
+  ru: "ru-RU",
+  pt: "pt-BR",
+  id: "id-ID",
+};
 
 let current: Lang = navigator.language.toLowerCase().startsWith("vi") ? "vi" : "en";
 let pref: LangPref = "auto";
 const listeners = new Set<() => void>();
 
-function setCurrent(lang: Lang, p: LangPref) {
+async function setCurrent(lang: Lang, p: LangPref) {
+  try {
+    await load(lang);
+  } catch {
+    lang = "en"; // keep working in English rather than show nothing
+  }
   current = lang;
   pref = p;
-  document.documentElement.lang = lang;
+  document.documentElement.lang = LOCALES[lang];
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
   listeners.forEach((l) => l());
 }
 
 export function t(key: Key, params?: Record<string, string | number>): string {
-  let s = DICTS[current][key] ?? en[key];
+  let s = dicts[current]?.[key] ?? en[key];
   if (params) for (const [k, v] of Object.entries(params)) s = s.split(`{${k}}`).join(String(v));
   return s;
 }
@@ -909,9 +962,13 @@ export function lang(): Lang {
   return current;
 }
 
-/** BCP-47 locale for Intl formatting. */
 export function locale(): string {
-  return current === "vi" ? "vi-VN" : "en-US";
+  return LOCALES[current];
+}
+
+/** The changelog in the UI language, for languages other than English and Vietnamese. */
+export function translatedChangelog(): string | undefined {
+  return changelogs[current];
 }
 
 interface LanguageState {
@@ -923,16 +980,16 @@ interface LanguageState {
 export async function initI18n() {
   try {
     const s = await invoke<LanguageState>("app_get_language");
-    setCurrent(s.resolved, s.pref);
+    await setCurrent(s.resolved, s.pref);
   } catch {
     // Keep the browser-detected default.
   }
-  void listen<LanguageState>("ui://language", (e) => setCurrent(e.payload.resolved, e.payload.pref));
+  void listen<LanguageState>("ui://language", (e) => void setCurrent(e.payload.resolved, e.payload.pref));
 }
 
 export async function setLanguage(p: LangPref) {
   const s = await invoke<LanguageState>("app_set_language", { language: p });
-  setCurrent(s.resolved, s.pref);
+  await setCurrent(s.resolved, s.pref);
 }
 
 const subscribe = (l: () => void) => {

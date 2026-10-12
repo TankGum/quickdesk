@@ -1,5 +1,7 @@
-// Français (French). See ../en.ts for what each part is. The app itself is in
-// English and Vietnamese, so its menu and button names stay in English.
+// Français (French). See ../en.ts for what each part is. The app's menu and
+// button names are written as the app itself shows them
+// (src/shared/locales/fr.ts). The system's own labels are named as the system
+// shows them.
 import type { Locale } from "..";
 import changelog from "./CHANGELOG.md?raw";
 import docs from "./docs";

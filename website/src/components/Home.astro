@@ -67,7 +67,7 @@ const t = (key: HomeKey) => homeText(key, lang).replaceAll("{{VERSION}}", releas
   <section class="demo" id="demo">
     <div class="switcher" role="tablist" aria-label="QuickDesk panels">
       <button type="button" role="tab" data-mode="notes" aria-selected="false"><Fragment set:html={t("t10")} /></button>
-      <button type="button" role="tab" data-mode="clipboard" aria-selected="false"><b>V</b>Clipboard</button>
+      <button type="button" role="tab" data-mode="clipboard" aria-selected="false"><Fragment set:html={t("mode-clip")} /></button>
       <button type="button" role="tab" data-mode="ports" aria-selected="false"><Fragment set:html={t("t11")} /></button>
       <button type="button" role="tab" data-mode="ai" aria-selected="false"><Fragment set:html={t("t12")} /></button>
     </div>
@@ -187,15 +187,15 @@ const t = (key: HomeKey) => homeText(key, lang).replaceAll("{{VERSION}}", releas
     <div class="wrap">
       <header class="feature__head">
         <span class="shortcut"><kbd>Super</kbd><kbd>Alt</kbd><kbd>V</kbd></span>
-        <p class="eyebrow eyebrow--accent">Clipboard</p>
+        <p class="eyebrow eyebrow--accent"><Fragment set:html={t("clip-eyebrow")} /></p>
         <h2 class="section-title"><Fragment set:html={t("t33")} /></h2>
         <p class="lead"><Fragment set:html={t("t34")} /></p>
       </header>
 
       <div class="stack" aria-hidden="true">
         <div class="card card--img"><span class="card__type"><Fragment set:html={t("t35")} /></span><div class="card__thumb"></div><span class="card__meta">1280×720 · 184 KB</span></div>
-        <div class="card"><span class="card__type">Files</span><ul class="card__files"><li>📄 release-notes.pdf</li><li>🖼️ mockup.png</li><li>📁 assets</li></ul><span class="card__meta">~/Projects/quickdesk</span></div>
-        <div class="card"><span class="card__type"><Fragment set:html={t("t36")} /></span><p class="card__text">Họp dời sang 15:30, phòng 4B</p><span class="card__meta"><Fragment set:html={t("t37")} /></span></div>
+        <div class="card"><span class="card__type"><Fragment set:html={t("clip-files")} /></span><ul class="card__files"><li>📄 release-notes.pdf</li><li>🖼️ mockup.png</li><li>📁 assets</li></ul><span class="card__meta">~/Projects/quickdesk</span></div>
+        <div class="card"><span class="card__type"><Fragment set:html={t("t36")} /></span><p class="card__text"><Fragment set:html={t("clip-sample")} /></p><span class="card__meta"><Fragment set:html={t("t37")} /></span></div>
         <div class="card card--top"><span class="card__type"><Fragment set:html={t("t38")} /></span><code>docker compose up -d --build</code><span class="card__meta"><Fragment set:html={t("t39")} /></span><span class="card__pin">★</span></div>
       </div>
     </div>
@@ -218,7 +218,7 @@ const t = (key: HomeKey) => homeText(key, lang).replaceAll("{{VERSION}}", releas
         </div>
         <div class="mini-panel">
           <div class="mini-panel__head"><span><Fragment set:html={t("t1")} /></span><span class="shortcut shortcut--sm"><kbd>Super</kbd><kbd>Alt</kbd><kbd>P</kbd></span></div>
-          <div class="ports__row ports__row--story" data-story-row><span class="port">3000</span><span>node <em>vite</em></span><span>48211</span><span class="ports__act"><button type="button" class="mini mini--danger mini--pulse" data-story-kill>Kill</button></span></div>
+          <div class="ports__row ports__row--story" data-story-row><span class="port">3000</span><span>node <em>vite</em></span><span>48211</span><span class="ports__act"><button type="button" class="mini mini--danger mini--pulse" data-story-kill><Fragment set:html={t("story-kill")} /></button></span></div>
           <div class="ports__row ports__row--story"><span class="port">5432</span><span>🐳 postgres-dev</span><span>—</span><span></span></div>
           <div class="ports__row ports__row--story"><span class="port">6379</span><span>redis-server</span><span>1187</span><span></span></div>
           <button type="button" class="btn btn--link story__replay" data-story-replay><Fragment set:html={t("t45")} /></button>
@@ -248,7 +248,7 @@ const t = (key: HomeKey) => homeText(key, lang).replaceAll("{{VERSION}}", releas
               <i><svg viewBox="0 0 16 16"><path d="m5 5 6 6m0-6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></i>
             </span>
           </div>
-          <iframe title="QuickDesk Runtimes tab (demo)" src={`/demo/?window=main&tab=versions&theme=dark${lang === "vi" ? "&lang=vi" : ""}`} width="903" height="603" loading="lazy"></iframe>
+          <iframe title="QuickDesk Runtimes tab (demo)" src={`/demo/?window=main&tab=versions&theme=dark${lang === "en" ? "" : `&lang=${lang}`}`} width="903" height="603" loading="lazy"></iframe>
         </div>
       </div>
     </div>

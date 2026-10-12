@@ -37,7 +37,7 @@ export function UpdateBanner() {
     text = t("update.available", { version });
   }
 
-  const notes = s.state === "available" ? pickNotes(s.notes, s.notesVi) : null;
+  const notes = s.state === "available" ? pickNotes(s.notes, s.notesVi, s.notesI18n) : null;
 
   return (
     <div className={`update-banner ${s.state}`} role="status">

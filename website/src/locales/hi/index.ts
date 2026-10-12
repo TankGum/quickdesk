@@ -1,6 +1,7 @@
-// हिन्दी (Hindi). See ../en.ts for what each part is. The app itself is in
-// English and Vietnamese, so its menu and button names stay in English, and
-// so do the system's own labels (System Settings, More info …).
+// हिन्दी (Hindi). See ../en.ts for what each part is. The app's menu and
+// button names are written as the app itself shows them
+// (src/shared/locales/hi.ts). The system's own labels (System Settings, More
+// info …) stay in English.
 import type { Locale } from "..";
 import changelog from "./CHANGELOG.md?raw";
 import docs from "./docs";

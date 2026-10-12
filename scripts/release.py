@@ -7,7 +7,8 @@
 
 Before running it, write the release notes: a `## 0.2.3 — <date>` section in
 both CHANGELOG.md and CHANGELOG.vi.md, or a `## Unreleased` section that the
-script renames to `## 0.2.3 — <today>`. They may be uncommitted; they go into
+script renames to `## 0.2.3 — <today>` (also in the website's translations,
+website/src/locales/<lang>/CHANGELOG.md, where it is optional). They may be uncommitted; they go into
 the release commit. Any other uncommitted change stops the script, so a
 release is exactly what is on the branch.
 """
@@ -25,7 +26,9 @@ ROOT = Path(__file__).resolve().parent.parent
 TAURI_CONF = ROOT / "src-tauri" / "tauri.conf.json"
 PACKAGE = ROOT / "package.json"
 CARGO = ROOT / "Cargo.toml"
-NOTES = {"CHANGELOG.md", "CHANGELOG.vi.md"}
+NOTES = {"CHANGELOG.md", "CHANGELOG.vi.md"} | {
+    str(p.relative_to(ROOT)) for p in changelog.TRANSLATED.values()
+}
 
 
 def run(*cmd: str, check: bool = True) -> str:
@@ -76,6 +79,15 @@ def main() -> None:
         else:
             path.write_text(unreleased.sub(f"## {version} — {today}", text, count=1))
             print(f"{path.name}: '## Unreleased' is now '## {version} — {today}'")
+    # The translations may lag behind: rename their notes when they have some.
+    for lang, path in changelog.TRANSLATED.items():
+        text = path.read_text()
+        if not unreleased.search(text) or changelog._section(path, version):
+            continue
+        if dry:
+            print(f"would rename '## Unreleased' to '## {version} — {today}' in {lang}/CHANGELOG.md")
+        else:
+            path.write_text(unreleased.sub(f"## {version} — {today}", text, count=1))
     branch = run("git", "rev-parse", "--abbrev-ref", "HEAD")
     if branch != "main":
         print(f"note: releasing from branch '{branch}', not main")
