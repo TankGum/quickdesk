@@ -320,7 +320,7 @@ const es: Record<Key, string> = {
   "ai.onTopBar.win": "En la bandeja del sistema",
   "ai.tray.mac": "Mostrar un anillo de uso en la barra de menús",
   "ai.keychain.title": "¿Mostrar también tus límites de Claude?",
-  "ai.keychain.body": "Claude Code guarda su inicio de sesión en el Llavero (Keychain) de macOS. QuickDesk puede leerlo allí para preguntar a Anthropic por tu uso, como hace el comando /usage. macOS pregunta una vez: elige Permitir siempre. El inicio de sesión solo se lee, nunca se guarda y solo se envía a api.anthropic.com.",
+  "ai.keychain.body": "Claude Code guarda su inicio de sesión en el Llavero (Keychain) de macOS. QuickDesk puede leerlo allí para preguntar a Anthropic por tu uso, como hace el comando /usage. El inicio de sesión solo se lee, nunca se guarda y solo se envía a api.anthropic.com.",
   "ai.keychain.allow": "Leer el inicio de sesión de Claude",
   "ai.keychain.stop": "Dejar de leer el inicio de sesión de Claude del Llavero",
   "ai.onTopBar.mac": "En la barra de menús",

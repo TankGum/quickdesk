@@ -320,7 +320,7 @@ const zh: Record<Key, string> = {
   "ai.onTopBar.win": "在系统托盘中",
   "ai.tray.mac": "在菜单栏显示用量圆环",
   "ai.keychain.title": "也显示你的 Claude 限额？",
-  "ai.keychain.body": "Claude Code 把登录信息保存在 macOS 钥匙串（Keychain）中。QuickDesk 可以从那里读取，向 Anthropic 查询你的用量，就像 /usage 命令那样。macOS 会询问一次：请选择 始终允许。登录信息只会被读取，从不保存，并且只发送到 api.anthropic.com。",
+  "ai.keychain.body": "Claude Code 把登录信息保存在 macOS 钥匙串（Keychain）中。QuickDesk 可以从那里读取，向 Anthropic 查询你的用量，就像 /usage 命令那样。登录信息只会被读取，从不保存，并且只发送到 api.anthropic.com。",
   "ai.keychain.allow": "读取 Claude 登录",
   "ai.keychain.stop": "停止从钥匙串读取 Claude 登录",
   "ai.onTopBar.mac": "在菜单栏中",

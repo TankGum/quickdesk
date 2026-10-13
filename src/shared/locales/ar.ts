@@ -320,7 +320,7 @@ const ar: Record<Key, string> = {
   "ai.onTopBar.win": "في شريط النظام",
   "ai.tray.mac": "عرض حلقة الاستخدام في شريط القوائم",
   "ai.keychain.title": "عرض حدود Claude أيضًا؟",
-  "ai.keychain.body": "يحفظ Claude Code بيانات تسجيل دخوله في سلسلة مفاتيح macOS (Keychain). يمكن لـ QuickDesk قراءتها من هناك ليسأل Anthropic عن استخدامك، كما يفعل الأمر /usage. يسأل macOS مرة واحدة: اختر Always Allow. تُقرأ بيانات الدخول فقط، ولا تُخزَّن أبدًا، ولا تُرسل إلا إلى api.anthropic.com.",
+  "ai.keychain.body": "يحفظ Claude Code بيانات تسجيل دخوله في سلسلة مفاتيح macOS (Keychain). يمكن لـ QuickDesk قراءتها من هناك ليسأل Anthropic عن استخدامك، كما يفعل الأمر /usage. تُقرأ بيانات الدخول فقط، ولا تُخزَّن أبدًا، ولا تُرسل إلا إلى api.anthropic.com.",
   "ai.keychain.allow": "قراءة تسجيل دخول Claude",
   "ai.keychain.stop": "التوقف عن قراءة تسجيل دخول Claude من Keychain",
   "ai.onTopBar.mac": "في شريط القوائم",

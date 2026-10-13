@@ -320,7 +320,7 @@ const pt: Record<Key, string> = {
   "ai.onTopBar.win": "Na bandeja do sistema",
   "ai.tray.mac": "Mostrar um anel de uso na barra de menus",
   "ai.keychain.title": "Mostrar também seus limites do Claude?",
-  "ai.keychain.body": "O Claude Code guarda o login no Chaveiro do macOS. O QuickDesk pode lê-lo ali para perguntar à Anthropic sobre o seu uso, como faz o comando /usage. O macOS pergunta uma vez: escolha Sempre Permitir. O login só é lido, nunca armazenado, e só é enviado para api.anthropic.com.",
+  "ai.keychain.body": "O Claude Code guarda o login no Chaveiro do macOS. O QuickDesk pode lê-lo ali para perguntar à Anthropic sobre o seu uso, como faz o comando /usage. O login só é lido, nunca armazenado, e só é enviado para api.anthropic.com.",
   "ai.keychain.allow": "Ler o login do Claude",
   "ai.keychain.stop": "Parar de ler o login do Claude no Chaveiro",
   "ai.onTopBar.mac": "Na barra de menus",

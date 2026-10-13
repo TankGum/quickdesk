@@ -59,7 +59,7 @@ const all: Section[] = [
 <li>The shortcuts are <kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>N</kbd> / <kbd>V</kbd> / <kbd>P</kbd> (Control + Option): ⌘⌥V and ⌘⌥N belong to Finder.</li>
 <li><strong>Auto-paste</strong> presses ⌘V in the app you were using, which macOS allows only after you add QuickDesk under System Settings → Privacy & Security → <strong>Accessibility</strong>. macOS asks the first time you pick an entry; until then the entry is copied and you press ⌘V. Settings → Auto-paste shows whether it is allowed.</li>
 <li>Newer macOS versions may ask whether QuickDesk may read what other apps copy. Choose Allow, or clipboard history stays empty.</li>
-<li><strong>Claude usage:</strong> Claude Code keeps its login in the Keychain on a Mac. The AI tab offers to read it there; macOS then asks once (choose <em>Always Allow</em>). Like on the other systems the login is only read and only sent to <code>api.anthropic.com</code>.</li>
+<li><strong>Claude usage:</strong> Claude Code keeps its login in the Keychain on a Mac. The AI tab offers to read it there. Like on the other systems the login is only read and only sent to <code>api.anthropic.com</code>.</li>
 <li>Because the app is signed ad hoc, macOS may ask for Accessibility and the Keychain again after an update. If auto-paste stops working, remove QuickDesk from the Accessibility list and add it again.</li>
 <li>The Runtimes tab works as on Linux, with your login shell (zsh: <code>~/.zshrc</code>). Copies installed with Homebrew are shown but not changed.</li>
 </ul>
@@ -76,7 +76,7 @@ const all: Section[] = [
 <li>Phím tắt là <kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>N</kbd> / <kbd>V</kbd> / <kbd>P</kbd> (Control + Option): ⌘⌥V và ⌘⌥N là phím của Finder.</li>
 <li><strong>Tự động dán</strong> bấm ⌘V trong app bạn đang dùng, và macOS chỉ cho phép sau khi bạn thêm QuickDesk vào System Settings → Privacy & Security → <strong>Accessibility</strong>. macOS hỏi ở lần đầu bạn chọn một mục; trước đó mục được copy và bạn bấm ⌘V. Cài đặt → Tự động dán cho biết đã được cho phép chưa.</li>
 <li>Các bản macOS mới có thể hỏi QuickDesk có được đọc những gì app khác copy không. Hãy chọn Allow, nếu không lịch sử clipboard sẽ trống.</li>
-<li><strong>Usage Claude:</strong> trên Mac, Claude Code giữ phiên đăng nhập trong Keychain. Tab AI đề nghị đọc nó ở đó; macOS sẽ hỏi một lần (chọn <em>Always Allow</em>). Giống các hệ điều hành khác, phiên đăng nhập chỉ được đọc và chỉ gửi tới <code>api.anthropic.com</code>.</li>
+<li><strong>Usage Claude:</strong> trên Mac, Claude Code giữ phiên đăng nhập trong Keychain. Tab AI đề nghị đọc nó ở đó. Giống các hệ điều hành khác, phiên đăng nhập chỉ được đọc và chỉ gửi tới <code>api.anthropic.com</code>.</li>
 <li>Vì app được ký ad-hoc, sau khi cập nhật macOS có thể hỏi lại quyền Accessibility và Keychain. Nếu tự động dán ngừng chạy, hãy xoá QuickDesk khỏi danh sách Accessibility rồi thêm lại.</li>
 <li>Tab Runtime chạy giống trên Linux, với shell đăng nhập của bạn (zsh: <code>~/.zshrc</code>). Bản cài bằng Homebrew chỉ được hiển thị, không bị đổi.</li>
 </ul>
