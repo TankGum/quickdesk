@@ -6,7 +6,7 @@ Mỗi bản phát hành QuickDesk có gì mới. Bản tiếng Anh là
 Mỗi bản là một mục `## <phiên bản> — <ngày>` với tối đa ba nhóm:
 `### Mới`, `### Cải thiện`, `### Sửa lỗi`.
 
-## Unreleased
+## 0.7.1 — 2026-10-13
 
 ### Sửa lỗi
 - macOS: không còn hỏi mật khẩu khi lấy usage Claude. QuickDesk giờ đọc phiên đăng nhập của Claude Code trong Keychain theo cùng cách Claude Code tự đọc, nên macOS không hỏi lại mỗi lần QuickDesk khởi động hay Claude Code làm mới phiên đăng nhập.

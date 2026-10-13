@@ -8,7 +8,7 @@ Each release is a `## <version> — <date>` section with up to three groups:
 a version that has no section here, and shows the section in the app, on the
 download page and on GitHub Releases.
 
-## Unreleased
+## 0.7.1 — 2026-10-13
 
 ### Fixed
 - macOS: no more password prompts for Claude usage. QuickDesk now reads Claude Code's login from the Keychain the way Claude Code itself does, so macOS no longer asks each time QuickDesk starts or Claude Code renews its login.
