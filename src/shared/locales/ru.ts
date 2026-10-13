@@ -320,7 +320,7 @@ const ru: Record<Key, string> = {
   "ai.onTopBar.win": "В системном трее",
   "ai.tray.mac": "Показывать кольцо использования в строке меню",
   "ai.keychain.title": "Показывать и лимиты Claude?",
-  "ai.keychain.body": "Claude Code хранит данные входа в связке ключей macOS (Keychain). QuickDesk может прочитать их оттуда, чтобы узнать у Anthropic ваше использование, как это делает команда /usage. macOS спросит один раз: выберите Разрешать всегда. Данные входа только читаются, никогда не сохраняются и отправляются только на api.anthropic.com.",
+  "ai.keychain.body": "Claude Code хранит данные входа в связке ключей macOS (Keychain). QuickDesk может прочитать их оттуда, чтобы узнать у Anthropic ваше использование, как это делает команда /usage. Данные входа только читаются, никогда не сохраняются и отправляются только на api.anthropic.com.",
   "ai.keychain.allow": "Читать вход Claude",
   "ai.keychain.stop": "Больше не читать вход Claude из связки ключей",
   "ai.onTopBar.mac": "В строке меню",

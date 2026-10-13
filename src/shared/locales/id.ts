@@ -320,7 +320,7 @@ const id: Record<Key, string> = {
   "ai.onTopBar.win": "Di baki sistem",
   "ai.tray.mac": "Tampilkan cincin penggunaan di bilah menu",
   "ai.keychain.title": "Tampilkan juga batas Claude Anda?",
-  "ai.keychain.body": "Claude Code menyimpan login-nya di Rantai Kunci macOS. QuickDesk bisa membacanya di sana untuk menanyakan penggunaan Anda ke Anthropic, seperti yang dilakukan perintah /usage. macOS bertanya sekali: pilih Selalu Izinkan. Login hanya dibaca, tidak pernah disimpan, dan hanya dikirim ke api.anthropic.com.",
+  "ai.keychain.body": "Claude Code menyimpan login-nya di Rantai Kunci macOS. QuickDesk bisa membacanya di sana untuk menanyakan penggunaan Anda ke Anthropic, seperti yang dilakukan perintah /usage. Login hanya dibaca, tidak pernah disimpan, dan hanya dikirim ke api.anthropic.com.",
   "ai.keychain.allow": "Baca login Claude",
   "ai.keychain.stop": "Berhenti membaca login Claude dari Rantai Kunci",
   "ai.onTopBar.mac": "Di bilah menu",

@@ -7,10 +7,11 @@
 //! The endpoint is not a public API and may change; parsing is lenient.
 //!
 //! On macOS Claude Code keeps the login in the Keychain instead of a file.
-//! QuickDesk reads it there only after the user turned that on (macOS then
-//! asks once), and like the file it is never stored or sent anywhere but
+//! QuickDesk reads it there only after the user turned that on, through
+//! `/usr/bin/security` like Claude Code (so macOS does not ask for the
+//! password), and like the file it is never stored or sent anywhere but
 //! api.anthropic.com. It is kept in memory between refreshes and read again
-//! only once it stops working, so macOS does not ask every few minutes.
+//! only once it stops working.
 
 use std::path::PathBuf;
 use std::time::Duration;
@@ -142,7 +143,7 @@ pub fn keychain_possible() -> bool {
 /// fresh read (at most every `KEYCHAIN_REREAD`).
 #[cfg(target_os = "macos")]
 fn keychain_login() -> Result<String, String> {
-    // Held while reading, so macOS never asks twice at once.
+    // Held while reading, so two refreshes never read at once.
     let mut kept = kept_login();
     if let Some(k) = kept.as_ref() {
         let works = k.result.is_ok() && !k.stale;
@@ -155,28 +156,38 @@ fn keychain_login() -> Result<String, String> {
     result
 }
 
-/// The login JSON Claude Code saved in the Keychain. macOS asks the user the
-/// first time (Always Allow keeps it quiet afterwards).
+/// The login JSON Claude Code saved in the Keychain, read the way Claude Code
+/// reads it: with `/usr/bin/security`. Claude Code creates the item with that
+/// tool, so the item already trusts it and macOS does not ask for the
+/// password. Read by QuickDesk itself, macOS would ask on every read QuickDesk
+/// is not trusted for, and Claude Code replaces the item (dropping "Always
+/// Allow") whenever it refreshes its login.
 #[cfg(target_os = "macos")]
 fn read_keychain() -> Result<String, String> {
-    use security_framework::item::{ItemClass, ItemSearchOptions, SearchResult};
-    let found = ItemSearchOptions::new()
-        .class(ItemClass::generic_password())
-        .service(KEYCHAIN_SERVICE)
-        .load_data(true)
-        .limit(1)
-        .search()
-        .map_err(|e| {
-            if e.code() == -25300 {
-                "not logged in to Claude Code".to_owned()
-            } else {
-                format!("Keychain: {e}")
-            }
-        })?;
-    match found.into_iter().next() {
-        Some(SearchResult::Data(bytes)) => String::from_utf8(bytes).map_err(|_| "Claude login is not text".to_owned()),
-        _ => Err("not logged in to Claude Code".into()),
+    let out = std::process::Command::new("/usr/bin/security")
+        .args(["find-generic-password", "-s", KEYCHAIN_SERVICE, "-w"])
+        .stdin(std::process::Stdio::null())
+        .output()
+        .map_err(|e| format!("Keychain: {e}"))?;
+    // 44: errSecItemNotFound.
+    if out.status.code() == Some(44) {
+        return Err("not logged in to Claude Code".into());
     }
+    if !out.status.success() {
+        return Err(format!("Keychain: security exited with {}", out.status));
+    }
+    let text = String::from_utf8(out.stdout).map_err(|_| "Claude login is not text".to_owned())?;
+    Ok(unhex(text.trim_end_matches('\n')))
+}
+
+/// `security -w` prints a value that is not plain text as hex.
+#[cfg(target_os = "macos")]
+fn unhex(s: &str) -> String {
+    if s.starts_with('{') || s.len() % 2 != 0 || !s.bytes().all(|b| b.is_ascii_hexdigit()) {
+        return s.to_owned();
+    }
+    let bytes: Option<Vec<u8>> = (0..s.len()).step_by(2).map(|i| u8::from_str_radix(&s[i..i + 2], 16).ok()).collect();
+    bytes.and_then(|b| String::from_utf8(b).ok()).unwrap_or_else(|| s.to_owned())
 }
 
 fn capitalize(s: &str) -> String {

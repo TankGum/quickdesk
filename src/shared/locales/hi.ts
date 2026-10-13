@@ -320,7 +320,7 @@ const hi: Record<Key, string> = {
   "ai.onTopBar.win": "सिस्टम ट्रे में",
   "ai.tray.mac": "मेन्यू बार में उपयोग रिंग दिखाएँ",
   "ai.keychain.title": "अपनी Claude सीमाएँ भी दिखाएँ?",
-  "ai.keychain.body": "Claude Code अपना लॉगिन macOS Keychain में रखता है। QuickDesk वहाँ से उसे पढ़कर Anthropic से आपका उपयोग पूछ सकता है, जैसे /usage कमांड करता है। macOS एक बार पूछता है: Always Allow चुनें। लॉगिन सिर्फ़ पढ़ा जाता है, कभी सहेजा नहीं जाता, और सिर्फ़ api.anthropic.com को भेजा जाता है।",
+  "ai.keychain.body": "Claude Code अपना लॉगिन macOS Keychain में रखता है। QuickDesk वहाँ से उसे पढ़कर Anthropic से आपका उपयोग पूछ सकता है, जैसे /usage कमांड करता है। लॉगिन सिर्फ़ पढ़ा जाता है, कभी सहेजा नहीं जाता, और सिर्फ़ api.anthropic.com को भेजा जाता है।",
   "ai.keychain.allow": "Claude लॉगिन पढ़ें",
   "ai.keychain.stop": "Keychain से Claude लॉगिन पढ़ना बंद करें",
   "ai.onTopBar.mac": "मेन्यू बार में",

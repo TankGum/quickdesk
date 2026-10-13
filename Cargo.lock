@@ -3434,7 +3434,6 @@ name = "qd-ai-usage"
 version = "0.7.0"
 dependencies = [
  "libc",
- "security-framework 2.11.1",
  "serde",
  "serde_json",
  "tracing",

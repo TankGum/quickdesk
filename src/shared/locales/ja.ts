@@ -320,7 +320,7 @@ const ja: Record<Key, string> = {
   "ai.onTopBar.win": "システムトレイに表示中",
   "ai.tray.mac": "メニューバーに利用量リングを表示",
   "ai.keychain.title": "Claude の上限も表示しますか？",
-  "ai.keychain.body": "Claude Code はログイン情報を macOS のキーチェーン（Keychain）に保存しています。QuickDesk はそこから読み取って、/usage コマンドと同じように Anthropic に利用量を問い合わせられます。macOS が一度だけ確認するので、常に許可 を選んでください。ログイン情報は読み取るだけで保存せず、api.anthropic.com にだけ送信します。",
+  "ai.keychain.body": "Claude Code はログイン情報を macOS のキーチェーン（Keychain）に保存しています。QuickDesk はそこから読み取って、/usage コマンドと同じように Anthropic に利用量を問い合わせられます。ログイン情報は読み取るだけで保存せず、api.anthropic.com にだけ送信します。",
   "ai.keychain.allow": "Claude のログインを読み取る",
   "ai.keychain.stop": "キーチェーンから Claude のログインを読み取るのをやめる",
   "ai.onTopBar.mac": "メニューバーに表示中",

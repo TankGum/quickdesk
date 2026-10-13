@@ -31,8 +31,8 @@ const docs: Record<string, { title: string; html: string }> = {
 <li>快捷键是 <kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>N</kbd> / <kbd>V</kbd> / <kbd>P</kbd>（Control + Option）：⌘⌥V 和 ⌘⌥N 属于访达。</li>
 <li><strong>自动粘贴</strong>会在你刚才使用的应用中按下 ⌘V，macOS 只有在你于“系统设置 → 隐私与安全性 → <strong>辅助功能</strong>”中添加 QuickDesk 之后才允许这样做。macOS 会在你第一次选择记录时询问；在此之前，记录会被复制，由你自己按 ⌘V。设置 → 自动粘贴会显示是否已允许。</li>
 <li>较新的 macOS 版本可能会询问 QuickDesk 能否读取其他应用复制的内容。请选择“允许”，否则剪贴板历史会一直是空的。</li>
-<li><strong>Claude 用量：</strong>在 Mac 上，Claude Code 把登录信息保存在钥匙串中。AI 标签会提出从那里读取；随后 macOS 会询问一次（选择<em>始终允许</em>）。与其他系统一样，登录信息只会被读取，并且只发送到 <code>api.anthropic.com</code>。</li>
-<li>由于应用采用 ad hoc 签名，更新后 macOS 可能会再次请求“辅助功能”和钥匙串权限。如果自动粘贴失效，请把 QuickDesk 从“辅助功能”列表中移除后再重新添加。</li>
+<li><strong>Claude 用量：</strong>在 Mac 上，Claude Code 把登录信息保存在钥匙串中。AI 标签会提出从那里读取。与其他系统一样，登录信息只会被读取，并且只发送到 <code>api.anthropic.com</code>。</li>
+<li>应用使用自己的证书签名（不是 Apple 的证书），因此更新后 macOS 会保留“辅助功能”权限。如果更新后自动粘贴失效，请把 QuickDesk 从“辅助功能”列表中移除后再重新添加。</li>
 <li>运行时标签的工作方式与 Linux 上相同，使用你的登录 shell（zsh：<code>~/.zshrc</code>）。用 Homebrew 安装的副本会显示出来，但不会被修改。</li>
 </ul>
 <p><strong>卸载：</strong>从菜单栏退出 QuickDesk，然后把它从“应用程序”移到废纸篓。你的数据保留在 <code>~/Library/Application Support/click.quickdesk</code>，直到你删除该文件夹。</p>`,

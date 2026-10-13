@@ -320,7 +320,7 @@ const bn: Record<Key, string> = {
   "ai.onTopBar.win": "সিস্টেম ট্রেতে",
   "ai.tray.mac": "মেনু বারে ব্যবহারের রিং দেখান",
   "ai.keychain.title": "আপনার Claude-এর সীমাও দেখাবেন?",
-  "ai.keychain.body": "Claude Code তার লগইন macOS Keychain-এ রাখে। QuickDesk সেখান থেকে সেটি পড়ে Anthropic-এর কাছে আপনার ব্যবহার জানতে চাইতে পারে, যেমন /usage কমান্ড করে। macOS একবার জিজ্ঞেস করবে: Always Allow বেছে নিন। লগইন শুধু পড়া হয়, কখনো সংরক্ষণ করা হয় না, এবং শুধু api.anthropic.com-এ পাঠানো হয়।",
+  "ai.keychain.body": "Claude Code তার লগইন macOS Keychain-এ রাখে। QuickDesk সেখান থেকে সেটি পড়ে Anthropic-এর কাছে আপনার ব্যবহার জানতে চাইতে পারে, যেমন /usage কমান্ড করে। লগইন শুধু পড়া হয়, কখনো সংরক্ষণ করা হয় না, এবং শুধু api.anthropic.com-এ পাঠানো হয়।",
   "ai.keychain.allow": "Claude লগইন পড়ুন",
   "ai.keychain.stop": "Keychain থেকে Claude লগইন পড়া বন্ধ করুন",
   "ai.onTopBar.mac": "মেনু বারে",

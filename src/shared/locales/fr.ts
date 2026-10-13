@@ -320,7 +320,7 @@ const fr: Record<Key, string> = {
   "ai.onTopBar.win": "Dans la zone de notification",
   "ai.tray.mac": "Afficher un anneau d’utilisation dans la barre des menus",
   "ai.keychain.title": "Afficher aussi vos limites Claude ?",
-  "ai.keychain.body": "Claude Code garde sa connexion dans le trousseau (Keychain) de macOS. QuickDesk peut la lire là pour demander votre utilisation à Anthropic, comme le fait la commande /usage. macOS demande une fois : choisissez Toujours autoriser. La connexion est seulement lue, jamais stockée, et envoyée uniquement à api.anthropic.com.",
+  "ai.keychain.body": "Claude Code garde sa connexion dans le trousseau (Keychain) de macOS. QuickDesk peut la lire là pour demander votre utilisation à Anthropic, comme le fait la commande /usage. La connexion est seulement lue, jamais stockée, et envoyée uniquement à api.anthropic.com.",
   "ai.keychain.allow": "Lire la connexion Claude",
   "ai.keychain.stop": "Ne plus lire la connexion Claude dans le trousseau",
   "ai.onTopBar.mac": "Dans la barre des menus",
