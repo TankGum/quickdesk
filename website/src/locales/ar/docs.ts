@@ -31,8 +31,8 @@ const docs: Record<string, { title: string; html: string }> = {
 <li>الاختصارات هي <kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>N</kbd> / <kbd>V</kbd> / <kbd>P</kbd> ‏(Control + Option): أما ⌘⌥V و⌘⌥N فتخص Finder.</li>
 <li><strong>اللصق التلقائي</strong> يضغط ⌘V في التطبيق الذي كنت تستخدمه، ولا يسمح macOS بذلك إلا بعد أن تضيف QuickDesk في System Settings → Privacy & Security → <strong>Accessibility</strong>. يسألك macOS في أول مرة تختار فيها عنصرًا؛ وحتى ذلك الحين يُنسَخ العنصر وتضغط ⌘V بنفسك. يُظهر الإعدادات → اللصق التلقائي ما إذا كان مسموحًا.</li>
 <li>قد تسأل إصدارات macOS الأحدث عمّا إذا كان يحق لـ QuickDesk قراءة ما تنسخه التطبيقات الأخرى. اختر Allow، وإلا سيبقى سجل الحافظة فارغًا.</li>
-<li><strong>استخدام Claude:</strong> على Mac يحفظ Claude Code تسجيل دخوله في Keychain. يعرض تبويب AI قراءته من هناك؛ ثم يسألك macOS مرة واحدة (اختر <em>Always Allow</em>). وكما في الأنظمة الأخرى، يُقرأ تسجيل الدخول فقط ولا يُرسَل إلا إلى <code>api.anthropic.com</code>.</li>
-<li>لأن التطبيق موقَّع توقيعًا مخصّصًا (ad hoc)، قد يطلب macOS أذونات Accessibility وKeychain مجددًا بعد التحديث. إن توقف اللصق التلقائي عن العمل، فأزِل QuickDesk من قائمة Accessibility ثم أضفه من جديد.</li>
+<li><strong>استخدام Claude:</strong> على Mac يحفظ Claude Code تسجيل دخوله في Keychain. يعرض تبويب AI قراءته من هناك. وكما في الأنظمة الأخرى، يُقرأ تسجيل الدخول فقط ولا يُرسَل إلا إلى <code>api.anthropic.com</code>.</li>
+<li>التطبيق موقَّع بشهادته الخاصة (لا بشهادة من Apple)، لذا يحتفظ macOS بإذن Accessibility بعد التحديثات. إن توقف اللصق التلقائي عن العمل بعد تحديث، فأزِل QuickDesk من قائمة Accessibility ثم أضفه من جديد.</li>
 <li>يعمل تبويب بيئات التشغيل كما على Linux، مع صدفة تسجيل الدخول الخاصة بك (zsh: <code>~/.zshrc</code>). تظهر النسخ المثبَّتة عبر Homebrew لكنها لا تُعدَّل.</li>
 </ul>
 <p><strong>إزالة التثبيت:</strong> أنهِ QuickDesk من شريط القوائم وانقله من Applications إلى سلة المهملات. تبقى بياناتك في <code>~/Library/Application Support/click.quickdesk</code> حتى تحذف ذلك المجلد.</p>`,

@@ -30,8 +30,8 @@ const docs: Record<string, { title: string; html: string }> = {
 <li>शॉर्टकट <kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>N</kbd> / <kbd>V</kbd> / <kbd>P</kbd> (Control + Option) हैं: ⌘⌥V और ⌘⌥N Finder के हैं।</li>
 <li><strong>ऑटो-पेस्ट</strong> उस ऐप में ⌘V दबाता है जिसमें आप थे, और macOS यह तभी करने देता है जब आप QuickDesk को System Settings → Privacy & Security → <strong>Accessibility</strong> में जोड़ दें। macOS पहली बार एंट्री चुनने पर पूछता है; तब तक एंट्री कॉपी होती है और ⌘V आप दबाते हैं। सेटिंग्स → ऑटो-पेस्ट में दिखता है कि अनुमति है या नहीं।</li>
 <li>नए macOS वर्ज़न पूछ सकते हैं कि क्या QuickDesk दूसरे ऐप्स की कॉपी की हुई चीज़ें पढ़ सकता है। Allow चुनें, वरना क्लिपबोर्ड इतिहास खाली रहेगा।</li>
-<li><strong>Claude उपयोग:</strong> Mac पर Claude Code अपना लॉगिन Keychain में रखता है। AI टैब उसे वहाँ से पढ़ने का प्रस्ताव देता है; फिर macOS एक बार पूछता है (<em>Always Allow</em> चुनें)। दूसरे सिस्टम की तरह, लॉगिन सिर्फ़ पढ़ा जाता है और सिर्फ़ <code>api.anthropic.com</code> को भेजा जाता है।</li>
-<li>क्योंकि ऐप ad hoc साइन है, अपडेट के बाद macOS फिर से Accessibility और Keychain की अनुमति माँग सकता है। अगर ऑटो-पेस्ट काम करना बंद कर दे, तो QuickDesk को Accessibility सूची से हटाकर दोबारा जोड़ें।</li>
+<li><strong>Claude उपयोग:</strong> Mac पर Claude Code अपना लॉगिन Keychain में रखता है। AI टैब उसे वहाँ से पढ़ने का प्रस्ताव देता है। दूसरे सिस्टम की तरह, लॉगिन सिर्फ़ पढ़ा जाता है और सिर्फ़ <code>api.anthropic.com</code> को भेजा जाता है।</li>
+<li>ऐप अपने ख़ुद के सर्टिफ़िकेट से साइन है (Apple के नहीं), इसलिए अपडेट के बाद भी macOS Accessibility की अनुमति बनाए रखता है। अगर अपडेट के बाद ऑटो-पेस्ट काम करना बंद कर दे, तो QuickDesk को Accessibility सूची से हटाकर दोबारा जोड़ें।</li>
 <li>रनटाइम टैब Linux की तरह ही आपके लॉगिन शेल (zsh: <code>~/.zshrc</code>) से काम करता है। Homebrew से इंस्टॉल की गई कॉपी दिखाई जाती हैं, पर बदली नहीं जातीं।</li>
 </ul>
 <p><strong>अनइंस्टॉल:</strong> मेन्यू बार से QuickDesk बंद करें और उसे Applications से Trash में डालें। आपका डेटा <code>~/Library/Application Support/click.quickdesk</code> में तब तक रहता है जब तक आप वह फ़ोल्डर न मिटाएँ।</p>`,

@@ -30,8 +30,8 @@ const docs: Record<string, { title: string; html: string }> = {
 <li>শর্টকাট হলো <kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>N</kbd> / <kbd>V</kbd> / <kbd>P</kbd> (Control + Option): ⌘⌥V আর ⌘⌥N Finder-এর।</li>
 <li><strong>অটো-পেস্ট</strong> আপনি যে অ্যাপে ছিলেন সেখানে ⌘V চাপে, আর macOS এটি তখনই করতে দেয় যখন আপনি QuickDesk-কে System Settings → Privacy & Security → <strong>Accessibility</strong>-তে যোগ করেন। প্রথমবার এন্ট্রি বাছলে macOS জিজ্ঞেস করে; তার আগে পর্যন্ত এন্ট্রি কপি হয় আর ⌘V আপনি চাপেন। অনুমতি আছে কি না সেটিংস → অটো-পেস্ট-এ দেখা যায়।</li>
 <li>নতুন macOS ভার্সন জিজ্ঞেস করতে পারে QuickDesk অন্য অ্যাপের কপি করা জিনিস পড়তে পারবে কি না। Allow বেছে নিন, নইলে ক্লিপবোর্ড ইতিহাস খালি থাকবে।</li>
-<li><strong>Claude ব্যবহার:</strong> Mac-এ Claude Code তার লগইন Keychain-এ রাখে। AI ট্যাব সেটি সেখান থেকে পড়ার প্রস্তাব দেয়; তখন macOS একবার জিজ্ঞেস করে (<em>Always Allow</em> বেছে নিন)। অন্য সিস্টেমের মতোই, লগইন শুধু পড়া হয় আর শুধু <code>api.anthropic.com</code>-এ পাঠানো হয়।</li>
-<li>অ্যাপটি ad hoc সাইন করা বলে, আপডেটের পরে macOS আবার Accessibility আর Keychain-এর অনুমতি চাইতে পারে। অটো-পেস্ট কাজ করা বন্ধ করলে, Accessibility তালিকা থেকে QuickDesk সরিয়ে আবার যোগ করুন।</li>
+<li><strong>Claude ব্যবহার:</strong> Mac-এ Claude Code তার লগইন Keychain-এ রাখে। AI ট্যাব সেটি সেখান থেকে পড়ার প্রস্তাব দেয়। অন্য সিস্টেমের মতোই, লগইন শুধু পড়া হয় আর শুধু <code>api.anthropic.com</code>-এ পাঠানো হয়।</li>
+<li>অ্যাপটি নিজস্ব সার্টিফিকেট দিয়ে সাইন করা (Apple-এর নয়), তাই আপডেটের পরেও macOS Accessibility-র অনুমতি রেখে দেয়। আপডেটের পরে অটো-পেস্ট কাজ করা বন্ধ করলে, Accessibility তালিকা থেকে QuickDesk সরিয়ে আবার যোগ করুন।</li>
 <li>রানটাইম ট্যাব Linux-এর মতোই কাজ করে, আপনার লগইন শেল দিয়ে (zsh: <code>~/.zshrc</code>)। Homebrew দিয়ে ইনস্টল করা কপি দেখানো হয়, তবে বদলানো হয় না।</li>
 </ul>
 <p><strong>আনইনস্টল:</strong> মেনু বার থেকে QuickDesk বন্ধ করুন আর এটিকে Applications থেকে Trash-এ সরিয়ে দিন। আপনার ডেটা <code>~/Library/Application Support/click.quickdesk</code>-এ থাকে, যতক্ষণ না আপনি ওই ফোল্ডারটি মোছেন।</p>`,

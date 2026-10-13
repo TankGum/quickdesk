@@ -30,8 +30,8 @@ const docs: Record<string, { title: string; html: string }> = {
 <li>ショートカットは <kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>N</kbd> / <kbd>V</kbd> / <kbd>P</kbd>（Control + Option）です。⌘⌥V と ⌘⌥N は Finder が使っています。</li>
 <li><strong>自動貼り付け</strong>は使っていたアプリで ⌘V を押します。macOS がこれを許すのは、「システム設定 → プライバシーとセキュリティ → <strong>アクセシビリティ</strong>」に QuickDesk を追加したあとだけです。初めて項目を選ぶときに macOS が尋ねます。それまでは項目がコピーされるので、ご自分で ⌘V を押してください。許可の状態は設定 → 自動貼り付けで確認できます。</li>
 <li>新しい macOS では、他のアプリがコピーした内容を QuickDesk が読み取ってよいか尋ねられることがあります。「許可」を選ばないと、クリップボード履歴は空のままです。</li>
-<li><strong>Claude の利用量：</strong>Mac では Claude Code がログイン情報をキーチェーンに保存します。AI タブがそこから読み取ることを提案し、macOS が一度だけ尋ねます（<em>常に許可</em>を選びます）。他の OS と同じく、ログイン情報は読み取るだけで、<code>api.anthropic.com</code> にのみ送られます。</li>
-<li>アプリはアドホック署名のため、アップデート後に macOS がアクセシビリティとキーチェーンの許可を再び求めることがあります。自動貼り付けが動かなくなったら、アクセシビリティの一覧から QuickDesk を削除して追加し直してください。</li>
+<li><strong>Claude の利用量：</strong>Mac では Claude Code がログイン情報をキーチェーンに保存します。AI タブがそこから読み取ることを提案します。他の OS と同じく、ログイン情報は読み取るだけで、<code>api.anthropic.com</code> にのみ送られます。</li>
+<li>アプリは独自の証明書（Apple のものではありません）で署名されているため、アップデート後も macOS はアクセシビリティの許可を保持します。アップデート後に自動貼り付けが動かなくなったら、アクセシビリティの一覧から QuickDesk を削除して追加し直してください。</li>
 <li>ランタイムタブは Linux と同じように、ログインシェル（zsh：<code>~/.zshrc</code>）で動きます。Homebrew でインストールしたものは表示されますが、変更はしません。</li>
 </ul>
 <p><strong>アンインストール：</strong>メニューバーから QuickDesk を終了し、「アプリケーション」からゴミ箱へ移動します。データは <code>~/Library/Application Support/click.quickdesk</code> に、そのフォルダーを削除するまで残ります。</p>`,
