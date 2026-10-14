@@ -6,7 +6,7 @@ Mỗi bản phát hành QuickDesk có gì mới. Bản tiếng Anh là
 Mỗi bản là một mục `## <phiên bản> — <ngày>` với tối đa ba nhóm:
 `### Mới`, `### Cải thiện`, `### Sửa lỗi`.
 
-## Unreleased
+## 0.8.1 — 2026-10-14
 
 ### Sửa lỗi
 - Đồng bộ: ảnh trong những ghi chú về máy khi máy còn chạy bản chưa có ảnh giờ cũng được tải về. Trước đây chúng cứ báo “Ảnh chưa có trên máy này” cho tới khi đồng bộ có thay đổi khác.

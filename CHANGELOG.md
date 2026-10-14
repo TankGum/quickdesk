@@ -8,7 +8,7 @@ Each release is a `## <version> — <date>` section with up to three groups:
 a version that has no section here, and shows the section in the app, on the
 download page and on GitHub Releases.
 
-## Unreleased
+## 0.8.1 — 2026-10-14
 
 ### Fixed
 - Sync: pictures in notes that arrived while this computer still ran a version without pictures now download too. Before, they stayed “Picture not available on this computer” until something else changed in sync.
