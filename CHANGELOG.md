@@ -8,7 +8,7 @@ Each release is a `## <version> — <date>` section with up to three groups:
 a version that has no section here, and shows the section in the app, on the
 download page and on GitHub Releases.
 
-## Unreleased
+## 0.8.0 — 2026-10-14
 
 ### New
 - Pictures in notes. Paste an image (a screenshot works), drop a file on the note, or use the picture button in the toolbar. QuickDesk shrinks large pictures (up to 1600 px); the note itself only holds a short reference, so search and the list stay fast. With sync on, pictures travel to your other computers encrypted, like the notes, and count towards the sync limits. Pictures no note uses any more are cleaned up after a while.

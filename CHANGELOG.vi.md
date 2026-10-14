@@ -6,7 +6,7 @@ Mỗi bản phát hành QuickDesk có gì mới. Bản tiếng Anh là
 Mỗi bản là một mục `## <phiên bản> — <ngày>` với tối đa ba nhóm:
 `### Mới`, `### Cải thiện`, `### Sửa lỗi`.
 
-## Unreleased
+## 0.8.0 — 2026-10-14
 
 ### Mới
 - Ảnh trong ghi chú. Dán ảnh (chụp màn hình rồi dán được), kéo thả file vào ghi chú, hoặc bấm nút ảnh trên thanh công cụ. QuickDesk thu nhỏ ảnh lớn (tối đa 1600 px); bản thân ghi chú chỉ giữ một tham chiếu ngắn nên tìm kiếm và danh sách vẫn nhanh. Khi bật đồng bộ, ảnh sang các máy khác được mã hoá như ghi chú và tính vào giới hạn đồng bộ. Ảnh không còn ghi chú nào dùng sẽ được dọn sau một thời gian.
