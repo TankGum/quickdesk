@@ -35,6 +35,9 @@ const REVISION_KEY: &str = "sync.revision";
 /// Set while a picture could not be moved, so an otherwise idle round still looks again.
 const PICTURES_RETRY_KEY: &str = "sync.pictures_retry";
 const LAST_PICTURE_GC_KEY: &str = "sync.last_picture_gc";
+/// Set once pictures were synced here: notes pulled before (by a version that
+/// synced the text only) may point to pictures this device still lacks.
+const PICTURES_CHECKED_KEY: &str = "sync.pictures_checked";
 
 /// Forget all sync progress (used when sync is disabled or re-pointed).
 pub fn reset_local_state(conn: &rusqlite::Connection) -> Result<()> {
@@ -42,7 +45,10 @@ pub fn reset_local_state(conn: &rusqlite::Connection) -> Result<()> {
         "DELETE FROM settings WHERE key IN (?1, ?2, ?3, ?4, ?5)",
         [SEQ_KEY, CURSORS_KEY, SNAPSHOT_KEY, LAST_COMPACTION_KEY, REVISION_KEY],
     )?;
-    conn.execute("DELETE FROM settings WHERE key IN (?1, ?2)", [PICTURES_RETRY_KEY, LAST_PICTURE_GC_KEY])?;
+    conn.execute(
+        "DELETE FROM settings WHERE key IN (?1, ?2, ?3)",
+        [PICTURES_RETRY_KEY, LAST_PICTURE_GC_KEY, PICTURES_CHECKED_KEY],
+    )?;
     // Everything must be pushed again to whatever bucket comes next.
     conn.execute("UPDATE notes SET dirty = 1", [])?;
     Ok(())
@@ -223,6 +229,9 @@ impl SyncEngine<'_> {
             let mut pending: bool =
                 conn.query_row("SELECT EXISTS(SELECT 1 FROM notes WHERE dirty = 1)", [], |r| r.get(0))?;
             pending |= settings::get::<bool>(&conn, PICTURES_RETRY_KEY)?.unwrap_or(false);
+            if self.pictures.is_some() {
+                pending |= !settings::get::<bool>(&conn, PICTURES_CHECKED_KEY)?.unwrap_or(false);
+            }
             if seen.as_deref() == Some(rev.as_str()) && !pending {
                 return Ok(SyncReport::default());
             }
@@ -399,6 +408,7 @@ impl SyncEngine<'_> {
         let used = images::in_use(&*db.conn()?)?;
         let (have, missing): (Vec<&String>, Vec<&String>) = used.iter().partition(|h| images::exists(dir, h));
         let mut retry = false;
+        settings::set(&*db.conn()?, PICTURES_CHECKED_KEY, &true)?;
         if have.is_empty() && missing.is_empty() {
             settings::set(&*db.conn()?, PICTURES_RETRY_KEY, &false)?;
             return Ok(());

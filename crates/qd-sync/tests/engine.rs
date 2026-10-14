@@ -331,6 +331,25 @@ fn pictures_travel_encrypted_with_their_note() {
     assert_eq!(b.sync(&t, &dek).pictures_pulled, 0);
 }
 
+/// A device that pulled a note with a version that did not sync pictures yet
+/// fetches the picture after the update, though nothing changed in the bucket since.
+#[test]
+fn pictures_of_notes_pulled_before_the_update_are_fetched() {
+    let (t, dek) = setup();
+    // Own ids: the picture folders are named after them, and tests run at once.
+    let a = device_with_pictures("old-a");
+    let mut b = device_with_pictures("old-b");
+    let hash = a.create_with_picture();
+    a.sync_with(&t, &dek, no_compaction()).unwrap();
+
+    let dir = b.pictures.take();
+    assert_eq!(b.sync_with(&t, &dek, no_compaction()).unwrap().pulled, 1);
+    b.pictures = dir;
+    assert!(!b.has_picture(&hash));
+    assert_eq!(b.sync_with(&t, &dek, no_compaction()).unwrap().pictures_pulled, 1);
+    assert!(b.has_picture(&hash));
+}
+
 /// Refuses pictures the way a full account does, as a non-network error.
 struct Full<'a> {
     inner: &'a MemoryTransport,
