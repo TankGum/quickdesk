@@ -53,7 +53,8 @@ const docs: Record<string, { title: string; html: string }> = {
   notes: {
     title: "笔记",
     html: `<p>笔记使用 Markdown 和富文本编辑器：标题、粗体和斜体、列表、清单、引用和代码块。<kbd>Ctrl</kbd> <kbd>N</kbd> 新建笔记，<kbd>Ctrl</kbd> <kbd>S</kbd> 保存，<kbd>Ctrl</kbd> <kbd>F</kbd> 搜索。搜索会忽略重音符号，因此 <code>tieng viet</code> 能找到 “tiếng Việt”。</p>
-<p>点星标可以把笔记固定在顶部。删除前会先询问，并且几秒内可以撤销。</p>`,
+<p>点星标可以把笔记固定在顶部。删除前会先询问，并且几秒内可以撤销。</p>
+<p>可以通过粘贴（截图也行）、把文件拖放到笔记上，或点击工具栏的图片按钮来添加图片。QuickDesk 会把大图缩小到最长边 1600 像素以内。开启同步后，图片会与笔记一起加密传输。</p>`,
   },
   sync: {
     title: "在多台电脑之间同步笔记",
@@ -81,7 +82,7 @@ const docs: Record<string, { title: string; html: string }> = {
 </ul>
 <h3>关闭同步</h3>
 <p><strong>关闭同步…</strong> 会停止在某台电脑上同步，并保留它的笔记。勾选 <em>同时从 QuickDesk Cloud 删除我的笔记</em> 可为所有电脑删除已同步的副本。</p>
-<p>每个同步码的上限：256 MB 和 20,000 个存储对象，远超笔记所需。</p>`,
+<p>每个同步码的上限：256 MB 和 20,000 个存储对象，远超笔记所需。图片也计入这些上限。</p>`,
   },
   clipboard: {
     title: "剪贴板历史",

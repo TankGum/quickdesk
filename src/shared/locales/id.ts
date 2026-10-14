@@ -115,6 +115,9 @@ const id: Record<Key, string> = {
   "editor.tasks": "Daftar periksa",
   "editor.quote": "Kutipan",
   "editor.codeBlock": "Blok kode",
+  "editor.image": "Gambar",
+  "notes.imageFailed": "Gambar itu tidak dapat ditambahkan. Gunakan berkas PNG, JPEG, GIF, atau WebP di bawah 20 MB.",
+  "notes.imageMissing": "Gambar belum ada di komputer ini",
   "notes.editTitle": "Edit catatan",
 
   // Clipboard (popup + tab)

@@ -1,6 +1,7 @@
 //! Quick Notes: local storage, full-text search and sync bookkeeping.
 
 mod fts;
+pub mod images;
 pub mod repo;
 pub mod sync;
 
@@ -20,6 +21,9 @@ pub enum Error {
     NotFound(String),
     #[error("note is empty")]
     EmptyBody,
+    /// A picture could not be added (not an image, too big …).
+    #[error("{0}")]
+    Picture(String),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

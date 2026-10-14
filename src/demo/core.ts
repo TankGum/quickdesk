@@ -24,6 +24,9 @@ const DAY = 24 * HOUR;
 
 // ---------- Notes ----------
 
+/** The picture in the sample standup note (see `noteImages` below). */
+const DEMO_PICTURE = "d3a1f0c2b4e6987a5c3d1e0f2a4b6c8d9e1f3a5b7c9d0e2f4a6b8c0d1e3f5a79";
+
 let notes: Note[] = [
   {
     id: "n1",
@@ -37,7 +40,7 @@ let notes: Note[] = [
   {
     id: "n2",
     title: "Standup — Tuesday",
-    body: "- Shipped clipboard images and files\n- Reviewing the release flow\n- No blockers",
+    body: `- Shipped clipboard images and files\n- Reviewing the release flow\n- No blockers\n\n![](qdimg:${DEMO_PICTURE})`,
     pinned: false,
     createdAt: now - DAY,
     updatedAt: now - 5 * HOUR,
@@ -69,11 +72,14 @@ const sortNotes = (list: Note[]) => [...list].sort((a, b) => Number(b.pinned) - 
 
 // ---------- Clipboard ----------
 
+const noteImages = new Map<string, string>();
 const thumb =
   "data:image/svg+xml;utf8," +
   encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90"><defs><radialGradient id="a" cx=".85" cy="1.1" r=".8"><stop offset="0" stop-color="#e95420"/><stop offset="1" stop-color="#e95420" stop-opacity="0"/></radialGradient><radialGradient id="b" cx="0" cy="0" r=".9"><stop offset="0" stop-color="#6a2c5b"/><stop offset="1" stop-color="#6a2c5b" stop-opacity="0"/></radialGradient></defs><rect width="160" height="90" fill="#1a0614"/><rect width="160" height="90" fill="url(#b)"/><rect width="160" height="90" fill="url(#a)"/><rect x="18" y="16" width="70" height="44" rx="5" fill="#fff" fill-opacity=".12"/></svg>`,
   );
+
+noteImages.set(DEMO_PICTURE, thumb);
 
 let clipId = 10;
 const clip = (kind: ClipKind, preview: string, ago: number, extra: Partial<ClipEntry> = {}): ClipEntry => ({
@@ -217,7 +223,7 @@ const sync: SyncStatus = {
   state: params.get("sync") === "off" ? "disabled" : "idle",
   lastSyncAt: now - 40_000,
   lastError: null,
-  lastReport: { pulled: 1, pushed: 2, conflicts: 0, compacted: false },
+  lastReport: { pulled: 1, pushed: 2, conflicts: 0, compacted: false, picturesPulled: 0, picturesPushed: 0 },
   account: "demo0demo0demo00",
   notice: null,
 };
@@ -428,6 +434,19 @@ const commands: Record<string, (a: Args) => unknown> = {
   app_show: () => undefined,
   diag_focus_stats: () => ({ total: 0, focused: 0, latencyP50: null, latencyMax: null, recent: [] }),
 
+  // Pictures in notes stay in memory: the id is made from the data, like the real one is from the bytes.
+  note_image_add: (a) => {
+    const data = String(a.data);
+    let h = 0;
+    for (let i = 0; i < data.length; i += 7) h = (Math.imul(h, 31) + data.charCodeAt(i)) | 0;
+    const hash = (Math.abs(h).toString(16).padStart(8, "0") + data.length.toString(16).padStart(8, "0")).repeat(4);
+    // Say what the file is by its first bytes, as the real app does; the demo does not shrink it.
+    const mime = data.startsWith("/9j/") ? "jpeg" : data.startsWith("R0lGOD") ? "gif" : data.startsWith("UklGR") ? "webp" : "png";
+    noteImages.set(hash, `data:image/${mime};base64,${data}`);
+    return hash;
+  },
+  note_image_paste: () => null,
+  note_image: (a) => noteImages.get(String(a.hash)) ?? null,
   notes_list: () => sortNotes(notes),
   notes_search: (a) => sortNotes(notes.filter((n) => fold(`${n.title}\n${n.body}`).includes(fold(a.query)))),
   notes_create: (a) => {

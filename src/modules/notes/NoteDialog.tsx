@@ -110,6 +110,7 @@ export function NoteDialog({ note, onClose, onDeleted }: { note: Note | null; on
           markdown={note?.body ?? ""}
           autofocus={!!note}
           onReady={(ed) => (editorRef.current = ed)}
+          onError={setError}
           onChange={(md) => {
             setBody(md);
             setBodyTouched(true);

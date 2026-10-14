@@ -433,6 +433,9 @@ button.icon:hover { background: var(--hover); color: var(--fg); }
 .note-rich code { background: var(--raised); padding: 1px 5px; border-radius: 4px; }
 .note-rich pre { background: var(--raised); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin: 0 0 8px; overflow-x: auto; }
 .note-rich pre code { background: none; padding: 0; }
+.note-rich img { display: block; max-width: 100%; height: auto; margin: 6px 0 10px; border-radius: 8px; border: 1px solid var(--border); }
+.note-rich img.ProseMirror-selectednode { outline: 2px solid var(--mod); outline-offset: 2px; }
+.note-rich img.missing { min-width: 160px; min-height: 64px; padding: 8px; background: var(--raised); color: var(--faint); font-size: 12px; }
 .note-rich p.is-editor-empty:first-child::before { content: attr(data-placeholder); color: var(--faint); float: inline-start; height: 0; pointer-events: none; }
 
 /* ---------- AI usage ---------- */

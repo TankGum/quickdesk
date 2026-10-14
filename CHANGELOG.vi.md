@@ -8,6 +8,9 @@ Mỗi bản là một mục `## <phiên bản> — <ngày>` với tối đa ba n
 
 ## Unreleased
 
+### Mới
+- Ảnh trong ghi chú. Dán ảnh (chụp màn hình rồi dán được), kéo thả file vào ghi chú, hoặc bấm nút ảnh trên thanh công cụ. QuickDesk thu nhỏ ảnh lớn (tối đa 1600 px); bản thân ghi chú chỉ giữ một tham chiếu ngắn nên tìm kiếm và danh sách vẫn nhanh. Khi bật đồng bộ, ảnh sang các máy khác được mã hoá như ghi chú và tính vào giới hạn đồng bộ. Ảnh không còn ghi chú nào dùng sẽ được dọn sau một thời gian.
+
 ### Cải thiện
 - Menu usage AI trên thanh trên cùng vẽ mỗi giới hạn bằng thanh mịn và thấp hơn: 25 ô bằng hai ký tự khối mảnh, nét dày cho phần đã dùng và nét mảnh cho phần còn lại, thay cho 10 ô vuông màu to. Thanh không còn màu (chỉ cần một emoji là dòng menu cao lên); phần trăm và vòng tròn vẫn cho biết đã dùng bao nhiêu. Dòng làm mới giờ chỉ ghi “Làm mới”.
 

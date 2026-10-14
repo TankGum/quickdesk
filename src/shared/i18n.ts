@@ -122,6 +122,9 @@ const en = {
   "editor.tasks": "Checklist",
   "editor.quote": "Quote",
   "editor.codeBlock": "Code block",
+  "editor.image": "Image",
+  "notes.imageFailed": "Could not add that picture. Use a PNG, JPEG, GIF or WebP file under 20 MB.",
+  "notes.imageMissing": "Picture not available on this computer",
   "notes.editTitle": "Edit note",
 
   // Clipboard (popup + tab)
@@ -564,6 +567,9 @@ const vi: Record<Key, string> = {
   "editor.tasks": "Danh sách việc cần làm",
   "editor.quote": "Trích dẫn",
   "editor.codeBlock": "Khối mã",
+  "editor.image": "Ảnh",
+  "notes.imageFailed": "Không thêm được ảnh này. Hãy dùng file PNG, JPEG, GIF hoặc WebP dưới 20 MB.",
+  "notes.imageMissing": "Ảnh chưa có trên máy này",
   "notes.editTitle": "Sửa ghi chú",
 
   "clip.searchPopup": "Tìm trong clipboard…",

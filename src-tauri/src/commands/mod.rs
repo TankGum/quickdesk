@@ -37,7 +37,7 @@ impl From<qd_notes::Error> for CmdError {
     fn from(e: qd_notes::Error) -> Self {
         let code = match e {
             qd_notes::Error::NotFound(_) => "not_found",
-            qd_notes::Error::EmptyBody => "invalid",
+            qd_notes::Error::EmptyBody | qd_notes::Error::Picture(_) => "invalid",
             _ => "internal",
         };
         CmdError::new(code, e.to_string())

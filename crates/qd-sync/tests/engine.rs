@@ -13,10 +13,18 @@ struct Device {
     id: String,
     db: Db,
     clock: Clock,
+    /// Where this device keeps the pictures of notes; `None` syncs the text only.
+    pictures: Option<std::path::PathBuf>,
 }
 
 fn device(id: &str) -> Device {
-    Device { id: id.into(), db: Db::open_in_memory(&[&NotesModule]).unwrap(), clock: Clock::new(id) }
+    Device { id: id.into(), db: Db::open_in_memory(&[&NotesModule]).unwrap(), clock: Clock::new(id), pictures: None }
+}
+
+fn device_with_pictures(id: &str) -> Device {
+    let dir = std::env::temp_dir().join(format!("qd-sync-pictures-{}-{id}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    Device { pictures: Some(dir), ..device(id) }
 }
 
 fn no_compaction() -> EngineConfig {
@@ -25,8 +33,16 @@ fn no_compaction() -> EngineConfig {
 
 impl Device {
     fn sync_with(&self, t: &MemoryTransport, dek: &Dek, config: EngineConfig) -> qd_sync::Result<qd_sync::SyncReport> {
-        SyncEngine { transport: t, dek, layout: Layout::new("qd"), device_id: &self.id, device_name: "test", config }
-            .sync_once(&self.db, &self.clock)
+        SyncEngine {
+            transport: t,
+            dek,
+            layout: Layout::new("qd"),
+            device_id: &self.id,
+            device_name: "test",
+            config,
+            pictures: self.pictures.as_deref(),
+        }
+        .sync_once(&self.db, &self.clock)
     }
     fn sync(&self, t: &MemoryTransport, dek: &Dek) -> qd_sync::SyncReport {
         self.sync_with(t, dek, no_compaction()).unwrap()
@@ -136,6 +152,7 @@ fn idle_rounds_cost_one_call_and_still_see_changes() {
             device_id: &a.id,
             device_name: "test",
             config: no_compaction(),
+            pictures: None,
         }
         .sync_once(&a.db, &a.clock)
         .unwrap()
@@ -233,7 +250,12 @@ fn restored_database_recovers_own_changes_from_bucket() {
     a.create("only copy lives in the bucket");
     a.sync(&t, &dek);
     // Same device id, but an empty database (e.g. restored from an old backup).
-    let restored = Device { id: "a".into(), db: Db::open_in_memory(&[&NotesModule]).unwrap(), clock: Clock::new("a") };
+    let restored = Device {
+        id: "a".into(),
+        db: Db::open_in_memory(&[&NotesModule]).unwrap(),
+        clock: Clock::new("a"),
+        pictures: None,
+    };
     restored.sync(&t, &dek);
     assert_eq!(restored.bodies(), vec!["only copy lives in the bucket"]);
 }
@@ -271,4 +293,121 @@ fn compaction_snapshot_lets_new_devices_join_after_logs_are_deleted() {
     assert_eq!(a.bodies(), c.bodies());
     assert_eq!(a.bodies().len(), 5);
     assert!(settings::get::<String>(&c.db.conn().unwrap(), "sync.snapshot").unwrap().is_some());
+}
+
+/// A 1×1 PNG, base64.
+const PIXEL: &str = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+
+impl Device {
+    /// Add a picture to this device and write a note that shows it.
+    fn create_with_picture(&self) -> String {
+        let hash = qd_notes::images::add_base64(self.pictures.as_ref().unwrap(), PIXEL).unwrap();
+        self.create(&format!("look ![](qdimg:{hash})"));
+        hash
+    }
+    fn has_picture(&self, hash: &str) -> bool {
+        qd_notes::images::exists(self.pictures.as_ref().unwrap(), hash)
+    }
+}
+
+#[test]
+fn pictures_travel_encrypted_with_their_note() {
+    let (t, dek) = setup();
+    let (a, b) = (device_with_pictures("a"), device_with_pictures("b"));
+    let hash = a.create_with_picture();
+    let report = a.sync_with(&t, &dek, no_compaction()).unwrap();
+    assert_eq!((report.pushed, report.pictures_pushed), (1, 1));
+
+    let key = format!("qd/v1/blobs/{hash}.bin");
+    let raw = t.raw(&key).expect("the picture is in the bucket");
+    assert!(!raw.windows(4).any(|w| w == b"PNG\r"), "the bucket must not hold a readable PNG");
+
+    assert!(!b.has_picture(&hash));
+    let report = b.sync_with(&t, &dek, no_compaction()).unwrap();
+    assert_eq!((report.pulled, report.pictures_pulled), (1, 1));
+    assert!(b.has_picture(&hash));
+    // Nothing more to move.
+    assert_eq!(a.sync(&t, &dek).pictures_pushed, 0);
+    assert_eq!(b.sync(&t, &dek).pictures_pulled, 0);
+}
+
+/// Refuses pictures the way a full account does, as a non-network error.
+struct Full<'a> {
+    inner: &'a MemoryTransport,
+    full: std::sync::atomic::AtomicBool,
+}
+
+impl BlobTransport for Full<'_> {
+    fn put_if_absent(&self, key: &str, bytes: &[u8]) -> qd_sync::Result<PutOutcome> {
+        if key.contains("/blobs/") && self.full.load(Ordering::Relaxed) {
+            return Err(Error::Remote("sync storage for this account is full".into()));
+        }
+        self.inner.put_if_absent(key, bytes)
+    }
+    fn put(&self, key: &str, bytes: &[u8]) -> qd_sync::Result<()> {
+        self.inner.put(key, bytes)
+    }
+    fn get(&self, key: &str) -> qd_sync::Result<Option<Vec<u8>>> {
+        self.inner.get(key)
+    }
+    fn list(&self, prefix: &str, start_after: Option<&str>) -> qd_sync::Result<Vec<ObjectInfo>> {
+        self.inner.list(prefix, start_after)
+    }
+    fn delete(&self, key: &str) -> qd_sync::Result<()> {
+        self.inner.delete(key)
+    }
+    fn revision(&self) -> qd_sync::Result<Option<String>> {
+        self.inner.revision()
+    }
+}
+
+#[test]
+fn a_picture_that_cannot_be_stored_does_not_hold_back_the_notes() {
+    let (t, dek) = setup();
+    let full = Full { inner: &t, full: true.into() };
+    let a = device_with_pictures("a");
+    let hash = a.create_with_picture();
+    let sync = || {
+        SyncEngine {
+            transport: &full,
+            dek: &dek,
+            layout: Layout::new("qd"),
+            device_id: &a.id,
+            device_name: "test",
+            config: no_compaction(),
+            pictures: a.pictures.as_deref(),
+        }
+        .sync_once(&a.db, &a.clock)
+        .unwrap()
+    };
+    let report = sync();
+    assert_eq!((report.pushed, report.pictures_pushed), (1, 0), "the note goes without its picture");
+    sync();
+    assert!(!t.keys().iter().any(|k| k.contains("/blobs/")));
+
+    // Room again: the next round, with nothing else to do, still sends it.
+    full.full.store(false, Ordering::Relaxed);
+    assert_eq!(sync().pictures_pushed, 1);
+    assert!(t.keys().contains(&format!("qd/v1/blobs/{hash}.bin")));
+}
+
+#[test]
+fn pictures_no_note_uses_are_removed_from_the_bucket_after_retention() {
+    let (t, dek) = setup();
+    let a = device_with_pictures("a");
+    let hash = a.create_with_picture();
+    a.sync(&t, &dek);
+    let key = format!("qd/v1/blobs/{hash}.bin");
+    assert!(t.keys().contains(&key));
+
+    let old = EngineConfig { retention_ms: 1000, compaction_interval_ms: 0, ..EngineConfig::default() };
+    t.set_modified(&key, 1);
+    // Still used by a note: kept, however old.
+    a.sync_with(&t, &dek, old).unwrap();
+    assert!(t.keys().contains(&key));
+
+    let id = repo::list(&a.db.conn().unwrap(), 10).unwrap()[0].id.clone();
+    a.edit(&id, "no picture any more");
+    a.sync_with(&t, &dek, old).unwrap();
+    assert!(!t.keys().contains(&key), "unused and old: removed");
 }

@@ -115,6 +115,9 @@ const ru: Record<Key, string> = {
   "editor.tasks": "Список задач",
   "editor.quote": "Цитата",
   "editor.codeBlock": "Блок кода",
+  "editor.image": "Изображение",
+  "notes.imageFailed": "Не удалось добавить это изображение. Используйте файл PNG, JPEG, GIF или WebP размером меньше 20 МБ.",
+  "notes.imageMissing": "Изображения пока нет на этом компьютере",
   "notes.editTitle": "Редактировать заметку",
 
   // Clipboard (popup + tab)

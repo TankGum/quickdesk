@@ -115,6 +115,9 @@ const hi: Record<Key, string> = {
   "editor.tasks": "चेकलिस्ट",
   "editor.quote": "उद्धरण",
   "editor.codeBlock": "कोड ब्लॉक",
+  "editor.image": "छवि",
+  "notes.imageFailed": "यह चित्र नहीं जोड़ा जा सका। 20 MB से छोटी PNG, JPEG, GIF या WebP फ़ाइल इस्तेमाल करें।",
+  "notes.imageMissing": "यह चित्र अभी इस कंप्यूटर पर नहीं है",
   "notes.editTitle": "नोट संपादित करें",
 
   // Clipboard (popup + tab)

@@ -344,8 +344,11 @@ s3://<bucket>/quickdesk/v1/
 ├── keyring.json                      # DEK đã được wrap (không chứa secret dạng rõ)
 ├── devices/<device_id>.bin           # metadata device đã mã hoá (tên máy, last_seq)
 ├── log/<device_id>/<seq:020>.bin     # batch op bất biến, đã mã hoá
-└── snapshots/<hlc>.bin               # state đã compact, đã mã hoá
+├── snapshots/<hlc>.bin               # state đã compact, đã mã hoá
+└── blobs/<hash>.bin                  # ảnh trong ghi chú (BLAKE3 của ảnh gốc), đã mã hoá
 ```
+
+Ảnh trong ghi chú nằm ngoài log: note chỉ giữ tham chiếu `![](qdimg:<hash>)` nên text, search và sync op không đổi. Ảnh được thu nhỏ (≤ 1600 px, ≤ 8 MB), lưu file `<hash>.png|jpg` trong `note-images/`, và `sync_once` đẩy ảnh lên **trước** khi đẩy op chứa tham chiếu. Máy nhận tải ảnh còn thiếu sau khi pull, kiểm tra magic byte và hash rồi mới lưu. Lỗi không phải mạng khi chuyển ảnh (đầy dung lượng, object hỏng) không chặn sync note; vòng sau thử lại. Ảnh trên bucket không còn note nào dùng và cũ hơn 30 ngày thì bị xoá (máy nào còn dùng sẽ upload lại).
 
 ### 6.2 Crypto
 

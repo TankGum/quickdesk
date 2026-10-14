@@ -1,7 +1,7 @@
 // Privacy page in Bengali. Keep it in step with src/data/privacy.ts.
 const privacy = {
   title: "গোপনীয়তা",
-  updated: "সর্বশেষ আপডেট: 11 অক্টোবর 2026 (ডাউনলোড গণনা)",
+  updated: "সর্বশেষ আপডেট: 14 অক্টোবর 2026 (নোটে ছবি)",
   html: `<p class="lead">QuickDesk-এ কোনো অ্যাকাউন্ট নেই, অ্যানালিটিক্স নেই, টেলিমেট্রি নেই। আপনার নোট আর ক্লিপবোর্ড ইতিহাস থাকে আপনার কম্পিউটারে। এই পেজে তার বাইরে যা যায় সবকিছুর তালিকা আছে।</p>
 <h2>যা আপনার কম্পিউটারে থাকে</h2>
 <ul>
@@ -14,7 +14,7 @@ const privacy = {
 <table>
 <tr><th>কখন</th><th>কোথায়</th><th>কী</th></tr>
 <tr><td data-label="কখন">আপডেট খোঁজা (চালু হওয়ার 30 সেকেন্ড পরে, তারপর প্রতি 6 ঘণ্টায়; বন্ধ করা যায়)</td><td data-label="কোথায়"><code>dl.quickdesk.click</code> (Cloudflare)</td><td data-label="কী"><code>update.json</code>-এর জন্য একটি অনুরোধ, আর আপডেট বাছলে প্যাকেজ। যেকোনো ডাউনলোডের মতোই, আপনার IP ঠিকানা Cloudflare দেখতে পায়।</td></tr>
-<tr><td data-label="কখন">নোট সিঙ্ক, শুধু যদি আপনি চালু করেন</td><td data-label="কোথায়">QuickDesk Cloud, <code>sync.quickdesk.click</code> (Cloudflare)</td><td data-label="কী">আপনার নোট, আপনার কম্পিউটারে আপনার পাসফ্রেজ থেকে তৈরি কী দিয়ে এনক্রিপ্ট করা (XChaCha20-Poly1305); QuickDesk Cloud সেগুলো পড়তে পারে না। এটি সেগুলো একটি র‍্যান্ডম সিঙ্ক অ্যাকাউন্ট আইডির অধীনে, আকার আর আপলোডের সময়সহ রাখে, এবং আপনার IP ঠিকানা দেখে। কোনো ইমেল, নাম বা অন্য ব্যক্তিগত ডেটা নেই। সেটিংস → সিঙ্ক থেকে সবকিছু মুছে ফেলতে পারেন।</td></tr>
+<tr><td data-label="কখন">নোট সিঙ্ক, শুধু যদি আপনি চালু করেন</td><td data-label="কোথায়">QuickDesk Cloud, <code>sync.quickdesk.click</code> (Cloudflare)</td><td data-label="কী">আপনার নোট ও তাতে থাকা ছবি, আপনার কম্পিউটারে আপনার পাসফ্রেজ থেকে তৈরি কী দিয়ে এনক্রিপ্ট করা (XChaCha20-Poly1305); QuickDesk Cloud সেগুলো পড়তে পারে না। এটি সেগুলো একটি র‍্যান্ডম সিঙ্ক অ্যাকাউন্ট আইডির অধীনে, আকার আর আপলোডের সময়সহ রাখে, এবং আপনার IP ঠিকানা দেখে। কোনো ইমেল, নাম বা অন্য ব্যক্তিগত ডেটা নেই। সেটিংস → সিঙ্ক থেকে সবকিছু মুছে ফেলতে পারেন।</td></tr>
 <tr><td data-label="কখন">AI ব্যবহার, শুধু যদি এই কম্পিউটারে Claude Code-এ লগ ইন করা থাকে (Mac-এ, শুধু যখন আপনি Keychain থেকে এর লগইন পড়ার অনুমতি দেন)</td><td data-label="কোথায়"><code>api.anthropic.com</code></td><td data-label="কী">Claude Code-এর বিদ্যমান লগইন দিয়ে অনুমোদিত একটি ব্যবহারের অনুরোধ, বড়জোর প্রতি 5 মিনিটে। টোকেন পড়া হয়, কখনও সংরক্ষণ, রিফ্রেশ বা অন্য কোথাও পাঠানো হয় না।</td></tr>
 <tr><td data-label="কখন">রানটাইম ট্যাব, যখন এটি নতুন রিলিজ খোঁজে (বড়জোর ঘণ্টায় একবার), যখন আপনি ভার্সনের তালিকা খোলেন বা কোনো ভার্সন ইনস্টল করেন</td><td data-label="কোথায়">nvm, uv, rustup আর mise-এর সার্ভার: <code>nodejs.org</code>, <code>github.com</code> / <code>releases.astral.sh</code> (Python বিল্ড), <code>static.rust-lang.org</code>, আর mise-এর জন্য প্রতিটি ভাষার নিজস্ব ডাউনলোড সাইট (যেমন <code>go.dev</code>)</td><td data-label="কী">ওই টুলগুলো নিজেরাই অনুরোধ পাঠায়, যেমন আপনি টার্মিনালে চালালে করে। QuickDesk তাতে কিছু যোগ করে না।</td></tr>
 <tr><td data-label="কখন">রানটাইম ট্যাব, শুধু যদি আপনি “mise ইনস্টল করুন”-এ ক্লিক করেন</td><td data-label="কোথায়"><code>github.com</code> (jdx/mise রিলিজ); Windows-এ <code>api.github.com</code>-ও</td><td data-label="কী">সর্বশেষ mise আর তার চেকসাম ফাইলের ডাউনলোড। Windows-এ QuickDesk আগে GitHub API-কে জিজ্ঞেস করে কোনটি সর্বশেষ রিলিজ (User-Agent “QuickDesk”)।</td></tr>

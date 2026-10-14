@@ -52,7 +52,8 @@ const docs: Record<string, { title: string; html: string }> = {
   notes: {
     title: "Catatan",
     html: `<p>Catatan adalah Markdown dengan editor kaya: judul, tebal dan miring, daftar, daftar tugas, kutipan, dan blok kode. <kbd>Ctrl</kbd> <kbd>N</kbd> membuat catatan baru, <kbd>Ctrl</kbd> <kbd>S</kbd> menyimpan, <kbd>Ctrl</kbd> <kbd>F</kbd> mencari. Pencarian mengabaikan tanda diakritik, jadi <code>tieng viet</code> menemukan “tiếng Việt”.</p>
-<p>Sematkan catatan dengan bintang agar tetap di atas. Menghapus meminta konfirmasi dan bisa dibatalkan selama beberapa detik.</p>`,
+<p>Sematkan catatan dengan bintang agar tetap di atas. Menghapus meminta konfirmasi dan bisa dibatalkan selama beberapa detik.</p>
+<p>Tambahkan gambar dengan menempelkannya (tangkapan layar bisa), menjatuhkan berkas ke catatan, atau lewat tombol gambar di bilah alat. QuickDesk memperkecil gambar besar hingga maksimal 1600 piksel. Saat sinkronisasi aktif, gambar dikirim terenkripsi bersama catatannya.</p>`,
   },
   sync: {
     title: "Menyinkronkan catatan antarkomputer",
@@ -80,7 +81,7 @@ const docs: Record<string, { title: string; html: string }> = {
 </ul>
 <h3>Mematikannya</h3>
 <p><strong>Matikan sinkronisasi…</strong> menghentikan sinkronisasi di satu komputer dan tetap menyimpan catatannya. Centang <em>Hapus juga catatan saya dari QuickDesk Cloud</em> untuk menghapus salinan tersinkron bagi semua komputer.</p>
-<p>Batas per kode sinkronisasi: 256 MB dan 20.000 objek tersimpan, jauh lebih banyak daripada yang dibutuhkan catatan.</p>`,
+<p>Batas per kode sinkronisasi: 256 MB dan 20.000 objek tersimpan, jauh lebih banyak daripada yang dibutuhkan catatan. Gambar di catatan juga dihitung dalam batas ini.</p>`,
   },
   clipboard: {
     title: "Riwayat clipboard",

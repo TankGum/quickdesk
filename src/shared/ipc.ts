@@ -118,6 +118,8 @@ export interface SyncReport {
   pushed: number;
   conflicts: number;
   compacted: boolean;
+  picturesPulled: number;
+  picturesPushed: number;
 }
 
 export interface SyncStatus {
@@ -312,6 +314,12 @@ export const api = {
   notesRestore: (id: string) => invoke<Note>("notes_restore", { id }),
   notesList: () => invoke<Note[]>("notes_list"),
   notesSearch: (query: string) => invoke<Note[]>("notes_search", { query }),
+  /** A picture for a note, as base64 of the file: shrunk and stored; its id goes into the note as `qdimg:<id>`. */
+  noteImageAdd: (data: string) => invoke<string>("note_image_add", { data }),
+  /** The picture on the system clipboard, stored; null when it holds none. */
+  noteImagePaste: () => invoke<string | null>("note_image_paste"),
+  /** The picture as a data URL, or null while it is not on this computer. */
+  noteImage: (hash: string) => invoke<string | null>("note_image", { hash }),
   portsScan: () => invoke<PortEntry[]>("ports_scan"),
   portsKill: (pid: number, force: boolean) => invoke<void>("ports_kill", { pid, force }),
   portsIsAlive: (pid: number) => invoke<boolean>("ports_is_alive", { pid }),

@@ -10,6 +10,9 @@ download page and on GitHub Releases.
 
 ## Unreleased
 
+### New
+- Pictures in notes. Paste an image (a screenshot works), drop a file on the note, or use the picture button in the toolbar. QuickDesk shrinks large pictures (up to 1600 px); the note itself only holds a short reference, so search and the list stay fast. With sync on, pictures travel to your other computers encrypted, like the notes, and count towards the sync limits. Pictures no note uses any more are cleaned up after a while.
+
 ### Improved
 - The AI usage menu in the top bar draws each limit as a finer, lower bar: 25 cells of two thin block characters, thick for what you have used and a thin line for what is left, instead of 10 tall coloured squares. The colour is gone from the bar (a menu row grows taller with any emoji); the percentage and the ring still tell you how much is used. The refresh line now just says “Refresh”.
 

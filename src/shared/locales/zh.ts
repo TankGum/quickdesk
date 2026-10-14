@@ -115,6 +115,9 @@ const zh: Record<Key, string> = {
   "editor.tasks": "清单",
   "editor.quote": "引用",
   "editor.codeBlock": "代码块",
+  "editor.image": "图片",
+  "notes.imageFailed": "无法添加这张图片。请使用 20 MB 以内的 PNG、JPEG、GIF 或 WebP 文件。",
+  "notes.imageMissing": "这台电脑上还没有这张图片",
   "notes.editTitle": "编辑笔记",
 
   // Clipboard (popup + tab)

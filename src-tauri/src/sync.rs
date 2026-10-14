@@ -231,6 +231,7 @@ fn run_once(app: &AppHandle) -> Result<Option<SyncReport>, (bool, String)> {
     update(app, |s| s.state = "syncing");
     let state = app.state::<AppState>();
     let name = device_name();
+    let pictures = crate::commands::notes::image_dir(&state);
     let engine = SyncEngine {
         transport: &transport,
         dek: &dek,
@@ -238,6 +239,7 @@ fn run_once(app: &AppHandle) -> Result<Option<SyncReport>, (bool, String)> {
         device_id: &state.device_id,
         device_name: &name,
         config: EngineConfig::default(),
+        pictures: Some(&pictures),
     };
     engine.sync_once(&state.db, &state.clock).map(Some).map_err(|e| (e.is_transient(), e.to_string()))
 }
@@ -277,6 +279,9 @@ pub fn start(app: &AppHandle) {
                     }
                     if report.pulled > 0 {
                         let _ = app.emit("notes://changed", ());
+                    }
+                    if report.pictures_pulled > 0 {
+                        let _ = app.emit("notes://pictures", ());
                     }
                     update(&app, |s| {
                         s.state = "idle";

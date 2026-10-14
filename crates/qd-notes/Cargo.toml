@@ -9,6 +9,10 @@ qd-core.workspace = true
 rusqlite.workspace = true
 serde.workspace = true
 thiserror.workspace = true
+blake3 = "1"
+data-encoding = "2"
+# gif and webp are only read (first frame); pictures are stored as PNG or JPEG.
+image = { workspace = true, features = ["gif", "webp"] }
 
 [dev-dependencies]
 serde_json.workspace = true

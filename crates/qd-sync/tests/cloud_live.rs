@@ -51,6 +51,7 @@ fn cloud_transport_and_two_device_sync() {
         device_id: id,
         device_name: id,
         config,
+        pictures: None,
     };
     let (a_t, b_t): (&'static CloudTransport, &'static CloudTransport) =
         (Box::leak(Box::new(a_t)), Box::leak(Box::new(b_t)));

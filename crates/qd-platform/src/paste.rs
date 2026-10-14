@@ -46,6 +46,20 @@ pub fn write_image(encoded: &[u8]) -> Result<(), String> {
     with_clipboard(|cb| cb.set_image(data).map_err(|e| e.to_string()))
 }
 
+/// The picture on the clipboard as PNG, or `None` when it holds something else.
+/// For webviews that do not hand a pasted screenshot to the page (WebKitGTK).
+pub fn read_image() -> Result<Option<Vec<u8>>, String> {
+    let data = match with_clipboard(|cb| cb.get_image().map_err(|e| e.to_string())) {
+        Ok(data) => data,
+        Err(_) => return Ok(None),
+    };
+    let rgba = image::RgbaImage::from_raw(data.width as u32, data.height as u32, data.bytes.into_owned())
+        .ok_or("clipboard picture has the wrong size")?;
+    let mut png = Vec::new();
+    rgba.write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png).map_err(|e| e.to_string())?;
+    Ok(Some(png))
+}
+
 /// Put a list of files on the clipboard, as a file manager's "Copy" does.
 pub fn write_files(paths: &[String]) -> Result<(), String> {
     with_clipboard(|cb| cb.set().file_list(paths).map_err(|e| e.to_string()))

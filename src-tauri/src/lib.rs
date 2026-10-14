@@ -137,6 +137,9 @@ pub fn run(args: Vec<String>) {
             commands::notes::notes_delete,
             commands::notes::notes_restore,
             commands::notes::notes_list,
+            commands::notes::note_image_add,
+            commands::notes::note_image_paste,
+            commands::notes::note_image,
             commands::notes::notes_search,
             commands::update::update_status,
             commands::update::update_check,
@@ -218,6 +221,7 @@ pub fn run(args: Vec<String>) {
             sync::start(app.handle());
             ai_usage::start(app.handle());
             updater::start(app.handle());
+            commands::notes::start_image_cleanup(app.handle());
 
             let handle = app.handle().clone();
             ipc::serve(move |msg| dispatch(&handle, msg))?;

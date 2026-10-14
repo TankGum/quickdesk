@@ -115,6 +115,9 @@ const bn: Record<Key, string> = {
   "editor.tasks": "চেকলিস্ট",
   "editor.quote": "উদ্ধৃতি",
   "editor.codeBlock": "কোড ব্লক",
+  "editor.image": "ছবি",
+  "notes.imageFailed": "এই ছবিটি যোগ করা গেল না। 20 MB-এর কম একটি PNG, JPEG, GIF বা WebP ফাইল ব্যবহার করুন।",
+  "notes.imageMissing": "ছবিটি এখনও এই কম্পিউটারে নেই",
   "notes.editTitle": "নোট সম্পাদনা",
 
   // Clipboard (popup + tab)

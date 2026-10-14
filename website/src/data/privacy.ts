@@ -13,7 +13,7 @@ export interface Privacy {
 export const privacy: Record<"en" | "vi", Privacy> = {
   en: {
     title: "Privacy",
-    updated: "Last updated 11 October 2026 (download counts)",
+    updated: "Last updated 14 October 2026 (pictures in notes)",
     html: `<p class="lead">QuickDesk has no accounts, no analytics and no telemetry. Your notes and clipboard history live on your computer. This page lists everything that leaves it.</p>
 <h2>What stays on your computer</h2>
 <ul>
@@ -26,7 +26,7 @@ export const privacy: Record<"en" | "vi", Privacy> = {
 <table>
 <tr><th>When</th><th>To</th><th>What</th></tr>
 <tr><td data-label="When">Checking for updates (30 s after start, then every 6 hours; can be turned off)</td><td data-label="To"><code>dl.quickdesk.click</code> (Cloudflare)</td><td data-label="What">A request for <code>update.json</code>, and the package when you choose to update. Your IP address is visible to Cloudflare, as with any download.</td></tr>
-<tr><td data-label="When">Note sync, only if you turn it on</td><td data-label="To">QuickDesk Cloud, <code>sync.quickdesk.click</code> (Cloudflare)</td><td data-label="What">Your notes, encrypted on your computer (XChaCha20-Poly1305) with a key derived from your passphrase; QuickDesk Cloud cannot read them. It stores them under a random sync account id, with their sizes and upload times, and sees your IP address. No email, name or other personal data. You can delete everything from Settings → Sync.</td></tr>
+<tr><td data-label="When">Note sync, only if you turn it on</td><td data-label="To">QuickDesk Cloud, <code>sync.quickdesk.click</code> (Cloudflare)</td><td data-label="What">Your notes and the pictures in them, encrypted on your computer (XChaCha20-Poly1305) with a key derived from your passphrase; QuickDesk Cloud cannot read them. It stores them under a random sync account id, with their sizes and upload times, and sees your IP address. No email, name or other personal data. You can delete everything from Settings → Sync.</td></tr>
 <tr><td data-label="When">AI usage, only if Claude Code is signed in on this computer (on a Mac, only after you allow reading its login from the Keychain)</td><td data-label="To"><code>api.anthropic.com</code></td><td data-label="What">A usage request authorised with Claude Code's existing login, at most every 5 minutes. The token is read, never stored, refreshed or sent anywhere else.</td></tr>
 <tr><td data-label="When">Runtimes tab, when it looks for newer releases (at most once an hour), when you open a version list or install a version</td><td data-label="To">The servers of nvm, uv, rustup and mise: <code>nodejs.org</code>, <code>github.com</code> / <code>releases.astral.sh</code> (Python builds), <code>static.rust-lang.org</code>, and for mise each language's own download site (for example <code>go.dev</code>)</td><td data-label="What">Those tools make the requests themselves, as when you run them in a terminal. QuickDesk adds nothing to them.</td></tr>
 <tr><td data-label="When">Runtimes tab, only if you click “Install mise”</td><td data-label="To"><code>github.com</code> (jdx/mise releases); on Windows also <code>api.github.com</code></td><td data-label="What">A download of the latest mise and its checksum file. On Windows, QuickDesk first asks the GitHub API which release is the latest (User-Agent “QuickDesk”).</td></tr>
@@ -42,7 +42,7 @@ export const privacy: Record<"en" | "vi", Privacy> = {
   },
   vi: {
     title: "Quyền riêng tư",
-    updated: "Cập nhật lần cuối ngày 11/10/2026 (đếm lượt tải)",
+    updated: "Cập nhật lần cuối ngày 14/10/2026 (ảnh trong ghi chú)",
     html: `<p class="lead">QuickDesk không có tài khoản, không có analytics và không gửi telemetry. Ghi chú và lịch sử clipboard nằm trên máy bạn. Trang này liệt kê mọi thứ được gửi ra ngoài.</p>
 <h2>Những gì ở lại trên máy bạn</h2>
 <ul>
@@ -55,7 +55,7 @@ export const privacy: Record<"en" | "vi", Privacy> = {
 <table>
 <tr><th>Khi nào</th><th>Tới đâu</th><th>Nội dung</th></tr>
 <tr><td data-label="Khi nào">Kiểm tra bản mới (30 giây sau khi mở, rồi mỗi 6 giờ; có thể tắt)</td><td data-label="Tới đâu"><code>dl.quickdesk.click</code> (Cloudflare)</td><td data-label="Nội dung">Một yêu cầu tải <code>update.json</code>, và gói cài khi bạn chọn cập nhật. Cloudflare thấy địa chỉ IP của bạn, như mọi lần tải file.</td></tr>
-<tr><td data-label="Khi nào">Đồng bộ ghi chú, chỉ khi bạn bật</td><td data-label="Tới đâu">QuickDesk Cloud, <code>sync.quickdesk.click</code> (Cloudflare)</td><td data-label="Nội dung">Ghi chú đã được mã hoá trên máy (XChaCha20-Poly1305) bằng khoá sinh từ passphrase của bạn; QuickDesk Cloud không đọc được. Dữ liệu được lưu theo một mã tài khoản ngẫu nhiên, kèm dung lượng và thời điểm tải lên, và máy chủ thấy địa chỉ IP của bạn. Không có email, tên hay dữ liệu cá nhân nào khác. Bạn có thể xoá tất cả trong Cài đặt → Đồng bộ.</td></tr>
+<tr><td data-label="Khi nào">Đồng bộ ghi chú, chỉ khi bạn bật</td><td data-label="Tới đâu">QuickDesk Cloud, <code>sync.quickdesk.click</code> (Cloudflare)</td><td data-label="Nội dung">Ghi chú cùng ảnh trong đó, đã được mã hoá trên máy (XChaCha20-Poly1305) bằng khoá sinh từ passphrase của bạn; QuickDesk Cloud không đọc được. Dữ liệu được lưu theo một mã tài khoản ngẫu nhiên, kèm dung lượng và thời điểm tải lên, và máy chủ thấy địa chỉ IP của bạn. Không có email, tên hay dữ liệu cá nhân nào khác. Bạn có thể xoá tất cả trong Cài đặt → Đồng bộ.</td></tr>
 <tr><td data-label="Khi nào">Usage AI, chỉ khi Claude Code đã đăng nhập trên máy (trên Mac, chỉ sau khi bạn cho phép đọc phiên đăng nhập từ Keychain)</td><td data-label="Tới đâu"><code>api.anthropic.com</code></td><td data-label="Nội dung">Một yêu cầu usage dùng phiên đăng nhập sẵn có của Claude Code, tối đa mỗi 5 phút. Token chỉ được đọc: không lưu, không làm mới, không gửi đi đâu khác.</td></tr>
 <tr><td data-label="Khi nào">Tab Runtime, khi tab tìm bản mới hơn (nhiều nhất mỗi giờ một lần), khi bạn mở danh sách version hoặc cài một version</td><td data-label="Tới đâu">Máy chủ của nvm, uv, rustup và mise: <code>nodejs.org</code>, <code>github.com</code> / <code>releases.astral.sh</code> (bản build Python), <code>static.rust-lang.org</code>, và với mise là trang tải của từng ngôn ngữ (ví dụ <code>go.dev</code>)</td><td data-label="Nội dung">Chính các công cụ đó gửi request, giống như khi bạn chạy chúng trong terminal. QuickDesk không thêm gì vào.</td></tr>
 <tr><td data-label="Khi nào">Tab Runtime, chỉ khi bạn bấm “Cài mise”</td><td data-label="Tới đâu"><code>github.com</code> (bản phát hành jdx/mise); trên Windows thêm <code>api.github.com</code></td><td data-label="Nội dung">Tải bản mise mới nhất và file mã kiểm tra của nó. Trên Windows, QuickDesk hỏi GitHub API trước xem bản nào mới nhất (User-Agent “QuickDesk”).</td></tr>

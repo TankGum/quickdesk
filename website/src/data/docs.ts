@@ -114,9 +114,11 @@ const all: Section[] = [
     title: { en: "Notes", vi: "Ghi chú" },
     html: {
       en: `<p>Notes are Markdown with a rich editor: headings, bold and italic, lists, checklists, quotes and code blocks. <kbd>Ctrl</kbd> <kbd>N</kbd> writes a new note, <kbd>Ctrl</kbd> <kbd>S</kbd> saves, <kbd>Ctrl</kbd> <kbd>F</kbd> searches. Search ignores accents, so <code>tieng viet</code> finds “tiếng Việt”.</p>
-<p>Pin a note with the star to keep it on top. Deleting asks first and can be undone for a few seconds.</p>`,
+<p>Pin a note with the star to keep it on top. Deleting asks first and can be undone for a few seconds.</p>
+<p>Add a picture by pasting it (a screenshot works), dropping a file on the note, or with the picture button in the toolbar. QuickDesk shrinks large pictures to at most 1600 pixels. With sync on, pictures travel encrypted with their note.</p>`,
       vi: `<p>Ghi chú dùng Markdown với trình soạn đầy đủ: tiêu đề, in đậm và nghiêng, danh sách, checklist, trích dẫn, khối code. <kbd>Ctrl</kbd> <kbd>N</kbd> để viết ghi chú mới, <kbd>Ctrl</kbd> <kbd>S</kbd> để lưu, <kbd>Ctrl</kbd> <kbd>F</kbd> để tìm. Tìm kiếm không cần dấu: gõ <code>tieng viet</code> vẫn ra “tiếng Việt”.</p>
-<p>Bấm ngôi sao để ghim ghi chú lên đầu. Xoá sẽ hỏi trước và có thể hoàn tác trong vài giây.</p>`,
+<p>Bấm ngôi sao để ghim ghi chú lên đầu. Xoá sẽ hỏi trước và có thể hoàn tác trong vài giây.</p>
+<p>Thêm ảnh bằng cách dán (chụp màn hình rồi dán được), kéo thả file vào ghi chú, hoặc bấm nút ảnh trên thanh công cụ. QuickDesk thu nhỏ ảnh lớn xuống tối đa 1600 pixel. Khi bật đồng bộ, ảnh đi cùng ghi chú và được mã hoá.</p>`,
     },
   },
   {
@@ -147,7 +149,7 @@ const all: Section[] = [
 </ul>
 <h3>Turning it off</h3>
 <p><strong>Turn off sync…</strong> stops syncing on one computer and keeps its notes. Tick <em>Also delete my notes from QuickDesk Cloud</em> to remove the synced copy for every computer.</p>
-<p>Limits per sync code: 256 MB and 20,000 stored objects, far more than notes need.</p>`,
+<p>Limits per sync code: 256 MB and 20,000 stored objects, far more than notes need. Pictures in notes count towards these limits.</p>`,
       vi: `<p>Ghi chú đồng bộ qua <strong>QuickDesk Cloud</strong>. Không cần tài khoản hay email: một máy nhận <strong>mã đồng bộ</strong>, các máy khác nhập mã đó để tham gia. Chỉ ghi chú được đồng bộ; lịch sử clipboard và cài đặt ở lại trên từng máy.</p>
 <h3>Thiết lập</h3>
 <ol>
@@ -172,7 +174,7 @@ const all: Section[] = [
 </ul>
 <h3>Tắt đồng bộ</h3>
 <p><strong>Tắt đồng bộ…</strong> ngừng đồng bộ trên một máy và giữ nguyên ghi chú trên máy đó. Tích <em>Xoá luôn ghi chú trên QuickDesk Cloud</em> để xoá bản đồng bộ cho mọi máy.</p>
-<p>Giới hạn cho mỗi mã đồng bộ: 256 MB và 20.000 object, dư sức cho ghi chú.</p>`,
+<p>Giới hạn cho mỗi mã đồng bộ: 256 MB và 20.000 object, dư sức cho ghi chú. Ảnh trong ghi chú cũng tính vào các giới hạn này.</p>`,
     },
   },
   {

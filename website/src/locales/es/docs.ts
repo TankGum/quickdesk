@@ -52,7 +52,8 @@ const docs: Record<string, { title: string; html: string }> = {
   notes: {
     title: "Notas",
     html: `<p>Las notas son Markdown con un editor enriquecido: títulos, negrita y cursiva, listas, listas de tareas, citas y bloques de código. <kbd>Ctrl</kbd> <kbd>N</kbd> crea una nota nueva, <kbd>Ctrl</kbd> <kbd>S</kbd> guarda, <kbd>Ctrl</kbd> <kbd>F</kbd> busca. La búsqueda ignora los acentos, así que <code>tieng viet</code> encuentra «tiếng Việt».</p>
-<p>Fija una nota con la estrella para mantenerla arriba. Al borrar se pide confirmación, y se puede deshacer durante unos segundos.</p>`,
+<p>Fija una nota con la estrella para mantenerla arriba. Al borrar se pide confirmación, y se puede deshacer durante unos segundos.</p>
+<p>Añade una imagen pegándola (sirve una captura de pantalla), soltando un archivo sobre la nota o con el botón de imagen de la barra de herramientas. QuickDesk reduce las imágenes grandes a 1600 píxeles como máximo. Con la sincronización activada, las imágenes viajan cifradas junto con su nota.</p>`,
   },
   sync: {
     title: "Sincronizar notas entre equipos",
@@ -80,7 +81,7 @@ const docs: Record<string, { title: string; html: string }> = {
 </ul>
 <h3>Desactivarla</h3>
 <p><strong>Desactivar la sincronización…</strong> deja de sincronizar en un equipo y conserva sus notas. Marca <em>Eliminar también mis notas de QuickDesk Cloud</em> para borrar la copia sincronizada para todos los equipos.</p>
-<p>Límites por código de sincronización: 256 MB y 20.000 objetos guardados, mucho más de lo que necesitan unas notas.</p>`,
+<p>Límites por código de sincronización: 256 MB y 20.000 objetos guardados, mucho más de lo que necesitan unas notas. Las imágenes de las notas también cuentan para estos límites.</p>`,
   },
   clipboard: {
     title: "Historial del portapapeles",

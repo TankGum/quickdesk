@@ -115,6 +115,9 @@ const ja: Record<Key, string> = {
   "editor.tasks": "チェックリスト",
   "editor.quote": "引用",
   "editor.codeBlock": "コードブロック",
+  "editor.image": "画像",
+  "notes.imageFailed": "この画像を追加できませんでした。20 MB 未満の PNG、JPEG、GIF、WebP ファイルを使ってください。",
+  "notes.imageMissing": "この画像はまだこのコンピューターにありません",
   "notes.editTitle": "メモを編集",
 
   // Clipboard (popup + tab)

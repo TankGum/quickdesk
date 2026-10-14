@@ -52,7 +52,8 @@ const docs: Record<string, { title: string; html: string }> = {
   notes: {
     title: "Notes",
     html: `<p>Les notes sont en Markdown, avec un éditeur enrichi : titres, gras et italique, listes, listes de tâches, citations et blocs de code. <kbd>Ctrl</kbd> <kbd>N</kbd> crée une note, <kbd>Ctrl</kbd> <kbd>S</kbd> enregistre, <kbd>Ctrl</kbd> <kbd>F</kbd> cherche. La recherche ignore les accents : <code>tieng viet</code> trouve « tiếng Việt ».</p>
-<p>Épinglez une note avec l’étoile pour la garder en haut. La suppression demande une confirmation et peut être annulée pendant quelques secondes.</p>`,
+<p>Épinglez une note avec l’étoile pour la garder en haut. La suppression demande une confirmation et peut être annulée pendant quelques secondes.</p>
+<p>Ajoutez une image en la collant (une capture d’écran convient), en déposant un fichier sur la note ou avec le bouton image de la barre d’outils. QuickDesk réduit les grandes images à 1600 pixels au plus. Quand la synchronisation est activée, les images voyagent chiffrées avec leur note.</p>`,
   },
   sync: {
     title: "Synchroniser les notes entre ordinateurs",
@@ -80,7 +81,7 @@ const docs: Record<string, { title: string; html: string }> = {
 </ul>
 <h3>La désactiver</h3>
 <p><strong>Désactiver la synchronisation…</strong> arrête la synchronisation sur un ordinateur et garde ses notes. Cochez <em>Supprimer aussi mes notes de QuickDesk Cloud</em> pour supprimer la copie synchronisée pour tous les ordinateurs.</p>
-<p>Limites par code de synchronisation : 256 Mo et 20 000 objets stockés, bien plus que ce dont des notes ont besoin.</p>`,
+<p>Limites par code de synchronisation : 256 Mo et 20 000 objets stockés, bien plus que ce dont des notes ont besoin. Les images des notes comptent aussi dans ces limites.</p>`,
   },
   clipboard: {
     title: "Historique du presse-papiers",

@@ -1,7 +1,7 @@
 // Privacy page in Japanese. Keep it in step with src/data/privacy.ts.
 const privacy = {
   title: "プライバシー",
-  updated: "最終更新：2026 年 10 月 11 日（ダウンロード数の集計）",
+  updated: "最終更新：2026 年 10 月 14 日（メモ内の画像）",
   html: `<p class="lead">QuickDesk にはアカウントも分析もテレメトリもありません。メモとクリップボード履歴はあなたのコンピューターにあります。このページでは、コンピューターの外に出るものをすべて挙げます。</p>
 <h2>コンピューターに残るもの</h2>
 <ul>
@@ -14,7 +14,7 @@ const privacy = {
 <table>
 <tr><th>いつ</th><th>送り先</th><th>内容</th></tr>
 <tr><td data-label="いつ">アップデートの確認（起動 30 秒後、その後 6 時間ごと。オフにできます）</td><td data-label="送り先"><code>dl.quickdesk.click</code>（Cloudflare）</td><td data-label="内容"><code>update.json</code> のリクエストと、アップデートを選んだときのパッケージ。他のダウンロードと同様に、IP アドレスは Cloudflare から見えます。</td></tr>
-<tr><td data-label="いつ">メモの同期（オンにした場合のみ）</td><td data-label="送り先">QuickDesk Cloud、<code>sync.quickdesk.click</code>（Cloudflare）</td><td data-label="内容">あなたのメモ。パスフレーズから導出した鍵でコンピューター上で暗号化済み（XChaCha20-Poly1305）で、QuickDesk Cloud は読めません。ランダムな同期アカウント ID のもとに、サイズとアップロード時刻とともに保存され、IP アドレスも見えます。メール、名前、その他の個人データはありません。設定 → 同期からすべて削除できます。</td></tr>
+<tr><td data-label="いつ">メモの同期（オンにした場合のみ）</td><td data-label="送り先">QuickDesk Cloud、<code>sync.quickdesk.click</code>（Cloudflare）</td><td data-label="内容">あなたのメモとその中の画像。パスフレーズから導出した鍵でコンピューター上で暗号化済み（XChaCha20-Poly1305）で、QuickDesk Cloud は読めません。ランダムな同期アカウント ID のもとに、サイズとアップロード時刻とともに保存され、IP アドレスも見えます。メール、名前、その他の個人データはありません。設定 → 同期からすべて削除できます。</td></tr>
 <tr><td data-label="いつ">AI 利用量（このコンピューターで Claude Code にログインしている場合のみ。Mac ではキーチェーンからのログイン情報の読み取りを許可したあとのみ）</td><td data-label="送り先"><code>api.anthropic.com</code></td><td data-label="内容">Claude Code の既存のログインで認証した利用量のリクエスト。最大 5 分に 1 回。トークンは読み取るだけで、保存、更新、他所への送信はしません。</td></tr>
 <tr><td data-label="いつ">ランタイムタブで新しいリリースを探すとき（最大 1 時間に 1 回）、バージョン一覧を開くとき、バージョンをインストールするとき</td><td data-label="送り先">nvm、uv、rustup、mise のサーバー：<code>nodejs.org</code>、<code>github.com</code> / <code>releases.astral.sh</code>（Python のビルド）、<code>static.rust-lang.org</code>、mise の場合は各言語のダウンロードサイト（たとえば <code>go.dev</code>）</td><td data-label="内容">ターミナルで実行するときと同じく、リクエストはツール自身が送ります。QuickDesk は何も付け加えません。</td></tr>
 <tr><td data-label="いつ">ランタイムタブで「mise をインストール」をクリックしたときのみ</td><td data-label="送り先"><code>github.com</code>（jdx/mise のリリース）。Windows では <code>api.github.com</code> も</td><td data-label="内容">最新の mise とそのチェックサムファイルのダウンロード。Windows では、QuickDesk がまず GitHub API に最新リリースを問い合わせます（User-Agent は「QuickDesk」）。</td></tr>

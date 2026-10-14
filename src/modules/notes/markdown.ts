@@ -1,6 +1,7 @@
 /** Markdown → readable plain text, for list previews and headings. */
 export function markdownToText(md: string): string {
   return md
+    .replace(/!\[[^\]]*\]\(qdimg:[0-9a-f]{64}\)/g, "🖼")
     .replace(/^```[^\n]*\n?/gm, "")
     .replace(/^\s{0,3}#{1,6}\s+/gm, "")
     .replace(/^\s*>\s?/gm, "")

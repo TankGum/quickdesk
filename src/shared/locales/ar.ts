@@ -115,6 +115,9 @@ const ar: Record<Key, string> = {
   "editor.tasks": "قائمة مهام",
   "editor.quote": "اقتباس",
   "editor.codeBlock": "كتلة شيفرة",
+  "editor.image": "صورة",
+  "notes.imageFailed": "تعذّرت إضافة هذه الصورة. استخدم ملف PNG أو JPEG أو GIF أو WebP أقل من 20 ميغابايت.",
+  "notes.imageMissing": "الصورة غير متوفرة بعد على هذا الحاسوب",
   "notes.editTitle": "تحرير الملاحظة",
 
   // Clipboard (popup + tab)

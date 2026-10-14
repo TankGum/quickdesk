@@ -7,14 +7,17 @@
 //! devices/<device>.bin           encrypted device info
 //! log/<device>/<seq:020>.bin     immutable encrypted batch of NoteOps
 //! snapshots/<hlc>.bin            encrypted full state + per-device cursors
+//! blobs/<hash>.bin               encrypted picture used by notes (named by the hash of the plain picture)
 //! ```
 //!
 //! Every device appends only under its own `log/<device>/`, so devices never
 //! overwrite each other's objects; conflicts are resolved by `qd_notes::sync`.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
+use std::path::Path;
 
 use qd_core::{settings, Clock, Db};
+use qd_notes::images;
 use qd_notes::sync::{all_ops, apply_remote, dirty_ops, mark_pushed, Applied, NoteOp};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -29,6 +32,9 @@ const SNAPSHOT_KEY: &str = "sync.snapshot";
 const LAST_COMPACTION_KEY: &str = "sync.last_compaction";
 /// The store's revision when the last full round started.
 const REVISION_KEY: &str = "sync.revision";
+/// Set while a picture could not be moved, so an otherwise idle round still looks again.
+const PICTURES_RETRY_KEY: &str = "sync.pictures_retry";
+const LAST_PICTURE_GC_KEY: &str = "sync.last_picture_gc";
 
 /// Forget all sync progress (used when sync is disabled or re-pointed).
 pub fn reset_local_state(conn: &rusqlite::Connection) -> Result<()> {
@@ -36,6 +42,7 @@ pub fn reset_local_state(conn: &rusqlite::Connection) -> Result<()> {
         "DELETE FROM settings WHERE key IN (?1, ?2, ?3, ?4, ?5)",
         [SEQ_KEY, CURSORS_KEY, SNAPSHOT_KEY, LAST_COMPACTION_KEY, REVISION_KEY],
     )?;
+    conn.execute("DELETE FROM settings WHERE key IN (?1, ?2)", [PICTURES_RETRY_KEY, LAST_PICTURE_GC_KEY])?;
     // Everything must be pushed again to whatever bucket comes next.
     conn.execute("UPDATE notes SET dirty = 1", [])?;
     Ok(())
@@ -69,6 +76,15 @@ impl Layout {
     }
     fn log_key(&self, device: &str, seq: u64) -> String {
         format!("{}log/{device}/{seq:020}.bin", self.root)
+    }
+    fn blobs(&self) -> String {
+        format!("{}blobs/", self.root)
+    }
+    fn blob_key(&self, hash: &str) -> String {
+        format!("{}blobs/{hash}.bin", self.root)
+    }
+    fn parse_blob_key<'k>(&self, key: &'k str) -> Option<&'k str> {
+        key.strip_prefix(&self.blobs())?.strip_suffix(".bin").filter(|h| images::is_hash(h))
     }
     fn snapshots(&self) -> String {
         format!("{}snapshots/", self.root)
@@ -136,6 +152,8 @@ pub struct SyncReport {
     pub pushed: usize,
     pub conflicts: usize,
     pub compacted: bool,
+    pub pictures_pulled: usize,
+    pub pictures_pushed: usize,
 }
 
 fn now_ms() -> i64 {
@@ -177,6 +195,8 @@ pub struct SyncEngine<'a> {
     pub device_id: &'a str,
     pub device_name: &'a str,
     pub config: EngineConfig,
+    /// Where the pictures of notes are kept; `None` syncs the text only.
+    pub pictures: Option<&'a Path>,
 }
 
 impl SyncEngine<'_> {
@@ -200,16 +220,20 @@ impl SyncEngine<'_> {
         if let Some(rev) = &revision {
             let conn = db.conn()?;
             let seen: Option<String> = settings::get(&conn, REVISION_KEY)?;
-            let pending: bool =
+            let mut pending: bool =
                 conn.query_row("SELECT EXISTS(SELECT 1 FROM notes WHERE dirty = 1)", [], |r| r.get(0))?;
+            pending |= settings::get::<bool>(&conn, PICTURES_RETRY_KEY)?.unwrap_or(false);
             if seen.as_deref() == Some(rev.as_str()) && !pending {
                 return Ok(SyncReport::default());
             }
         }
         let mut report = SyncReport::default();
         self.pull(db, clock, &mut report)?;
+        // Pictures go before the notes that use them, so another device never finds a note without its picture.
+        self.sync_pictures(db, &mut report)?;
         self.push(db, &mut report)?;
         report.compacted = self.maybe_compact(db, clock)?;
+        self.collect_pictures(db)?;
         if let Some(rev) = revision {
             settings::set(&*db.conn()?, REVISION_KEY, &rev)?;
         }
@@ -354,6 +378,87 @@ impl SyncEngine<'_> {
         let dkey = self.layout.device(self.device_id);
         self.transport.put(&dkey, &self.write(&dkey, &info)?)?;
         report.pushed += ops.len();
+        Ok(())
+    }
+
+    /// Which pictures the bucket holds (hash → last modified).
+    fn remote_pictures(&self) -> Result<BTreeMap<String, i64>> {
+        Ok(self
+            .transport
+            .list(&self.layout.blobs(), None)?
+            .into_iter()
+            .filter_map(|o| Some((self.layout.parse_blob_key(&o.key)?.to_owned(), o.last_modified_ms)))
+            .collect())
+    }
+
+    /// Upload the pictures notes use that the bucket lacks, download the ones this
+    /// device lacks. A picture that cannot be moved for a reason other than the
+    /// network (account full, bad object) is skipped, never blocks the notes.
+    fn sync_pictures(&self, db: &Db, report: &mut SyncReport) -> Result<()> {
+        let Some(dir) = self.pictures else { return Ok(()) };
+        let used = images::in_use(&*db.conn()?)?;
+        let (have, missing): (Vec<&String>, Vec<&String>) = used.iter().partition(|h| images::exists(dir, h));
+        let mut retry = false;
+        if have.is_empty() && missing.is_empty() {
+            settings::set(&*db.conn()?, PICTURES_RETRY_KEY, &false)?;
+            return Ok(());
+        }
+        let remote = self.remote_pictures()?;
+        let skip = |e: Error, what: &str, hash: &str| -> Result<bool> {
+            if matches!(e, Error::Network(_) | Error::Auth(_)) {
+                return Err(e);
+            }
+            tracing::warn!(error = %e, hash, "picture not {what}");
+            Ok(true)
+        };
+        for hash in have.into_iter().filter(|h| !remote.contains_key(*h)) {
+            let Some((bytes, _)) = images::read(dir, hash)? else { continue };
+            let key = self.layout.blob_key(hash);
+            let sent = self.dek.seal(&key, &bytes).and_then(|sealed| self.transport.put_if_absent(&key, &sealed));
+            match sent {
+                Ok(_) => report.pictures_pushed += 1,
+                Err(e) => retry |= skip(e, "uploaded", hash)?,
+            }
+        }
+        for hash in missing.into_iter().filter(|h| remote.contains_key(*h)) {
+            let key = self.layout.blob_key(hash);
+            let got = self.transport.get(&key).and_then(|sealed| match sealed {
+                Some(sealed) => Ok(Some(self.dek.open(&key, &sealed)?)),
+                None => Ok(None),
+            });
+            match got {
+                Ok(Some(bytes)) => match images::store_received(dir, hash, bytes) {
+                    Ok(()) => report.pictures_pulled += 1,
+                    Err(e) => tracing::warn!(error = %e, hash, "received picture refused"),
+                },
+                Ok(None) => {}
+                Err(e) => retry |= skip(e, "downloaded", hash)?,
+            }
+        }
+        settings::set(&*db.conn()?, PICTURES_RETRY_KEY, &retry)?;
+        Ok(())
+    }
+
+    /// Delete pictures from the bucket that no note uses any more, once they are
+    /// older than the retention time. A device that still has a note using one
+    /// uploads it again.
+    fn collect_pictures(&self, db: &Db) -> Result<()> {
+        if self.pictures.is_none() {
+            return Ok(());
+        }
+        let now = now_ms();
+        let last: i64 = settings::get(&*db.conn()?, LAST_PICTURE_GC_KEY)?.unwrap_or(0);
+        if now - last < self.config.compaction_interval_ms {
+            return Ok(());
+        }
+        settings::set(&*db.conn()?, LAST_PICTURE_GC_KEY, &now)?;
+        let used: HashSet<String> = images::in_use(&*db.conn()?)?;
+        let cutoff = now - self.config.retention_ms;
+        for (hash, modified) in self.remote_pictures()? {
+            if !used.contains(&hash) && modified > 0 && modified < cutoff {
+                self.transport.delete(&self.layout.blob_key(&hash))?;
+            }
+        }
         Ok(())
     }
 

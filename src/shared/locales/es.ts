@@ -115,6 +115,9 @@ const es: Record<Key, string> = {
   "editor.tasks": "Lista de tareas",
   "editor.quote": "Cita",
   "editor.codeBlock": "Bloque de código",
+  "editor.image": "Imagen",
+  "notes.imageFailed": "No se pudo añadir esa imagen. Usa un archivo PNG, JPEG, GIF o WebP de menos de 20 MB.",
+  "notes.imageMissing": "La imagen aún no está en este equipo",
   "notes.editTitle": "Editar nota",
 
   // Clipboard (popup + tab)
