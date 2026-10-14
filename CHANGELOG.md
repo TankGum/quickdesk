@@ -8,6 +8,11 @@ Each release is a `## <version> — <date>` section with up to three groups:
 a version that has no section here, and shows the section in the app, on the
 download page and on GitHub Releases.
 
+## Unreleased
+
+### Improved
+- The AI usage menu in the top bar draws each limit as a finer, lower bar: 25 cells of two thin block characters, thick for what you have used and a thin line for what is left, instead of 10 tall coloured squares. The colour is gone from the bar (a menu row grows taller with any emoji); the percentage and the ring still tell you how much is used. The refresh line now just says “Refresh”.
+
 ## 0.7.1 — 2026-10-13
 
 ### Fixed

@@ -73,16 +73,16 @@ export const home = {
     "vi": "Thoát QuickDesk"
   },
   "t21": {
-    "en": "🟩🟩🟩🟩⬛⬛⬛⬛⬛⬛&nbsp;&nbsp;42%&nbsp;&nbsp;5-hour",
-    "vi": "🟩🟩🟩🟩⬛⬛⬛⬛⬛⬛&nbsp;&nbsp;42%&nbsp;&nbsp;5 giờ"
+    "en": "▃▃▃▃▃▃▃▃▃▃▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁&nbsp;&nbsp;42%&nbsp;&nbsp;5-hour",
+    "vi": "▃▃▃▃▃▃▃▃▃▃▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁&nbsp;&nbsp;42%&nbsp;&nbsp;5 giờ"
   },
   "t21b": {
     "en": "resets in 2h 10m",
     "vi": "đặt lại sau 2 giờ 10 phút"
   },
   "t22": {
-    "en": "🟨🟨🟨🟨🟨🟨🟨⬛⬛⬛&nbsp;&nbsp;71%&nbsp;&nbsp;Weekly",
-    "vi": "🟨🟨🟨🟨🟨🟨🟨⬛⬛⬛&nbsp;&nbsp;71%&nbsp;&nbsp;Tuần"
+    "en": "▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▁▁▁▁▁▁▁&nbsp;&nbsp;71%&nbsp;&nbsp;Weekly",
+    "vi": "▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▁▁▁▁▁▁▁&nbsp;&nbsp;71%&nbsp;&nbsp;Tuần"
   },
   "t22b": {
     "en": "resets in 4d 6h",
@@ -93,8 +93,8 @@ export const home = {
     "vi": "Theo dõi"
   },
   "t26": {
-    "en": "Refresh Now",
-    "vi": "Làm mới ngay"
+    "en": "Refresh",
+    "vi": "Làm mới"
   },
   "t27": {
     "en": "Open AI Usage…",

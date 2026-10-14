@@ -302,17 +302,16 @@ fn tracked(snap: &UsageSnapshot) -> Option<(usize, &ProviderUsage)> {
         .or_else(|| snap.providers.iter().enumerate().find(|(_, p)| p.windows.iter().any(|w| w.used_percent.is_some())))
 }
 
-/// `🟩🟩🟩🟩⬛⬛⬛⬛⬛⬛`: GNOME draws this menu as plain text (no colours,
-/// no font sizes), so the bar is coloured emoji, green/yellow/red like the ring.
+/// The bar in a limit's line: `▃▃▃▃▃▃▃▁▁▁▁▁…`. GNOME draws this menu as plain
+/// text (no colours, no font sizes), so it is made of two low block
+/// characters: thick for what is used, a thin line for what is left.
+/// (Coloured emoji squares were tried: they could not be made smaller than a
+/// line of text, and a menu row with one grows taller. GNOME's tray menu does
+/// not show icons from an app either, so there is no colour.)
 fn bar(percent: f64) -> String {
-    const CELLS: usize = 10;
-    let filled = ((percent.clamp(0.0, 100.0) / 100.0) * CELLS as f64).round() as usize;
-    let cell = match crate::ring::level(percent) {
-        crate::ring::Level::Ok => "🟩",
-        crate::ring::Level::Warn => "🟨",
-        crate::ring::Level::High => "🟥",
-    };
-    format!("{}{}", cell.repeat(filled), "⬛".repeat(CELLS - filled))
+    const CELLS: usize = 25;
+    let filled = (percent.clamp(0.0, 100.0) / 100.0 * CELLS as f64).round() as usize;
+    format!("{}{}", "▃".repeat(filled), "▁".repeat(CELLS - filled))
 }
 
 /// The tracked tool under a greyed title ("Claude Pro"); per limit a line
@@ -320,6 +319,9 @@ fn bar(percent: f64) -> String {
 /// tools are picked in "Track". Clicking a limit opens the AI tab.
 fn build_menu(app: &AppHandle, lang: Lang, snap: &UsageSnapshot) -> tauri::Result<Menu<Wry>> {
     let menu = Menu::new(app)?;
+    // Refresh first: the closest to a button in a corner that a plain menu allows.
+    menu.append(&MenuItem::with_id(app, "ai-refresh", tx(lang, "refresh"), true, None::<&str>)?)?;
+    menu.append(&PredefinedMenuItem::separator(app)?)?;
     let mut any = false;
     if let Some((i, p)) = tracked(snap) {
         let title = match &p.plan {
@@ -348,7 +350,6 @@ fn build_menu(app: &AppHandle, lang: Lang, snap: &UsageSnapshot) -> tauri::Resul
     }
     menu.append(&PredefinedMenuItem::separator(app)?)?;
     menu.append(&ring_submenu(app, lang, snap)?)?;
-    menu.append(&MenuItem::with_id(app, "ai-refresh", tx(lang, "refresh"), true, None::<&str>)?)?;
     menu.append(&MenuItem::with_id(app, "ai-open", tx(lang, "open"), true, None::<&str>)?)?;
     Ok(menu)
 }
@@ -497,9 +498,18 @@ mod tests {
         assert_eq!(id(&snap(None)).as_deref(), Some("codex"), "automatic: what the ring shows");
         assert_eq!(id(&snap(choice("claude"))).as_deref(), Some("claude"));
         assert_eq!(id(&snap(choice("gemini"))).as_deref(), Some("gemini"), "picked, even without numbers");
-        assert_eq!(bar(42.0), "🟩🟩🟩🟩⬛⬛⬛⬛⬛⬛");
-        assert_eq!(bar(70.0), "🟨🟨🟨🟨🟨🟨🟨⬛⬛⬛");
-        assert_eq!(bar(0.0), "⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛");
-        assert_eq!(bar(130.0), "🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥");
+        let cells = |b: &str| b.chars().count();
+        assert_eq!(bar(0.0), "▁".repeat(25));
+        assert_eq!(bar(100.0), "▃".repeat(25));
+        assert_eq!(bar(130.0), bar(100.0), "over the limit stays full");
+        assert_eq!(bar(-5.0), bar(0.0));
+        // 42% of 25 cells is 10.5: rounds to 11.
+        assert_eq!(bar(42.0), format!("{}{}", "▃".repeat(11), "▁".repeat(14)));
+        assert_eq!(bar(71.0), format!("{}{}", "▃".repeat(18), "▁".repeat(7)));
+        for p in 0..=100 {
+            let b = bar(p as f64);
+            assert_eq!(cells(&b), 25, "{p}% keeps the same width");
+            assert!(b.chars().all(|c| c == '▃' || c == '▁'), "only two characters");
+        }
     }
 }

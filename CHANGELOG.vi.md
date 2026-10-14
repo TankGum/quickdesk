@@ -6,6 +6,11 @@ Mỗi bản phát hành QuickDesk có gì mới. Bản tiếng Anh là
 Mỗi bản là một mục `## <phiên bản> — <ngày>` với tối đa ba nhóm:
 `### Mới`, `### Cải thiện`, `### Sửa lỗi`.
 
+## Unreleased
+
+### Cải thiện
+- Menu usage AI trên thanh trên cùng vẽ mỗi giới hạn bằng thanh mịn và thấp hơn: 25 ô bằng hai ký tự khối mảnh, nét dày cho phần đã dùng và nét mảnh cho phần còn lại, thay cho 10 ô vuông màu to. Thanh không còn màu (chỉ cần một emoji là dòng menu cao lên); phần trăm và vòng tròn vẫn cho biết đã dùng bao nhiêu. Dòng làm mới giờ chỉ ghi “Làm mới”.
+
 ## 0.7.1 — 2026-10-13
 
 ### Sửa lỗi
